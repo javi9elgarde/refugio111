@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameTracker — Registro</title>
+  <link rel="stylesheet" href="styles.css?v=20260517c">
+</head>
+<body>
+
+<div id="gtLoading" style="position:fixed;inset:0;background:#07070f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:1rem">
+  <div style="font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#fff,#4facfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.1em">GAMETRACKER</div>
+  <div style="display:flex;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#4facfe;animation:dotPulse 1.2s ease-in-out infinite"></span><span style="width:8px;height:8px;border-radius:50%;background:#4facfe;animation:dotPulse 1.2s ease-in-out .2s infinite"></span><span style="width:8px;height:8px;border-radius:50%;background:#4facfe;animation:dotPulse 1.2s ease-in-out .4s infinite"></span></div>
+  <div style="font-size:.8rem;color:rgba(232,232,248,.4);letter-spacing:.05em">Cargando registro...</div>
+</div>
+<style>@keyframes dotPulse{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}</style>
+
+<nav class="nav">
+  <a href="index.html" class="nav__logo">🎮 <span>GAME</span>TRACKER</a>
+  <div class="nav__links">
+    <a href="index.html"        class="nav__link">Inicio</a>
+    <a href="biblioteca.html"   class="nav__link">Biblioteca</a>
+    <a href="registro.html"     class="nav__link">Registro</a>
+    <a href="estadisticas.html" class="nav__link">Estadísticas</a>
+    <a href="pendientes.html"   class="nav__link">Pendientes</a>
+  </div>
+  <div class="nav__year" id="navYear">2026</div>
+  <button class="nav__hamburger" id="navHamburger">☰</button>
+</nav>
+<div class="nav__mobile" id="navMobile">
+  <a href="index.html"        class="nav__link">Inicio</a>
+  <a href="biblioteca.html"   class="nav__link">Biblioteca</a>
+  <a href="registro.html"     class="nav__link">Registro</a>
+  <a href="estadisticas.html" class="nav__link">Estadísticas</a>
+  <a href="pendientes.html"   class="nav__link">Pendientes</a>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-header__inner">
+      <div><h1 class="page-header__title">📋 Registro de Videojuegos</h1><p class="page-header__sub" id="regCount">Cargando...</p></div>
+      <button class="btn btn-primary" id="btnAddEntry">+ Nueva Entrada</button>
+    </div>
+  </div>
+
+  <div class="section" style="padding-bottom:0">
+    <div class="filters" style="gap:1rem;flex-wrap:wrap">
+      <div class="player-tabs" id="playerTabs">
+        <button class="player-tab active-all" data-player="All">Todos</button>
+        <button class="player-tab" data-player="David">David</button>
+        <button class="player-tab" data-player="Javi">Javi</button>
+        <button class="player-tab" data-player="Mery">Mery</button>
+      </div>
+      <select class="form-select" id="filterYear" style="width:90px"></select>
+      <select class="form-select" id="filterMonth" style="width:130px">
+        <option value="">Todos los meses</option>
+        <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+        <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+        <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+      </select>
+      <select class="form-select" id="filterStatus" style="width:130px">
+        <option value="">Todos los estados</option>
+        <option value="Terminado">Terminado</option><option value="Jugando">Jugando</option>
+        <option value="Rejugado">Rejugado</option><option value="Platinado">Platinado</option>
+        <option value="Retomar">Retomar</option><option value="Abandonado">Abandonado</option>
+        <option value="Jugado">Jugado</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Mes</th><th>Jugador</th><th>Videojuego</th><th>Nota</th><th>Estado</th><th>Horas</th><th>Plataforma</th><th style="width:60px"></th></tr></thead>
+        <tbody id="regBody"></tbody>
+      </table>
+    </div>
+    <div id="regEmpty" class="empty-state hidden">
+      <div class="empty-state__icon">📋</div>
+      <div class="empty-state__title">Sin entradas</div>
+      <p>Añade tu primera partida con el botón +.</p>
+    </div>
+  </div>
+</div>
+
+<button class="btn-fab" id="fabAdd" title="Nueva entrada">＋</button>
+
+<!-- MODAL ADD/EDIT ENTRY -->
+<div class="modal-overlay" id="entryModal">
+  <div class="modal">
+    <div class="modal__header">
+      <h2 class="modal__title" id="entryModalTitle">Nueva Entrada</h2>
+      <button class="modal__close" id="entryModalClose">✕</button>
+    </div>
+    <div class="modal__body">
+      <input type="hidden" id="entryEditId">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Videojuego *</label><select class="form-select" id="fJuego"></select></div>
+        <div class="form-group"><label class="form-label">Jugador *</label>
+          <select class="form-select" id="fJugador"><option value="David">David</option><option value="Javi">Javi</option><option value="Mery">Mery</option></select></div>
+        <div class="form-group"><label class="form-label">Estado *</label>
+          <select class="form-select" id="fEstado"><option value="Terminado">Terminado</option><option value="Jugando">Jugando</option><option value="Rejugado">Rejugado</option><option value="Platinado">Platinado</option><option value="Retomar">Retomar</option><option value="Abandonado">Abandonado</option><option value="Jugado">Jugado</option></select></div>
+        <div class="form-group"><label class="form-label">Nota (0–10)</label><input type="number" class="form-input" id="fNota" placeholder="Ej: 9.5" min="0" max="10" step="0.05"></div>
+        <div class="form-group"><label class="form-label">Horas jugadas</label><input type="number" class="form-input" id="fHoras" placeholder="Ej: 20" min="0" step="0.5"></div>
+        <div class="form-group"><label class="form-label">Mes</label>
+          <select class="form-select" id="fMes"><option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option><option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option><option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option></select></div>
+        <div class="form-group"><label class="form-label">Año</label><input type="number" class="form-input" id="fAño" min="2000" max="2099" placeholder="2026"></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Plataforma jugada</label>
+          <select class="form-select" id="fPlataformaJugada">
+            <option value="">— Seleccionar —</option><option value="PC">PC</option><option value="PS5">PS5</option><option value="PS4">PS4</option><option value="PS3">PS3</option><option value="Xbox Series X">Xbox Series X</option><option value="Xbox One">Xbox One</option><option value="Xbox 360">Xbox 360</option><option value="Nintendo Switch 2">Nintendo Switch 2</option><option value="Nintendo Switch">Nintendo Switch</option>
+          </select></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Comentario</label><textarea class="form-textarea" id="fComentario" placeholder="Notas personales..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn-danger btn-sm" id="entryBtnDelete" style="margin-right:auto;display:none">Eliminar</button>
+      <button class="btn btn-secondary" id="entryBtnCancel">Cancelar</button>
+      <button class="btn btn-primary" id="entryBtnSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js?v=20260517c" defer></script>
+<script src="main.js?v=20260517c"            defer></script>
+<script src="registro.js?v=20260517c"        defer></script>
+</body>
+</html>

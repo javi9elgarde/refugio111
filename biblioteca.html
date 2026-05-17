@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameTracker — Biblioteca</title>
+  <link rel="stylesheet" href="styles.css?v=20260517b">
+</head>
+<body>
+
+<div id="gtLoading" style="position:fixed;inset:0;background:#07070f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:1rem">
+  <div style="font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#fff,#4facfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.1em">GAMETRACKER</div>
+  <div style="display:flex;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#4facfe;animation:dotPulse 1.2s ease-in-out infinite"></span><span style="width:8px;height:8px;border-radius:50%;background:#4facfe;animation:dotPulse 1.2s ease-in-out .2s infinite"></span><span style="width:8px;height:8px;border-radius:50%;background:#4facfe;animation:dotPulse 1.2s ease-in-out .4s infinite"></span></div>
+  <div style="font-size:.8rem;color:rgba(232,232,248,.4);letter-spacing:.05em">Cargando biblioteca...</div>
+</div>
+<style>@keyframes dotPulse{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}</style>
+
+<nav class="nav">
+  <a href="index.html" class="nav__logo">🎮 <span>GAME</span>TRACKER</a>
+  <div class="nav__links">
+    <a href="index.html"        class="nav__link">Inicio</a>
+    <a href="biblioteca.html"   class="nav__link">Biblioteca</a>
+    <a href="registro.html"     class="nav__link">Registro</a>
+    <a href="estadisticas.html" class="nav__link">Estadísticas</a>
+    <a href="pendientes.html"   class="nav__link">Pendientes</a>
+  </div>
+  <div class="nav__year" id="navYear">2026</div>
+  <button class="nav__hamburger" id="navHamburger">☰</button>
+</nav>
+<div class="nav__mobile" id="navMobile">
+  <a href="index.html"        class="nav__link">Inicio</a>
+  <a href="biblioteca.html"   class="nav__link">Biblioteca</a>
+  <a href="registro.html"     class="nav__link">Registro</a>
+  <a href="estadisticas.html" class="nav__link">Estadísticas</a>
+  <a href="pendientes.html"   class="nav__link">Pendientes</a>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-header__inner">
+      <div><h1 class="page-header__title">📚 Biblioteca BD</h1><p class="page-header__sub" id="libCount">Cargando...</p></div>
+      <button class="btn btn-primary" id="btnAddGame">+ Añadir Juego</button>
+    </div>
+  </div>
+
+  <div class="section" style="padding-bottom:0">
+    <div class="filters" id="filtersBar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="searchInput" placeholder="Buscar juego, desarrolladora...">
+      </div>
+      <div class="filter-chips" id="genreChips"></div>
+      <div class="filter-chips" id="platChips"></div>
+      <button class="btn btn-ghost btn-sm" id="clearFilters">✕ Limpiar</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="game-grid" id="gameGrid"></div>
+    <div id="emptyState" class="empty-state hidden">
+      <div class="empty-state__icon">🎮</div>
+      <div class="empty-state__title">No se encontraron juegos</div>
+      <p>Prueba a cambiar los filtros o añade un nuevo juego.</p>
+    </div>
+  </div>
+</div>
+
+<button class="btn-fab" id="fabAdd" title="Añadir juego">＋</button>
+
+<!-- MODAL ADD/EDIT GAME -->
+<div class="modal-overlay" id="gameModal">
+  <div class="modal">
+    <div class="modal__header">
+      <h2 class="modal__title" id="modalTitle">Añadir Juego</h2>
+      <button class="modal__close" id="modalClose">✕</button>
+    </div>
+    <div class="modal__body">
+      <input type="hidden" id="editId">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Título *</label><input type="text" class="form-input" id="fTitulo" placeholder="Nombre del juego"></div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">URL de Portada</label>
+          <input type="url" class="form-input" id="fPortada" placeholder="https://...">
+          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Pega la URL de una imagen de la portada</small>
+        </div>
+        <div class="form-group"><label class="form-label">Desarrolladora</label><input type="text" class="form-input" id="fDesarrollador" placeholder="Ej: From Software"></div>
+        <div class="form-group"><label class="form-label">Fecha de Lanzamiento</label><input type="text" class="form-input" id="fFecha" placeholder="YYYY-MM-DD"></div>
+        <div class="form-group"><label class="form-label">Duración (horas)</label><input type="number" class="form-input" id="fDuracion" placeholder="Ej: 20" min="0" step="0.5"></div>
+        <div class="form-group">
+          <label class="form-label">¿Pendiente de jugar?</label>
+          <select class="form-select" id="fPendiente"><option value="false">No</option><option value="true">Sí — añadir a pendientes</option></select>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Géneros</label>
+          <div class="chip-group" id="generoChips"></div>
+          <input type="text" class="form-input" id="fGeneroCustom" placeholder="Añadir género personalizado (Enter)" style="margin-top:0.5rem">
+        </div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Plataformas</label><div class="chip-group" id="plataformaChips"></div></div>
+        <div class="form-group" style="grid-column:1/-1"><label class="form-label">Descripción</label><textarea class="form-textarea" id="fDescripcion" placeholder="Sinopsis o notas..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn-danger btn-sm" id="btnDelete" style="margin-right:auto;display:none">Eliminar</button>
+      <button class="btn btn-secondary" id="btnCancel">Cancelar</button>
+      <button class="btn btn-primary" id="btnSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GAME DETAIL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal" style="max-width:780px">
+    <div class="modal__header">
+      <h2 class="modal__title" id="detailTitle">—</h2>
+      <button class="modal__close" id="detailClose">✕</button>
+    </div>
+    <div class="modal__body" id="detailBody"></div>
+    <div class="modal__footer">
+      <button class="btn btn-secondary" id="detailEdit">✏️ Editar</button>
+      <a href="registro.html" class="btn btn-primary">📋 Ver Registro</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js?v=20260517b" defer></script>
+<script src="main.js?v=20260517b"            defer></script>
+<script src="biblioteca.js?v=20260517b"      defer></script>
+</body>
+</html>
