@@ -60,6 +60,10 @@
         : '<div style="font-size:0.72rem;color:var(--txt3)">Sin nota</div>';
 
       var pendBadge = game.pendiente ? '<span class="badge" style="background:rgba(249,115,22,.15);color:#f97316;border:1px solid rgba(249,115,22,.3)">⏳ Pendiente</span>' : '';
+      var tipoMap = { remake:'🔄 Remake', remaster:'✨ Remaster', relanzamiento:'📦 Relanzamiento' };
+      var tipoBadge = game.tipoLanzamiento && tipoMap[game.tipoLanzamiento]
+        ? '<span class="badge" style="background:rgba(168,85,247,.15);color:#a855f7;border:1px solid rgba(168,85,247,.3)">' + tipoMap[game.tipoLanzamiento] + '</span>'
+        : '';
 
       return '<div class="game-card card card--glow fade-up" data-id="' + game.id + '">' +
         '<div class="game-card__cover">' + coverContent +
@@ -72,7 +76,7 @@
           '<div class="game-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
           (game.desarrollador ? '<div class="game-card__dev">' + Utils.escapeHtml(game.desarrollador) + '</div>' : '') +
           '<div class="game-card__platforms">' + Utils.platformBadgesHtml(game.plataformas) + '</div>' +
-          '<div class="game-card__genres">' + Utils.genreBadgesHtml(game.generos) + pendBadge + '</div>' +
+          '<div class="game-card__genres">' + Utils.genreBadgesHtml(game.generos) + pendBadge + tipoBadge + '</div>' +
           '<div class="game-card__score-wrap">' + scoreHtml + '</div>' +
         '</div>' +
       '</div>';
@@ -283,6 +287,7 @@
     document.getElementById('fFecha').value = '';
     document.getElementById('fDuracion').value = '';
     document.getElementById('fPendiente').value = 'false';
+    document.getElementById('fTipoLanzamiento').value = '';
     document.getElementById('fDescripcion').value = '';
     document.getElementById('btnDelete').style.display = 'none';
     if (coverPreview) coverPreview.update('', '');
@@ -307,6 +312,7 @@
     document.getElementById('fFecha').value = game.fechaLanzamiento || '';
     document.getElementById('fDuracion').value = game.duracion || '';
     document.getElementById('fPendiente').value = game.pendiente ? 'true' : 'false';
+    document.getElementById('fTipoLanzamiento').value = game.tipoLanzamiento || '';
     document.getElementById('fDescripcion').value = game.descripcion || '';
     document.getElementById('btnDelete').style.display = 'inline-flex';
     renderGeneroChips();
@@ -342,6 +348,7 @@
         (game.desarrollador ? '<div style="font-size:0.85rem;color:var(--txt2);margin-bottom:0.5rem">🏢 ' + Utils.escapeHtml(game.desarrollador) + '</div>' : '') +
         (game.fechaLanzamiento ? '<div style="font-size:0.85rem;color:var(--txt2);margin-bottom:0.5rem">📅 ' + Utils.escapeHtml(game.fechaLanzamiento) + '</div>' : '') +
         (game.duracion ? '<div style="font-size:0.85rem;color:var(--txt2);margin-bottom:0.5rem">⏱ ~' + game.duracion + 'h</div>' : '') +
+        (game.tipoLanzamiento ? '<div style="margin-bottom:0.5rem"><span style="background:rgba(168,85,247,.15);color:#a855f7;border:1px solid rgba(168,85,247,.3);padding:0.2rem 0.6rem;border-radius:6px;font-size:0.75rem;font-weight:600">' + ({remake:'🔄 Remake',remaster:'✨ Remaster',relanzamiento:'📦 Relanzamiento / Port'}[game.tipoLanzamiento]||'') + ' · No computa en rankings</span></div>' : '') +
         (notaMedia !== null
           ? '<div class="score-wrap" style="margin-top:1rem"><div class="score-bar"><div class="score-bar__fill" style="width:' + Utils.scoreWidth(notaMedia) + ';background:' + sc + '"></div></div><span class="score-num" style="color:' + sc + '">' + Utils.formatScore(notaMedia) + '</span></div>'
           : '<div style="color:var(--txt3);font-size:0.85rem;margin-top:1rem">Sin nota aún</div>') +
@@ -389,6 +396,7 @@
       fechaLanzamiento: document.getElementById('fFecha').value.trim(),
       duracion:         parseFloat(document.getElementById('fDuracion').value) || null,
       pendiente:        document.getElementById('fPendiente').value === 'true',
+      tipoLanzamiento:  document.getElementById('fTipoLanzamiento').value,
       descripcion:      document.getElementById('fDescripcion').value.trim(),
       generos:          selectedGeneros.slice(),
       plataformas:      selectedPlataformas.slice()

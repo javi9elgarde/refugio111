@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GameTracker — Pendientes</title>
-  <link rel="stylesheet" href="styles.css?v=20260517d">
+  <title>GameTracker â€” Pendientes</title>
+  <link rel="stylesheet" href="styles.css?v=20260518b">
 </head>
 <body>
 
@@ -16,37 +16,37 @@
 <style>@keyframes dotPulse{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}</style>
 
 <nav class="nav">
-  <a href="index.html" class="nav__logo">🎮 <span>GAME</span>TRACKER</a>
+  <a href="index.html" class="nav__logo">ðŸŽ® <span>GAME</span>TRACKER</a>
   <div class="nav__links">
     <a href="index.html"        class="nav__link">Inicio</a>
     <a href="biblioteca.html"   class="nav__link">Biblioteca</a>
     <a href="registro.html"     class="nav__link">Registro</a>
-    <a href="estadisticas.html" class="nav__link">Estadísticas</a>
+    <a href="estadisticas.html" class="nav__link">EstadÃ­sticas</a>
     <a href="pendientes.html"   class="nav__link">Pendientes</a>
   </div>
   <div class="nav__year" id="navYear">2026</div>
-  <button class="nav__hamburger" id="navHamburger">☰</button>
+  <button class="nav__hamburger" id="navHamburger">â˜°</button>
 </nav>
 <div class="nav__mobile" id="navMobile">
   <a href="index.html"        class="nav__link">Inicio</a>
   <a href="biblioteca.html"   class="nav__link">Biblioteca</a>
   <a href="registro.html"     class="nav__link">Registro</a>
-  <a href="estadisticas.html" class="nav__link">Estadísticas</a>
+  <a href="estadisticas.html" class="nav__link">EstadÃ­sticas</a>
   <a href="pendientes.html"   class="nav__link">Pendientes</a>
 </div>
 
 <div class="page">
   <div class="page-header">
     <div class="page-header__inner">
-      <div><h1 class="page-header__title">⏳ Videojuegos Pendientes</h1><p class="page-header__sub" id="pendCount">Cargando...</p></div>
-      <a href="biblioteca.html" class="btn btn-secondary">📚 Ir a Biblioteca</a>
+      <div><h1 class="page-header__title">â³ Videojuegos Pendientes</h1><p class="page-header__sub" id="pendCount">Cargando...</p></div>
+      <a href="biblioteca.html" class="btn btn-secondary">ðŸ“š Ir a Biblioteca</a>
     </div>
   </div>
 
   <div class="section" style="padding-bottom:0">
     <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem">
-      <button class="btn btn-primary btn-sm" id="tabMarcados" onclick="window.GT_Pend.setTab('marcados')">⏳ Marcados pendientes</button>
-      <button class="btn btn-secondary btn-sm" id="tabRetomar" onclick="window.GT_Pend.setTab('retomar')">↩ En Retomar</button>
+      <button class="btn btn-primary btn-sm" id="tabMarcados" onclick="window.GT_Pend.setTab('marcados')">â³ Marcados pendientes</button>
+      <button class="btn btn-secondary btn-sm" id="tabRetomar" onclick="window.GT_Pend.setTab('retomar')">â†© En Retomar</button>
     </div>
     <div class="filters" style="margin-bottom:1.5rem">
       <div class="search-wrap">
@@ -68,21 +68,21 @@
       </div>
     </div>
     <div id="pendEmpty" class="empty-state hidden">
-      <div class="empty-state__icon">⏳</div>
+      <div class="empty-state__icon">â³</div>
       <div class="empty-state__title">Sin juegos pendientes</div>
-      <p>Marca juegos como pendientes en la Biblioteca, o añade entradas con estado "Retomar" en el Registro.</p>
+      <p>Marca juegos como pendientes en la Biblioteca, o aÃ±ade entradas con estado "Retomar" en el Registro.</p>
     </div>
   </div>
 
   <footer class="footer">
-    <span>GAMETRACKER</span> · David · Javi · Mery · <span id="footerYear"></span>
+    <span>GAMETRACKER</span> Â· David Â· Javi Â· Mery Â· <span id="footerYear"></span>
   </footer>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js?v=20260517d" defer></script>
-<script src="main.js?v=20260517d"            defer></script>
-<script src="pendientes.js?v=20260517d"      defer></script>
+<script src="firebase-config.js?v=20260518b" defer></script>
+<script src="main.js?v=20260518b"            defer></script>
+<script src="pendientes.js?v=20260518b"      defer></script>
 </body>
 </html>

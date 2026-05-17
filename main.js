@@ -1,6 +1,6 @@
 /* ============================================================
    GAMETRACKER — Data Layer & Shared Utilities (Firebase version)
-   Version: 20260517b
+   Version: 20260518b
    ============================================================ */
 
 window.GT = window.GT || {};
@@ -239,6 +239,7 @@ window.GT.Registro = (function () {
     var bib = window.GT.Biblioteca ? window.GT.Biblioteca.getAll() : [];
     var gameIdsThisYear = {};
     bib.forEach(function(g) {
+      if (g.tipoLanzamiento) return; // Remasters y relanzamientos excluidos del ranking
       if (g.fechaLanzamiento && g.fechaLanzamiento.startsWith(yearStr)) {
         gameIdsThisYear[g.id] = true;
       }
@@ -382,6 +383,7 @@ window.GT.GameDetailModal = (function () {
           (game.desarrollador ? '<div style="font-size:0.85rem;color:var(--txt2);margin-bottom:0.5rem">🏢 ' + Utils.escapeHtml(game.desarrollador) + '</div>' : '') +
           (game.fechaLanzamiento ? '<div style="font-size:0.85rem;color:var(--txt2);margin-bottom:0.5rem">📅 ' + Utils.escapeHtml(game.fechaLanzamiento) + '</div>' : '') +
           (game.duracion ? '<div style="font-size:0.85rem;color:var(--txt2);margin-bottom:0.5rem">⏱ ~' + game.duracion + 'h</div>' : '') +
+          (game.tipoLanzamiento ? '<div style="margin-bottom:0.5rem"><span style="background:rgba(168,85,247,.15);color:#a855f7;border:1px solid rgba(168,85,247,.3);padding:0.2rem 0.6rem;border-radius:6px;font-size:0.75rem;font-weight:600">' + ({remake:'🔄 Remake',remaster:'✨ Remaster',relanzamiento:'📦 Relanzamiento / Port'}[game.tipoLanzamiento]||'') + ' · No computa en rankings</span></div>' : '') +
           (notaMedia !== null
             ? '<div style="margin:1rem 0;display:flex;align-items:center;gap:0.75rem">' +
                 '<span style="font-family:Orbitron,sans-serif;font-size:2rem;font-weight:900;color:' + sc + '">' + Utils.formatScore(notaMedia) + '</span>' +

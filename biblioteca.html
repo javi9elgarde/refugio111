@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GameTracker — Biblioteca</title>
-  <link rel="stylesheet" href="styles.css?v=20260517d">
+  <link rel="stylesheet" href="styles.css?v=20260518b">
 </head>
 <body>
 
@@ -110,6 +110,16 @@
           <label class="form-label">¿Pendiente de jugar?</label>
           <select class="form-select" id="fPendiente"><option value="false">No</option><option value="true">Sí — añadir a pendientes</option></select>
         </div>
+        <div class="form-group">
+          <label class="form-label">Tipo de lanzamiento</label>
+          <select class="form-select" id="fTipoLanzamiento">
+            <option value="">🎮 Juego nuevo</option>
+            <option value="remake">🔄 Remake</option>
+            <option value="remaster">✨ Remaster</option>
+            <option value="relanzamiento">📦 Relanzamiento / Port</option>
+          </select>
+          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Remasters y relanzamientos no aparecen en el GOTY ni rankings</small>
+        </div>
         <div class="form-group" style="grid-column:1/-1">
           <label class="form-label">Géneros</label>
           <div class="chip-group" id="generoChips"></div>
@@ -144,8 +154,8 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js?v=20260517d" defer></script>
-<script src="main.js?v=20260517d"            defer></script>
-<script src="biblioteca.js?v=20260517d"      defer></script>
+<script src="firebase-config.js?v=20260518b" defer></script>
+<script src="main.js?v=20260518b"            defer></script>
+<script src="biblioteca.js?v=20260518b"      defer></script>
 </body>
 </html>
