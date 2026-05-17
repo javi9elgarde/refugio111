@@ -167,7 +167,7 @@
       var posClass  = ['top5-pos-1','top5-pos-2','top5-pos-3','top5-pos-n','top5-pos-n'][i];
       var sc        = Utils.scoreColor(item.notaMedia);
       var coverContent = game.portadaUrl
-        ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="' + Utils.escapeHtml(game.titulo) + '" loading="lazy" onerror="this.style.display=\'none\'">'
+        ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="' + Utils.escapeHtml(game.titulo) + '" loading="lazy" style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">'
         : '<div class="top5-cover__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>';
       var isChamp = (i === 0);
       return '<div class="top5-card' + (isChamp ? ' champion' : '') + '" style="cursor:pointer;position:relative" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
@@ -191,7 +191,7 @@
         '<td>' + (i+1) + 'º</td>' +
         '<td><div class="game-cell">' +
           '<div class="mini-cover">' +
-            (game.portadaUrl ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
+            (game.portadaUrl ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">' : '') +
             '<span class="mini-cover__letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span>' +
           '</div>' +
           '<span style="font-weight:600">' + Utils.escapeHtml(game.titulo) + '</span>' +

@@ -51,7 +51,7 @@
 
       var coverHtml = '<div class="mini-cover">' +
         (game && game.portadaUrl
-          ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" onerror="this.style.display=\'none\'">'
+          ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" style="object-position:' + Utils.escapeHtml((game && game.portadaPos) || 'center top') + '" onerror="this.style.display=\'none\'">'
           : '') +
         '<span class="mini-cover__letter">' + Utils.escapeHtml(titulo.charAt(0)) + '</span>' +
       '</div>';

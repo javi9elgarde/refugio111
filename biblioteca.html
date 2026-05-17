@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GameTracker — Biblioteca</title>
-  <link rel="stylesheet" href="styles.css?v=20260517b">
+  <link rel="stylesheet" href="styles.css?v=20260517d">
 </head>
 <body>
 
@@ -83,6 +83,19 @@
           <input type="url" class="form-input" id="fPortada" placeholder="https://...">
           <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Pega la URL de una imagen de la portada</small>
         </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Encuadre de Portada</label>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.4rem">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('fPortadaPos').value='center top'">⬆ Arriba</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('fPortadaPos').value='center 20%'">20%</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('fPortadaPos').value='center 30%'">30%</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('fPortadaPos').value='center center'">⬛ Centro</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('fPortadaPos').value='center 70%'">70%</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('fPortadaPos').value='center bottom'">⬇ Abajo</button>
+          </div>
+          <input type="text" class="form-input" id="fPortadaPos" placeholder="Ej: center 30%  ·  top  ·  center center">
+          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Ajusta qué parte de la imagen se muestra en las portadas recortadas</small>
+        </div>
         <div class="form-group"><label class="form-label">Desarrolladora</label><input type="text" class="form-input" id="fDesarrollador" placeholder="Ej: From Software"></div>
         <div class="form-group"><label class="form-label">Fecha de Lanzamiento</label><input type="text" class="form-input" id="fFecha" placeholder="YYYY-MM-DD"></div>
         <div class="form-group"><label class="form-label">Duración (horas)</label><input type="number" class="form-input" id="fDuracion" placeholder="Ej: 20" min="0" step="0.5"></div>
@@ -124,8 +137,8 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js?v=20260517b" defer></script>
-<script src="main.js?v=20260517b"            defer></script>
-<script src="biblioteca.js?v=20260517b"      defer></script>
+<script src="firebase-config.js?v=20260517d" defer></script>
+<script src="main.js?v=20260517d"            defer></script>
+<script src="biblioteca.js?v=20260517d"      defer></script>
 </body>
 </html>

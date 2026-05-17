@@ -48,8 +48,9 @@
     grid.innerHTML = games.map(function(game) {
       var notaMedia = Registro.getNotaMedia(game.id);
       var sc = Utils.scoreColor(notaMedia);
+      var objPos = Utils.escapeHtml(game.portadaPos || 'center top');
       var coverContent = game.portadaUrl
-        ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="' + Utils.escapeHtml(game.titulo) + '" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+        ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="' + Utils.escapeHtml(game.titulo) + '" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
           '<div class="game-card__ph" style="display:none"><span class="game-card__ph-letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span><span class="game-card__ph-name">' + Utils.escapeHtml(game.titulo) + '</span></div>'
         : '<div class="game-card__ph"><span class="game-card__ph-letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span><span class="game-card__ph-name">' + Utils.escapeHtml(game.titulo) + '</span></div>';
 
@@ -158,6 +159,7 @@
     document.getElementById('editId').value = '';
     document.getElementById('fTitulo').value = '';
     document.getElementById('fPortada').value = '';
+    document.getElementById('fPortadaPos').value = '';
     document.getElementById('fDesarrollador').value = '';
     document.getElementById('fFecha').value = '';
     document.getElementById('fDuracion').value = '';
@@ -180,6 +182,7 @@
     document.getElementById('editId').value = id;
     document.getElementById('fTitulo').value = game.titulo || '';
     document.getElementById('fPortada').value = game.portadaUrl || '';
+    document.getElementById('fPortadaPos').value = game.portadaPos || '';
     document.getElementById('fDesarrollador').value = game.desarrollador || '';
     document.getElementById('fFecha').value = game.fechaLanzamiento || '';
     document.getElementById('fDuracion').value = game.duracion || '';
@@ -210,7 +213,7 @@
     var html = '<div style="display:grid;grid-template-columns:140px 1fr;gap:1.5rem;align-items:start">' +
       '<div style="aspect-ratio:2/3;background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:10px;overflow:hidden;position:relative">' +
         (game.portadaUrl
-          ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'">'
+          ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" style="width:100%;height:100%;object-fit:cover;object-position:' + Utils.escapeHtml(game.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">'
           : '') +
         '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Orbitron,sans-serif;font-size:2.5rem;font-weight:900;color:rgba(79,172,254,0.4)">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>' +
       '</div>' +
@@ -262,6 +265,7 @@
     var data = {
       titulo:           titulo,
       portadaUrl:       document.getElementById('fPortada').value.trim(),
+      portadaPos:       document.getElementById('fPortadaPos').value.trim() || null,
       desarrollador:    document.getElementById('fDesarrollador').value.trim(),
       fechaLanzamiento: document.getElementById('fFecha').value.trim(),
       duracion:         parseFloat(document.getElementById('fDuracion').value) || null,

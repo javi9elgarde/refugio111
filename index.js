@@ -185,7 +185,7 @@
       return '<div class="next5-card" onclick="window.GT.GameDetailModal.open(\'' + g.id + '\')" style="cursor:pointer">' +
         '<div class="next5-cover">' +
           (g.portadaUrl
-            ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" alt="' + Utils.escapeHtml(g.titulo) + '" loading="lazy" onerror="this.parentElement.querySelector(\'.next5-ph\').style.display=\'flex\';this.style.display=\'none\'">'
+            ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" alt="' + Utils.escapeHtml(g.titulo) + '" loading="lazy" style="object-position:' + Utils.escapeHtml(g.portadaPos || 'center top') + '" onerror="this.parentElement.querySelector(\'.next5-ph\').style.display=\'flex\';this.style.display=\'none\'">'
             : '') +
           '<div class="next5-ph" style="' + (g.portadaUrl ? 'display:none' : '') + '">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>' +
         '</div>' +
@@ -249,7 +249,7 @@
       var posLabel = (i+1) + 'º';
       var scoreColor = Utils.scoreColor(item.notaMedia);
       var coverContent = game.portadaUrl
-        ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="' + Utils.escapeHtml(game.titulo) + '" loading="lazy" onerror="this.style.display=\'none\'">'
+        ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="' + Utils.escapeHtml(game.titulo) + '" loading="lazy" style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">'
         : '<div class="top5-cover__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>';
       var isChamp = (i === 0);
       return '<div class="top5-card' + (isChamp ? ' champion' : '') + '" style="cursor:pointer;position:relative" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
@@ -273,7 +273,7 @@
         '<td>' + (i+1) + 'º</td>' +
         '<td><div class="game-cell">' +
           '<div class="mini-cover">' +
-            (game.portadaUrl ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
+            (game.portadaUrl ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">' : '') +
             '<span class="mini-cover__letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span>' +
           '</div>' +
           '<span style="font-weight:600">' + Utils.escapeHtml(game.titulo) + '</span>' +
