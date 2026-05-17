@@ -20,6 +20,7 @@
   var state = { search:'', genero:'', plataforma:'', editId: null, detailId: null };
   var selectedGeneros    = [];
   var selectedPlataformas = [];
+  var coverPreview = null;
 
   function safe(fn, name) {
     try { fn(); } catch(e) { console.warn('biblioteca.js ' + name + ':', e); }
@@ -150,6 +151,125 @@
     });
   }
 
+  /* ── COVER PREVIEW & DRAG ───────────────────────────────── */
+  function initCoverPreview() {
+    var wrap     = document.getElementById('coverPreviewWrap');
+    var img      = document.getElementById('coverPreviewImg');
+    var ph       = document.getElementById('coverPreviewPh');
+    var hint     = document.getElementById('coverDragHint');
+    var posInput = document.getElementById('fPortadaPos');
+
+    function applyPos(val) {
+      posInput.value = val;
+      img.style.objectPosition = val;
+    }
+
+    function showImg(url, pos) {
+      if (url) {
+        img.src = url;
+        img.style.display = '';
+        img.style.objectPosition = pos || 'center top';
+        ph.style.display = 'none';
+        hint.style.display = '';
+      } else {
+        img.src = '';
+        img.style.display = 'none';
+        ph.style.display = '';
+        hint.style.display = 'none';
+      }
+    }
+
+    // Preset buttons
+    document.querySelectorAll('.cover-pos-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { applyPos(this.dataset.pos); });
+    });
+
+    // Sync when URL field changes
+    document.getElementById('fPortada').addEventListener('input', function() {
+      showImg(this.value.trim(), posInput.value || 'center top');
+    });
+    document.getElementById('fPortada').addEventListener('change', function() {
+      showImg(this.value.trim(), posInput.value || 'center top');
+    });
+
+    // ── Drag to reposition ─────────────────────────────────
+    var isDragging = false, startX, startY, startXPct, startYPct;
+
+    function parsePos(val) {
+      var parts = (val || 'center top').trim().split(/\s+/);
+      function toNum(s, isY) {
+        if (!s) return isY ? 0 : 50;
+        s = s.toLowerCase();
+        if (s === 'center') return 50;
+        if (s === 'left' || s === 'top') return 0;
+        if (s === 'right' || s === 'bottom') return 100;
+        return parseFloat(s) || 50;
+      }
+      return { x: toNum(parts[0], false), y: toNum(parts[1], true) };
+    }
+
+    function getDragFactors() {
+      if (!img.naturalWidth || !img.naturalHeight) return { x: 0.5, y: 0.5 };
+      var rect = wrap.getBoundingClientRect();
+      var scale = Math.max(rect.width / img.naturalWidth, rect.height / img.naturalHeight);
+      var scaledW = img.naturalWidth  * scale;
+      var scaledH = img.naturalHeight * scale;
+      // overflow = how many pixels the image extends beyond the container
+      // 100% position change = moving by 'overflow' pixels → factor = 100/overflow
+      var overflowX = Math.max(1, scaledW - rect.width);
+      var overflowY = Math.max(1, scaledH - rect.height);
+      return { x: 100 / overflowX, y: 100 / overflowY };
+    }
+
+    function startDrag(clientX, clientY) {
+      if (img.style.display === 'none') return false;
+      isDragging = true;
+      startX = clientX; startY = clientY;
+      var pct = parsePos(posInput.value);
+      startXPct = pct.x; startYPct = pct.y;
+      wrap.style.cursor = 'grabbing';
+      return true;
+    }
+
+    function moveDrag(clientX, clientY) {
+      if (!isDragging) return;
+      var f  = getDragFactors();
+      var dx = clientX - startX;
+      var dy = clientY - startY;
+      var newX = Math.round(Math.max(0, Math.min(100, startXPct - dx * f.x)));
+      var newY = Math.round(Math.max(0, Math.min(100, startYPct - dy * f.y)));
+      applyPos(newX + '% ' + newY + '%');
+    }
+
+    function endDrag() {
+      if (isDragging) { isDragging = false; wrap.style.cursor = 'grab'; }
+    }
+
+    // Mouse events
+    wrap.addEventListener('mousedown', function(e) {
+      if (startDrag(e.clientX, e.clientY)) e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) { moveDrag(e.clientX, e.clientY); });
+    document.addEventListener('mouseup', endDrag);
+
+    // Touch events
+    wrap.addEventListener('touchstart', function(e) {
+      var t = e.touches[0]; startDrag(t.clientX, t.clientY);
+    }, { passive: true });
+    document.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
+      var t = e.touches[0]; moveDrag(t.clientX, t.clientY);
+    }, { passive: true });
+    document.addEventListener('touchend', endDrag);
+
+    return {
+      update: function(url, pos) {
+        posInput.value = pos || '';
+        showImg(url, pos || 'center top');
+      }
+    };
+  }
+
   /* ── MODAL OPEN ─────────────────────────────────────────── */
   function openAdd() {
     state.editId = null;
@@ -159,13 +279,13 @@
     document.getElementById('editId').value = '';
     document.getElementById('fTitulo').value = '';
     document.getElementById('fPortada').value = '';
-    document.getElementById('fPortadaPos').value = '';
     document.getElementById('fDesarrollador').value = '';
     document.getElementById('fFecha').value = '';
     document.getElementById('fDuracion').value = '';
     document.getElementById('fPendiente').value = 'false';
     document.getElementById('fDescripcion').value = '';
     document.getElementById('btnDelete').style.display = 'none';
+    if (coverPreview) coverPreview.update('', '');
     renderGeneroChips();
     renderPlataformaChips();
     document.getElementById('gameModal').classList.add('open');
@@ -182,8 +302,8 @@
     document.getElementById('editId').value = id;
     document.getElementById('fTitulo').value = game.titulo || '';
     document.getElementById('fPortada').value = game.portadaUrl || '';
-    document.getElementById('fPortadaPos').value = game.portadaPos || '';
     document.getElementById('fDesarrollador').value = game.desarrollador || '';
+    if (coverPreview) coverPreview.update(game.portadaUrl || '', game.portadaPos || '');
     document.getElementById('fFecha').value = game.fechaLanzamiento || '';
     document.getElementById('fDuracion').value = game.duracion || '';
     document.getElementById('fPendiente').value = game.pendiente ? 'true' : 'false';
@@ -303,6 +423,8 @@
   /* ── INIT ───────────────────────────────────────────────── */
   function init() {
     document.getElementById('navYear').textContent = new Date().getFullYear();
+
+    coverPreview = initCoverPreview();
 
     // Search
     document.getElementById('searchInput').addEventListener('input', function(){

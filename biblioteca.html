@@ -84,17 +84,24 @@
           <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Pega la URL de una imagen de la portada</small>
         </div>
         <div class="form-group" style="grid-column:1/-1">
-          <label class="form-label">Encuadre de Portada</label>
-          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.4rem">
-            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('fPortadaPos').value='center top'">⬆ Arriba</button>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('fPortadaPos').value='center 20%'">20%</button>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('fPortadaPos').value='center 30%'">30%</button>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('fPortadaPos').value='center center'">⬛ Centro</button>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('fPortadaPos').value='center 70%'">70%</button>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('fPortadaPos').value='center bottom'">⬇ Abajo</button>
+          <label class="form-label">Encuadre de Portada <span style="font-weight:400;font-size:0.72rem;color:var(--txt3)">— arrastra la imagen para ajustar el encuadre</span></label>
+          <div id="coverPreviewWrap" style="position:relative;width:100%;aspect-ratio:16/6;background:var(--bg3);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:grab;margin-bottom:0.6rem;user-select:none;touch-action:none">
+            <img id="coverPreviewImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;object-position:center top;pointer-events:none;display:none;user-select:none;-webkit-user-drag:none">
+            <div id="coverPreviewPh" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.4rem;color:var(--txt3);font-size:0.8rem">
+              <span style="font-size:1.5rem;opacity:0.4">🖼</span>
+              <span>Introduce la URL de portada para previsualizar</span>
+            </div>
+            <div id="coverDragHint" style="position:absolute;bottom:0.6rem;right:0.6rem;background:rgba(0,0,0,0.7);color:rgba(255,255,255,0.8);font-size:0.7rem;padding:0.3rem 0.7rem;border-radius:6px;pointer-events:none;display:none;backdrop-filter:blur(4px)">✋ Arrastra para reposicionar</div>
           </div>
-          <input type="text" class="form-input" id="fPortadaPos" placeholder="Ej: center 30%  ·  top  ·  center center">
-          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Ajusta qué parte de la imagen se muestra en las portadas recortadas</small>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+            <button type="button" class="btn btn-ghost btn-sm cover-pos-btn" data-pos="center top">⬆ Arriba</button>
+            <button type="button" class="btn btn-ghost btn-sm cover-pos-btn" data-pos="center 20%">20%</button>
+            <button type="button" class="btn btn-ghost btn-sm cover-pos-btn" data-pos="center 30%">30%</button>
+            <button type="button" class="btn btn-ghost btn-sm cover-pos-btn" data-pos="center center">Centro</button>
+            <button type="button" class="btn btn-ghost btn-sm cover-pos-btn" data-pos="center 70%">70%</button>
+            <button type="button" class="btn btn-ghost btn-sm cover-pos-btn" data-pos="center bottom">⬇ Abajo</button>
+          </div>
+          <input type="hidden" id="fPortadaPos" value="">
         </div>
         <div class="form-group"><label class="form-label">Desarrolladora</label><input type="text" class="form-input" id="fDesarrollador" placeholder="Ej: From Software"></div>
         <div class="form-group"><label class="form-label">Fecha de Lanzamiento</label><input type="text" class="form-input" id="fFecha" placeholder="YYYY-MM-DD"></div>
