@@ -249,14 +249,14 @@
         (game.portadaUrl
           ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
           : '<div class="hof-card__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>') +
-        '<div class="hof-card__medal">' + med.emoji + ' ' + med.label + '</div>' +
         (rankIdx === 0 ? '<div class="hof-champion-badge">👑 CAMPEÓN ' + year + '</div>' : '') +
       '</div>' +
       '<div class="hof-card__body">' +
-        '<div class="hof-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
-        '<div style="margin-top:0.25rem">' +
+        '<div class="hof-card__body-inner">' +
+          '<div class="hof-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
           '<span class="hof-card__score" style="color:' + sc + '">' + Utils.formatScore(item.notaMedia) + '</span>' +
         '</div>' +
+        '<div class="hof-card__medal">' + med.emoji + ' ' + med.label + '</div>' +
       '</div>' +
     '</div>';
   }
@@ -292,13 +292,13 @@
           (game.portadaUrl
             ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
             : '<div class="hof-card__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>') +
-          '<div class="hof-card__medal">' + (j + 4) + 'º</div>' +
         '</div>' +
         '<div class="hof-card__body">' +
-          '<div class="hof-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
-          '<div style="margin-top:0.25rem">' +
+          '<div class="hof-card__body-inner">' +
+            '<div class="hof-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
             '<span class="hof-card__score" style="color:' + sc + '">' + Utils.formatScore(item.notaMedia) + '</span>' +
           '</div>' +
+          '<div class="hof-card__medal">' + (j + 4) + 'º</div>' +
         '</div>' +
       '</div>';
     }).join('');
