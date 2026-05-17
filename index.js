@@ -254,9 +254,8 @@
       '</div>' +
       '<div class="hof-card__body">' +
         '<div class="hof-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
-        '<div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.25rem">' +
+        '<div style="margin-top:0.25rem">' +
           '<span class="hof-card__score" style="color:' + sc + '">' + Utils.formatScore(item.notaMedia) + '</span>' +
-          '<span class="hof-card__votes">' + item.numVotos + ' voto' + (item.numVotos !== 1 ? 's' : '') + '</span>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -276,8 +275,8 @@
       return;
     }
 
-    // Podium visual order: 2nd | 1st | 3rd
-    var podiumIdxs = [1, 0, 2].filter(function(i) { return i < ranking.length; });
+    // Podium visual order: 1st | 2nd | 3rd (escalera de izquierda a derecha)
+    var podiumIdxs = [0, 1, 2].filter(function(i) { return i < ranking.length; });
     podiumEl.innerHTML = podiumIdxs.map(function(i) {
       return hofCardHtml(ranking[i], i, year);
     }).join('');
@@ -297,9 +296,8 @@
         '</div>' +
         '<div class="hof-card__body">' +
           '<div class="hof-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
-          '<div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.25rem">' +
+          '<div style="margin-top:0.25rem">' +
             '<span class="hof-card__score" style="color:' + sc + '">' + Utils.formatScore(item.notaMedia) + '</span>' +
-            '<span class="hof-card__votes">' + item.numVotos + ' voto' + (item.numVotos !== 1 ? 's' : '') + '</span>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -321,7 +319,6 @@
           '<div class="score-bar"><div class="score-bar__fill" style="width:' + Utils.scoreWidth(item.notaMedia) + ';background:' + sc + '"></div></div>' +
           '<span class="score-num" style="color:' + sc + '">' + Utils.formatScore(item.notaMedia) + '</span>' +
         '</div>' +
-        '<div class="rank-list-votes">' + item.numVotos + '<span style="color:var(--txt3);font-size:0.7rem;font-weight:400;margin-left:0.2rem">voto' + (item.numVotos !== 1 ? 's' : '') + '</span></div>' +
       '</div>';
     }).join('');
   }
