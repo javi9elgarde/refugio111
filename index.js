@@ -156,42 +156,46 @@
     renderUpcomingList();
   }
 
-  function renderUpcomingList() {
-    var upcoming = Biblioteca.getUpcoming().slice(0, 12);
-    var ul = document.getElementById('upcomingList');
-    if (!upcoming.length) { ul.innerHTML = ''; return; }
-    ul.innerHTML = '<h3 class="section__title" style="font-size:1rem;margin-bottom:0.75rem">Próximos estrenos</h3>' +
-      upcoming.map(function(g){
-        var parts = g.fechaLanzamiento.split('-');
-        var dateStr = parts[2] === 'xx'
-          ? MONTH_NAMES[parseInt(parts[1])-1] + ' ' + parts[0]
-          : parseInt(parts[2]) + ' ' + MONTH_NAMES[parseInt(parts[1])-1];
-        return '<div class="card" style="padding:0.75rem 1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">' +
-          '<span style="font-family:\'Orbitron\',sans-serif;font-size:0.75rem;color:var(--cyan);min-width:100px">' + Utils.escapeHtml(dateStr) + '</span>' +
-          '<span style="font-weight:600;flex:1">' + Utils.escapeHtml(g.titulo) + '</span>' +
-          '<span>' + Utils.platformBadgesHtml(g.plataformas) + '</span>' +
-          '</div>';
-      }).join('');
-  }
+  function renderUpcomingList() { /* replaced by renderUpcomingCards */ }
 
-  function renderNext5() {
-    var el = document.getElementById('next5Strip');
+  function renderUpcomingCards() {
+    var el = document.getElementById('upcomingCardsGrid');
     if (!el) return;
-    var next5 = Biblioteca.getUpcoming().slice(0, 5);
-    if (!next5.length) { el.innerHTML = ''; return; }
-    el.innerHTML = next5.map(function(g) {
+
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var limit = new Date(today);
+    limit.setDate(limit.getDate() + 30);
+
+    var games = Biblioteca.getUpcoming().filter(function(g) {
+      if (!g.fechaLanzamiento) return false;
       var parts = g.fechaLanzamiento.split('-');
-      var dateStr = parseInt(parts[2]) + ' ' + MONTH_NAMES[parseInt(parts[1])-1] + ' ' + parts[0];
-      return '<div class="next5-card" onclick="window.GT.GameDetailModal.open(\'' + g.id + '\')" style="cursor:pointer">' +
-        '<div class="next5-cover">' +
+      if (!parts[2] || parts[2] === 'xx') return false;
+      var d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      return d >= today && d <= limit;
+    });
+
+    if (!games.length) {
+      el.innerHTML = '<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:2rem">No hay estrenos en los próximos 30 días</p>';
+      return;
+    }
+
+    el.innerHTML = games.map(function(g) {
+      var parts = g.fechaLanzamiento.split('-');
+      var day   = parseInt(parts[2]);
+      var month = MONTH_NAMES[parseInt(parts[1]) - 1];
+      var dateStr = day + ' ' + month;
+      var objPos = Utils.escapeHtml(g.portadaPos || 'center top');
+
+      return '<div class="upcoming-card" onclick="window.GT.GameDetailModal.open(\'' + g.id + '\')" style="cursor:pointer">' +
+        '<div class="upcoming-card__cover">' +
           (g.portadaUrl
-            ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" alt="' + Utils.escapeHtml(g.titulo) + '" loading="lazy" style="object-position:' + Utils.escapeHtml(g.portadaPos || 'center top') + '" onerror="this.parentElement.querySelector(\'.next5-ph\').style.display=\'flex\';this.style.display=\'none\'">'
-            : '') +
-          '<div class="next5-ph" style="' + (g.portadaUrl ? 'display:none' : '') + '">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>' +
+            ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" alt="' + Utils.escapeHtml(g.titulo) + '" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+            : '<div class="upcoming-card__ph">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>') +
+          '<div class="upcoming-card__date">' + Utils.escapeHtml(dateStr) + '</div>' +
         '</div>' +
-        '<div class="next5-info">' +
-          '<div class="next5-title">' + Utils.escapeHtml(g.titulo) + '</div>' +
-          '<div class="next5-date">📅 ' + Utils.escapeHtml(dateStr) + '</div>' +
+        '<div class="upcoming-card__body">' +
+          '<div class="upcoming-card__title">' + Utils.escapeHtml(g.titulo) + '</div>' +
           '<div>' + Utils.platformBadgesHtml(g.plataformas) + '</div>' +
         '</div>' +
       '</div>';
@@ -228,64 +232,97 @@
     sel.addEventListener('change', function(){ renderRanking(parseInt(this.value)); });
   }
 
+  var HOF_MEDALS = [
+    { emoji: '🥇', label: '1º · GOTY', cls: 'hof-gold'   },
+    { emoji: '🥈', label: '2º',         cls: 'hof-silver' },
+    { emoji: '🥉', label: '3º',         cls: 'hof-bronze' }
+  ];
+
+  function hofCardHtml(item, rankIdx, year) {
+    var game = Biblioteca.getById(item.juegoId);
+    if (!game) return '';
+    var med    = HOF_MEDALS[rankIdx];
+    var sc     = Utils.scoreColor(item.notaMedia);
+    var objPos = Utils.escapeHtml(game.portadaPos || 'center top');
+    return '<div class="hof-card ' + med.cls + '" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
+      '<div class="hof-card__cover">' +
+        (game.portadaUrl
+          ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+          : '<div class="hof-card__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>') +
+        '<div class="hof-card__medal">' + med.emoji + ' ' + med.label + '</div>' +
+        (rankIdx === 0 ? '<div class="hof-champion-badge">👑 CAMPEÓN ' + year + '</div>' : '') +
+      '</div>' +
+      '<div class="hof-card__body">' +
+        '<div class="hof-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
+        '<div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.25rem">' +
+          '<span class="hof-card__score" style="color:' + sc + '">' + Utils.formatScore(item.notaMedia) + '</span>' +
+          '<span class="hof-card__votes">' + item.numVotos + ' voto' + (item.numVotos !== 1 ? 's' : '') + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
   function renderRanking(year) {
     document.getElementById('gotyYear').textContent = year;
-    var ranking = Registro.getRanking(year);
-    var top5El  = document.getElementById('top5Grid');
-    var bodyEl  = document.getElementById('rankingBody');
+    var ranking  = Registro.getRanking(year);
+    var podiumEl = document.getElementById('hofPodium');
+    var lowerEl  = document.getElementById('hofLower');
+    var bodyEl   = document.getElementById('rankingBody');
 
     if (!ranking.length) {
-      top5El.innerHTML  = '<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:2rem">Sin datos para ' + year + '. Añade entradas en el Registro.</p>';
-      bodyEl.innerHTML  = '<tr><td colspan="6" class="text-muted text-center" style="padding:2rem">Sin datos</td></tr>';
+      podiumEl.innerHTML = '<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:2rem">Sin datos para ' + year + '. Añade entradas en el Registro.</p>';
+      lowerEl.innerHTML  = '';
+      bodyEl.innerHTML   = '<p class="text-muted" style="text-align:center;padding:2rem">Sin datos</p>';
       return;
     }
 
-    // Top 5 gallery
-    var top5 = ranking.slice(0, 5);
-    top5El.innerHTML = top5.map(function(item, i) {
+    // Podium visual order: 2nd | 1st | 3rd
+    var podiumIdxs = [1, 0, 2].filter(function(i) { return i < ranking.length; });
+    podiumEl.innerHTML = podiumIdxs.map(function(i) {
+      return hofCardHtml(ranking[i], i, year);
+    }).join('');
+
+    // 4th and 5th
+    lowerEl.innerHTML = ranking.slice(3, 5).map(function(item, j) {
       var game = Biblioteca.getById(item.juegoId);
       if (!game) return '';
-      var posClass = ['top5-pos-1','top5-pos-2','top5-pos-3','top5-pos-n','top5-pos-n'][i];
-      var posLabel = (i+1) + 'º';
-      var scoreColor = Utils.scoreColor(item.notaMedia);
-      var coverContent = game.portadaUrl
-        ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="' + Utils.escapeHtml(game.titulo) + '" loading="lazy" style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">'
-        : '<div class="top5-cover__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>';
-      var isChamp = (i === 0);
-      return '<div class="top5-card' + (isChamp ? ' champion' : '') + '" style="cursor:pointer;position:relative" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
-        (isChamp ? '<div class="champion-crown">👑</div>' : '') +
-        '<div class="top5-cover">' + coverContent +
-        '<div class="top5-overlay">' +
-          '<div class="top5-pos ' + posClass + '">' + posLabel + '</div>' +
-          '<div class="top5-title">' + Utils.escapeHtml(game.titulo) + '</div>' +
-          '<div class="top5-score" style="color:' + scoreColor + '">' + Utils.formatScore(item.notaMedia) + '</div>' +
-        '</div></div>' +
+      var sc     = Utils.scoreColor(item.notaMedia);
+      var objPos = Utils.escapeHtml(game.portadaPos || 'center top');
+      return '<div class="hof-card hof-lower-card" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
+        '<div class="hof-card__cover">' +
+          (game.portadaUrl
+            ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+            : '<div class="hof-card__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>') +
+          '<div class="hof-card__medal">' + (j + 4) + 'º</div>' +
+        '</div>' +
+        '<div class="hof-card__body">' +
+          '<div class="hof-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
+          '<div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.25rem">' +
+            '<span class="hof-card__score" style="color:' + sc + '">' + Utils.formatScore(item.notaMedia) + '</span>' +
+            '<span class="hof-card__votes">' + item.numVotos + ' voto' + (item.numVotos !== 1 ? 's' : '') + '</span>' +
+          '</div>' +
+        '</div>' +
       '</div>';
     }).join('');
 
-    // Full table
+    // Full ranking — no covers, just pos + title + score + votes
     bodyEl.innerHTML = ranking.map(function(item, i) {
       var game = Biblioteca.getById(item.juegoId);
       if (!game) return '';
-      var posClass = i < 3 ? 'rank-' + (i+1) : '';
       var sc = Utils.scoreColor(item.notaMedia);
-      return '<tr class="ranking-row ' + posClass + '" style="cursor:pointer" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
-        '<td>' + (i+1) + 'º</td>' +
-        '<td><div class="game-cell">' +
-          '<div class="mini-cover">' +
-            (game.portadaUrl ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">' : '') +
-            '<span class="mini-cover__letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span>' +
-          '</div>' +
-          '<span style="font-weight:600">' + Utils.escapeHtml(game.titulo) + '</span>' +
-        '</div></td>' +
-        '<td><div class="score-wrap">' +
+      var rowCls = i === 0 ? 'rank-list-gold' : i === 1 ? 'rank-list-silver' : i === 2 ? 'rank-list-bronze' : '';
+      return '<div class="rank-list-row ' + rowCls + '" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
+        '<div class="rank-list-pos">' + (i + 1) + '</div>' +
+        '<div class="rank-list-info">' +
+          '<div class="rank-list-title">' + Utils.escapeHtml(game.titulo) + '</div>' +
+          (game.desarrollador ? '<div class="rank-list-dev">' + Utils.escapeHtml(game.desarrollador) + '</div>' : '') +
+        '</div>' +
+        '<div class="rank-list-score-wrap">' +
           '<div class="score-bar"><div class="score-bar__fill" style="width:' + Utils.scoreWidth(item.notaMedia) + ';background:' + sc + '"></div></div>' +
           '<span class="score-num" style="color:' + sc + '">' + Utils.formatScore(item.notaMedia) + '</span>' +
-        '</div></td>' +
-        '<td><span class="badge badge-genre">' + item.numVotos + ' voto' + (item.numVotos!==1?'s':'') + '</span></td>' +
-        '<td>' + Utils.genreBadgesHtml(game.generos) + '</td>' +
-        '<td>' + Utils.platformBadgesHtml(game.plataformas) + '</td>' +
-      '</tr>';
+        '</div>' +
+        '<div class="rank-list-votes">' + item.numVotos + '<span style="color:var(--txt3);font-size:0.7rem;font-weight:400;margin-left:0.2rem">voto' + (item.numVotos !== 1 ? 's' : '') + '</span></div>' +
+      '</div>';
     }).join('');
   }
 
@@ -297,17 +334,17 @@
   /* ── BOOT ────────────────────────────────────────────────── */
   document.addEventListener('DOMContentLoaded', function () {
     window.GT.onDataReady(function () {
-      safe(initHeroCanvas,      'initHeroCanvas');
-      safe(initHeroPlayerStats, 'initHeroPlayerStats');
-      safe(initStats,           'initStats');
-      safe(initCalendar,        'initCalendar');
-      safe(initRanking,         'initRanking');
-      safe(renderNext5,         'renderNext5');
+      safe(initHeroCanvas,        'initHeroCanvas');
+      safe(initHeroPlayerStats,   'initHeroPlayerStats');
+      safe(initStats,             'initStats');
+      safe(initCalendar,          'initCalendar');
+      safe(initRanking,           'initRanking');
+      safe(renderUpcomingCards,   'renderUpcomingCards');
       // Re-render when another user changes data in real time
       window.GT.onDataChange(function () {
-        safe(initStats,           'initStats');
-        safe(initHeroPlayerStats, 'initHeroPlayerStats');
-        safe(renderNext5,         'renderNext5');
+        safe(initStats,             'initStats');
+        safe(initHeroPlayerStats,   'initHeroPlayerStats');
+        safe(renderUpcomingCards,   'renderUpcomingCards');
         var sel = document.getElementById('rankingYear');
         if (sel) safe(function(){ renderRanking(parseInt(sel.value)); }, 'renderRanking');
       });

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GameTracker — Menú Principal</title>
-  <link rel="stylesheet" href="styles.css?v=20260517d">
+  <link rel="stylesheet" href="styles.css?v=20260518a">
 </head>
 <body>
 
@@ -90,20 +90,37 @@
 
   <div style="height:1px;background:var(--border);margin:0 2rem"></div>
 
-  <!-- PRÓXIMOS 5 ESTRENOS -->
+  <!-- PRÓXIMOS ESTRENOS (próximos 30 días) -->
   <section class="section" style="padding-bottom:0">
     <div class="section__header" style="margin-bottom:1rem">
-      <div><h2 class="section__title">🔜 Próximos <span>Estrenos</span></h2><p class="section__subtitle">Los 5 juegos más cercanos · pincha para ver ficha</p></div>
+      <div><h2 class="section__title">🔜 Próximos <span>Estrenos</span></h2><p class="section__subtitle">Lanzamientos en los próximos 30 días · pincha para ver ficha</p></div>
     </div>
-    <div id="next5Strip" class="next5-strip"></div>
+    <div id="upcomingCardsGrid" class="upcoming-grid"></div>
   </section>
 
   <div style="height:1px;background:var(--border);margin:0 2rem"></div>
 
-  <!-- PRÓXIMOS LANZAMIENTOS -->
+  <!-- HALL OF FAME -->
+  <section class="section" id="goty">
+    <div class="section__header">
+      <div><h2 class="section__title">🏆 HALL OF FAME <span id="gotyYear">2026</span></h2><p class="section__subtitle">Los mejores juegos del año según nota media</p></div>
+      <div style="display:flex;align-items:center;gap:0.5rem">
+        <label style="font-size:0.8rem;color:var(--txt3)">Año:</label>
+        <select class="form-select" id="rankingYear" style="width:90px"></select>
+      </div>
+    </div>
+    <div class="hof-podium" id="hofPodium"></div>
+    <div class="hof-lower" id="hofLower"></div>
+    <h3 class="section__title" style="font-size:1.1rem;margin:0.5rem 0 1rem">Clasificación Completa</h3>
+    <div class="rank-list" id="rankingBody"></div>
+  </section>
+
+  <div style="height:1px;background:var(--border);margin:0 2rem"></div>
+
+  <!-- CALENDARIO DE LANZAMIENTOS (al final) -->
   <section class="section">
     <div class="section__header">
-      <div><h2 class="section__title">📅 Próximos <span>Lanzamientos</span></h2><p class="section__subtitle">Calendario de estrenos</p></div>
+      <div><h2 class="section__title">📅 Calendario de <span>Lanzamientos</span></h2><p class="section__subtitle">Histórico de estrenos por mes</p></div>
     </div>
     <div class="calendar-nav">
       <button class="btn btn-secondary btn-sm" id="calPrev">◀</button>
@@ -112,28 +129,6 @@
     </div>
     <div class="cal-grid" id="calHeaders"></div>
     <div class="cal-grid" id="calGrid"></div>
-    <div id="upcomingList" style="margin-top:1.5rem;display:flex;flex-direction:column;gap:0.5rem;"></div>
-  </section>
-
-  <div style="height:1px;background:var(--border);margin:0 2rem"></div>
-
-  <!-- TOP 5 GOTY -->
-  <section class="section">
-    <div class="section__header">
-      <div><h2 class="section__title">🏆 TOP 5 <span id="gotyYear">2026</span></h2><p class="section__subtitle">Los mejores juegos del año por nota media</p></div>
-      <div style="display:flex;align-items:center;gap:0.5rem">
-        <label style="font-size:0.8rem;color:var(--txt3)">Año:</label>
-        <select class="form-select" id="rankingYear" style="width:90px"></select>
-      </div>
-    </div>
-    <div class="top5-grid" id="top5Grid"></div>
-    <h3 class="section__title" style="font-size:1.1rem;margin-bottom:1rem">Clasificación Completa</h3>
-    <div class="table-wrap">
-      <table class="table">
-        <thead><tr><th style="width:48px">Pos.</th><th>Videojuego</th><th>Nota Media</th><th>Votos</th><th>Géneros</th><th>Plataformas</th></tr></thead>
-        <tbody id="rankingBody"></tbody>
-      </table>
-    </div>
   </section>
 
   <footer class="footer">
@@ -144,8 +139,8 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js?v=20260517d" defer></script>
-<script src="main.js?v=20260517d"            defer></script>
-<script src="index.js?v=20260517d"           defer></script>
+<script src="firebase-config.js?v=20260518a" defer></script>
+<script src="main.js?v=20260518a"            defer></script>
+<script src="index.js?v=20260518a"           defer></script>
 </body>
 </html>
