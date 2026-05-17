@@ -234,8 +234,18 @@ window.GT.Registro = (function () {
   }
 
   function getRanking(año) {
+    // Solo aparecen juegos LANZADOS en ese año (no Skyrim en ranking 2026)
+    var yearStr = String(año);
+    var bib = window.GT.Biblioteca ? window.GT.Biblioteca.getAll() : [];
+    var gameIdsThisYear = {};
+    bib.forEach(function(g) {
+      if (g.fechaLanzamiento && g.fechaLanzamiento.startsWith(yearStr)) {
+        gameIdsThisYear[g.id] = true;
+      }
+    });
+
     var registros = getAll().filter(function(r){
-      return (!año || r.año === parseInt(año)) &&
+      return gameIdsThisYear[r.juegoId] &&
              r.nota !== null && r.nota !== undefined && r.nota !== '';
     });
     var byGame = {};

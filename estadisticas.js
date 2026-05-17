@@ -169,7 +169,9 @@
       var coverContent = game.portadaUrl
         ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="' + Utils.escapeHtml(game.titulo) + '" loading="lazy" onerror="this.style.display=\'none\'">'
         : '<div class="top5-cover__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>';
-      return '<div class="top5-card" style="cursor:pointer" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
+      var isChamp = (i === 0);
+      return '<div class="top5-card' + (isChamp ? ' champion' : '') + '" style="cursor:pointer;position:relative" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
+        (isChamp ? '<div class="champion-crown">👑</div>' : '') +
         '<div class="top5-cover">' + coverContent +
           '<div class="top5-overlay">' +
             '<div class="top5-pos ' + posClass + '">' + posLabel + '</div>' +

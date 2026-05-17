@@ -765,6 +765,30 @@ option { background: var(--bg2); }
   transition: transform var(--transition), box-shadow var(--transition);
 }
 .top5-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+.top5-card.champion {
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 30px rgba(245,158,11,0.35), 0 0 60px rgba(245,158,11,0.15);
+  animation: championGlow 2.5s ease-in-out infinite;
+  transform: scale(1.04);
+  z-index: 2;
+}
+.top5-card.champion:hover { transform: scale(1.08) translateY(-4px); }
+@keyframes championGlow {
+  0%,100% { box-shadow: 0 0 25px rgba(245,158,11,0.3), 0 0 50px rgba(245,158,11,0.1); }
+  50%      { box-shadow: 0 0 45px rgba(245,158,11,0.6), 0 0 80px rgba(245,158,11,0.25); }
+}
+.champion-crown {
+  position: absolute;
+  top: -18px; left: 50%; transform: translateX(-50%);
+  font-size: 1.6rem;
+  filter: drop-shadow(0 2px 8px rgba(245,158,11,0.8));
+  animation: crownBounce 2s ease-in-out infinite;
+  z-index: 3;
+}
+@keyframes crownBounce {
+  0%,100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(-4px); }
+}
 .top5-cover {
   aspect-ratio: 2/3;
   background: linear-gradient(135deg, #1a1a2e, #0f3460);

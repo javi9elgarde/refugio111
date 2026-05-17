@@ -70,7 +70,9 @@
         '<td>' + scoreHtml + '</td>' +
         '<td><span class="badge ' + Utils.statusBadge(r.estado) + '">' + Utils.escapeHtml(r.estado) + '</span></td>' +
         '<td><span style="font-size:0.85rem;color:var(--txt2)">' + (r.horas ? r.horas + 'h' : '—') + '</span></td>' +
+        '<td>' + (game && game.generos && game.generos.length ? Utils.genreBadgesHtml(game.generos.slice(0,2)) : '—') + '</td>' +
         '<td>' + (r.plataformaJugada ? '<span class="badge badge-plat ' + Utils.platformClass(r.plataformaJugada) + '">' + Utils.escapeHtml(r.plataformaJugada) + '</span>' : '—') + '</td>' +
+        '<td><span style="font-size:0.8rem;color:var(--txt3)">' + (game && game.fechaLanzamiento ? game.fechaLanzamiento.slice(0,4) : '—') + '</span></td>' +
         '<td><button class="btn btn-ghost btn-icon" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar">✏️</button></td>' +
       '</tr>';
     }).join('');
