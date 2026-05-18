@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GameTracker — Estadísticas</title>
-  <link rel="stylesheet" href="styles.css?v=20260518i">
+  <link rel="stylesheet" href="styles.css?v=20260519a">
 </head>
 <body>
 
@@ -38,10 +38,18 @@
 <div class="page">
   <div class="page-header">
     <div class="page-header__inner">
-      <div><h1 class="page-header__title">📊 Estadísticas</h1><p class="page-header__sub">Rankings, géneros, plataformas y horas</p></div>
-      <div style="display:flex;align-items:center;gap:0.6rem">
-        <label style="font-size:0.8rem;color:var(--txt3)">Año:</label>
-        <select class="form-select" id="statsYear" style="width:90px"></select>
+      <div><h1 class="page-header__title">📊 Estadísticas</h1><p class="page-header__sub">Géneros, plataformas, historial y logros</p></div>
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <label style="font-size:0.78rem;color:var(--txt3);white-space:nowrap">Año:</label>
+          <select class="form-select" id="statsYear" style="width:100px"></select>
+        </div>
+        <div class="player-tabs" id="statsPlayerTabs">
+          <button class="player-tab active-all" data-player="All">Todos</button>
+          <button class="player-tab" data-player="David">David</button>
+          <button class="player-tab" data-player="Javi">Javi</button>
+          <button class="player-tab" data-player="Mery">Mery</button>
+        </div>
       </div>
     </div>
   </div>
@@ -59,6 +67,13 @@
     <div class="chart-grid">
       <div class="card chart-box"><h3>🎮 Géneros más jugados</h3><canvas id="chartGenres" class="chart-canvas"></canvas></div>
       <div class="card chart-box"><h3>🖥 Plataformas usadas</h3><canvas id="chartPlatforms" class="chart-canvas"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-bottom:0">
+    <h2 class="section__title" style="margin-bottom:1rem">📈 Historial de los últimos 5 años</h2>
+    <div class="card chart-box" style="max-height:320px">
+      <canvas id="chartHistory" class="chart-canvas"></canvas>
     </div>
   </div>
 
@@ -86,17 +101,9 @@
     </div>
   </div>
 
-  <div class="section" id="goty">
-    <div class="section__header">
-      <div><h2 class="section__title">🏆 Clasificación <span id="gotyLabel">GOTY 2026</span></h2><p class="section__subtitle">Por nota media de todos los jugadores</p></div>
-    </div>
-    <div class="top5-grid" id="top5Grid" style="margin-bottom:1.5rem"></div>
-    <div class="table-wrap">
-      <table class="table">
-        <thead><tr><th style="width:48px">Pos.</th><th>Videojuego</th><th>Nota Media</th><th>Votos</th><th>Géneros</th></tr></thead>
-        <tbody id="gotyBody"></tbody>
-      </table>
-    </div>
+  <div class="section" style="padding-bottom:0">
+    <h2 class="section__title" style="margin-bottom:1rem">🏅 Logros</h2>
+    <div class="logros-grid" id="logrosGrid"></div>
   </div>
 
   <div class="section" style="padding-top:0">
@@ -118,8 +125,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"      defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js?v=20260518i" defer></script>
-<script src="main.js?v=20260518i"            defer></script>
-<script src="estadisticas.js?v=20260518i"    defer></script>
+<script src="firebase-config.js?v=20260519a" defer></script>
+<script src="main.js?v=20260519a"            defer></script>
+<script src="estadisticas.js?v=20260519a"    defer></script>
 </body>
 </html>

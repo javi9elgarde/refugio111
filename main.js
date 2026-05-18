@@ -287,9 +287,10 @@ window.GT.Registro = (function () {
     return { totalJuegos, totalHoras:Math.round(totalHoras), avgScore:Math.round(avgScore*100)/100, porJugador };
   }
 
-  function getGenreStats(año) {
+  function getGenreStats(año, jugador) {
     var entries = getAll();
     if (año) entries = entries.filter(function(r){ return r.año === parseInt(año); });
+    if (jugador && jugador !== 'All') entries = entries.filter(function(r){ return r.jugador === jugador; });
     var counts = {};
     entries.forEach(function(r){
       var game = window.GT.Biblioteca.getById(r.juegoId);
@@ -300,9 +301,10 @@ window.GT.Registro = (function () {
                               .sort(function(a,b){ return b.count - a.count; });
   }
 
-  function getPlatformStats(año) {
+  function getPlatformStats(año, jugador) {
     var entries = getAll();
     if (año) entries = entries.filter(function(r){ return r.año === parseInt(año); });
+    if (jugador && jugador !== 'All') entries = entries.filter(function(r){ return r.jugador === jugador; });
     var counts = {};
     entries.forEach(function(r){
       var p = r.plataformaJugada || 'PC';
