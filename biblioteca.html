@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GameTracker — Biblioteca</title>
-  <link rel="stylesheet" href="styles.css?v=20260518c">
+  <link rel="stylesheet" href="styles.css?v=20260518h">
 </head>
 <body>
 
@@ -80,8 +80,15 @@
         <div class="form-group" style="grid-column:1/-1"><label class="form-label">Título *</label><input type="text" class="form-input" id="fTitulo" placeholder="Nombre del juego"></div>
         <div class="form-group" style="grid-column:1/-1">
           <label class="form-label">URL de Portada</label>
-          <input type="url" class="form-input" id="fPortada" placeholder="https://...">
-          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Pega la URL de una imagen de la portada</small>
+          <div style="display:flex;gap:0.5rem;align-items:center">
+            <input type="url" class="form-input" id="fPortada" placeholder="https://..." style="flex:1;min-width:0">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnRawgSearch" style="white-space:nowrap;flex-shrink:0;gap:0.35rem">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg>
+              Buscar en RAWG
+            </button>
+          </div>
+          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Pega una URL directamente o busca portada automática por el título del juego</small>
+          <div id="rawgResults" style="display:none;margin-top:0.8rem"></div>
         </div>
         <div class="form-group" style="grid-column:1/-1">
           <label class="form-label">Encuadre de Portada <span style="font-weight:400;font-size:0.72rem;color:var(--txt3)">— arrastra la imagen para ajustar el encuadre</span></label>
@@ -168,8 +175,8 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js?v=20260518c" defer></script>
-<script src="main.js?v=20260518c"            defer></script>
-<script src="biblioteca.js?v=20260518c"      defer></script>
+<script src="firebase-config.js?v=20260518h" defer></script>
+<script src="main.js?v=20260518h"            defer></script>
+<script src="biblioteca.js?v=20260518h"      defer></script>
 </body>
 </html>

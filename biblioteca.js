@@ -22,6 +22,57 @@
   var selectedPlataformas = [];
   var coverPreview = null;
 
+  /* ── RAWG API ───────────────────────────────────────────── */
+  var RAWG_KEY = 'c8cd3af7977b43b287e0a19389902880';
+  var RAWG_BTN_INNER = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg> Buscar en RAWG';
+
+  function searchRawg() {
+    var titulo = document.getElementById('fTitulo').value.trim();
+    if (!titulo) { Toast.show('Escribe el título del juego primero', 'error'); return; }
+    var btn       = document.getElementById('btnRawgSearch');
+    var resultsEl = document.getElementById('rawgResults');
+    btn.disabled     = true;
+    btn.innerHTML    = '⏳ Buscando...';
+    resultsEl.style.display = 'none';
+    fetch('https://api.rawg.io/api/games?key=' + RAWG_KEY +
+          '&search=' + encodeURIComponent(titulo) +
+          '&page_size=8&ordering=-rating')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        btn.disabled  = false;
+        btn.innerHTML = RAWG_BTN_INNER;
+        var games = (data.results || []).filter(function(g) { return g.background_image; });
+        if (!games.length) {
+          Toast.show('Sin resultados con portada en RAWG', 'error');
+          return;
+        }
+        resultsEl.innerHTML = '<div class="rawg-grid">' +
+          games.map(function(g) {
+            var year    = g.released ? g.released.slice(0, 4) : '';
+            var safeUrl = (g.background_image || '').replace(/'/g, '%27');
+            return '<div class="rawg-result" onclick="window.GT_Bib.pickRawgCover(\'' + safeUrl + '\')">' +
+              '<div class="rawg-result__img"><img src="' + Utils.escapeHtml(g.background_image) + '" loading="lazy" alt=""></div>' +
+              '<div class="rawg-result__name">' + Utils.escapeHtml(g.name) + '</div>' +
+              (year ? '<div class="rawg-result__year">' + year + '</div>' : '') +
+            '</div>';
+          }).join('') +
+        '</div>';
+        resultsEl.style.display = '';
+      })
+      .catch(function() {
+        btn.disabled  = false;
+        btn.innerHTML = RAWG_BTN_INNER;
+        Toast.show('Error al conectar con RAWG', 'error');
+      });
+  }
+
+  function pickRawgCover(url) {
+    document.getElementById('fPortada').value = url;
+    document.getElementById('rawgResults').style.display = 'none';
+    if (coverPreview) coverPreview.update(url, document.getElementById('fPortadaPos').value || 'center top');
+    Toast.show('Portada aplicada ✓');
+  }
+
   function safe(fn, name) {
     try { fn(); } catch(e) { console.warn('biblioteca.js ' + name + ':', e); }
   }
@@ -461,6 +512,9 @@
       renderGrid();
     });
 
+    // RAWG search
+    document.getElementById('btnRawgSearch').addEventListener('click', searchRawg);
+
     // Add buttons
     document.getElementById('btnAddGame').addEventListener('click', openAdd);
     document.getElementById('fabAdd').addEventListener('click', openAdd);
@@ -494,7 +548,7 @@
   }
 
   // Expose for inline onclick
-  window.GT_Bib = { openDetail: openDetail, openEdit: openEdit };
+  window.GT_Bib = { openDetail: openDetail, openEdit: openEdit, pickRawgCover: pickRawgCover };
 
   document.addEventListener('DOMContentLoaded', function () {
     window.GT.onDataReady(function () {
