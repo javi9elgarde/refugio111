@@ -140,30 +140,108 @@
   /* ══════════════════════════════════════════════════════════════
      PLATINUM TROPHY SVG
   ══════════════════════════════════════════════════════════════ */
+  /* PlayStation Platinum Trophy — fiel al original (orbe azul + símbolos □△×○ + cuerpo plateado) */
   var PLAT_SVG =
-    '<svg viewBox="0 0 40 46" width="72" height="82" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+    '<svg viewBox="0 0 100 118" width="90" height="106" xmlns="http://www.w3.org/2000/svg">' +
     '<defs>' +
-      '<linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">' +
-        '<stop offset="0%" stop-color="#e4e4ff"/>' +
-        '<stop offset="45%" stop-color="#b0b0d8"/>' +
-        '<stop offset="100%" stop-color="#7070a8"/>' +
+      /* Silver metallic gradient (horizontal sweep) */
+      '<linearGradient id="slv" x1="0" y1="0" x2="1" y2="0">' +
+        '<stop offset="0%"   stop-color="#5a6a8a"/>' +
+        '<stop offset="18%"  stop-color="#9aaec8"/>' +
+        '<stop offset="42%"  stop-color="#d4e2f4"/>' +
+        '<stop offset="68%"  stop-color="#a8bcd4"/>' +
+        '<stop offset="100%" stop-color="#607090"/>' +
       '</linearGradient>' +
-      '<linearGradient id="ps" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop offset="0%" stop-color="#c0c0e8"/>' +
-        '<stop offset="100%" stop-color="#8080b8"/>' +
+      /* Darker silver for stem/base bottom */
+      '<linearGradient id="slv2" x1="0" y1="0" x2="1" y2="0">' +
+        '<stop offset="0%"   stop-color="#404858"/>' +
+        '<stop offset="30%"  stop-color="#7888a4"/>' +
+        '<stop offset="55%"  stop-color="#98a8c0"/>' +
+        '<stop offset="80%"  stop-color="#68788c"/>' +
+        '<stop offset="100%" stop-color="#384050"/>' +
       '</linearGradient>' +
-      '<filter id="pgw" x="-20%" y="-20%" width="140%" height="140%">' +
-        '<feGaussianBlur stdDeviation="1.2" result="b"/>' +
+      /* PS5 deep blue orb radial */
+      '<radialGradient id="orb" cx="36%" cy="30%" r="68%">' +
+        '<stop offset="0%"   stop-color="#c0deff"/>' +
+        '<stop offset="22%"  stop-color="#2870e8"/>' +
+        '<stop offset="58%"  stop-color="#0438b0"/>' +
+        '<stop offset="100%" stop-color="#000c28"/>' +
+      '</radialGradient>' +
+      /* Inner orb depth ring */
+      '<radialGradient id="orbrim" cx="50%" cy="50%" r="50%">' +
+        '<stop offset="85%"  stop-color="transparent"/>' +
+        '<stop offset="100%" stop-color="rgba(60,140,255,0.6)"/>' +
+      '</radialGradient>' +
+      /* Blue glow */
+      '<filter id="bglow" x="-60%" y="-60%" width="220%" height="220%">' +
+        '<feGaussianBlur stdDeviation="6" result="b"/>' +
+        '<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>' +
+      '</filter>' +
+      /* Soft glow for cup */
+      '<filter id="csglow" x="-8%" y="-8%" width="116%" height="116%">' +
+        '<feGaussianBlur stdDeviation="0.8" result="b"/>' +
         '<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>' +
       '</filter>' +
     '</defs>' +
-    /* Cup body */ '<path d="M9 2h22v16q0 10-11 10T9 18Z" fill="url(#pg)" filter="url(#pgw)"/>' +
-    /* Left handle */ '<path d="M9 6Q3 6 3 13q0 6 6 7" fill="none" stroke="url(#ps)" stroke-width="2.2" stroke-linecap="round"/>' +
-    /* Right handle */ '<path d="M31 6q6 0 6 7 0 6-6 7" fill="none" stroke="url(#ps)" stroke-width="2.2" stroke-linecap="round"/>' +
-    /* Stem */ '<rect x="17" y="28" width="6" height="6" fill="url(#ps)"/>' +
-    /* Base */ '<rect x="10" y="34" width="20" height="5" rx="2.5" fill="url(#pg)" stroke="#a0a0cc" stroke-width="0.5"/>' +
-    /* Shine left */ '<ellipse cx="15" cy="13" rx="3.5" ry="5" fill="rgba(255,255,255,0.18)"/>' +
-    /* Star in cup */ '<path d="M20 9l1.2 3.6H25l-3 2.2 1.2 3.6L20 16.4l-3.2 2-1.2-3.6L12.6 12.6h3.8z" fill="rgba(255,255,255,0.25)"/>' +
+
+    /* === BLUE GLOW BEHIND ORB === */
+    '<circle cx="50" cy="27" r="32" fill="#1058e8" opacity="0.28" filter="url(#bglow)"/>' +
+
+    /* === CUP BODY === */
+    /* Bowl — tapers from wide rim down to narrow neck */
+    '<path d="M21,50 Q16,52 14,60 Q12,70 14,76 Q16,81 21,80' +
+          ' Q32,82 50,83 Q68,82 79,80' +
+          ' Q84,81 86,76 Q88,70 86,60 Q84,52 79,50 Z"' +
+    ' fill="url(#slv)" filter="url(#csglow)"/>' +
+    /* Rim top edge (ellipse at top of bowl) */
+    '<ellipse cx="50" cy="50" rx="29" ry="3.5" fill="none" stroke="#ccdaee" stroke-width="1.2"/>' +
+    /* Inner bowl shading */
+    '<ellipse cx="50" cy="67" rx="22" ry="10" fill="rgba(0,0,0,0.12)"/>' +
+    /* Left handle arc */
+    '<path d="M21,56 Q6,54 4,65 Q2,76 21,78"' +
+    ' fill="none" stroke="url(#slv)" stroke-width="6" stroke-linecap="round"/>' +
+    /* Right handle arc */
+    '<path d="M79,56 Q94,54 96,65 Q98,76 79,78"' +
+    ' fill="none" stroke="url(#slv)" stroke-width="6" stroke-linecap="round"/>' +
+    /* Stem neck */
+    '<rect x="43" y="83" width="14" height="18" fill="url(#slv2)"/>' +
+    /* Step detail */
+    '<rect x="39" y="95" width="22" height="5" rx="2" fill="url(#slv)"/>' +
+    /* Upper base plate */
+    '<rect x="26" y="100" width="48" height="6" rx="3" fill="url(#slv)"/>' +
+    /* Lower base plate (wider) */
+    '<rect x="18" y="105" width="64" height="9" rx="4.5" fill="url(#slv2)"/>' +
+    /* Base highlight line */
+    '<rect x="18" y="105" width="64" height="2" rx="1" fill="rgba(255,255,255,0.12)"/>' +
+
+    /* === ORB === */
+    /* Orb shadow behind */
+    '<circle cx="50" cy="27" r="27" fill="#000820" opacity="0.45"/>' +
+    /* Main orb sphere */
+    '<circle cx="50" cy="27" r="25" fill="url(#orb)"/>' +
+    /* Orb depth ring */
+    '<circle cx="50" cy="27" r="25" fill="url(#orbrim)"/>' +
+    /* Outer glowing rim */
+    '<circle cx="50" cy="27" r="25" fill="none" stroke="rgba(80,160,255,0.75)" stroke-width="1.8"/>' +
+    /* Secondary inner rim */
+    '<circle cx="50" cy="27" r="21" fill="none" stroke="rgba(40,100,200,0.35)" stroke-width="1"/>' +
+    /* Highlight reflection (top-left) */
+    '<ellipse cx="40" cy="17" rx="9" ry="6.5" fill="rgba(200,230,255,0.20)"/>' +
+    '<ellipse cx="38" cy="15" rx="4.5" ry="3" fill="rgba(255,255,255,0.14)"/>' +
+
+    /* === PS SYMBOLS (□ △ × ○) — 2×2 grid centered on orb === */
+    /* □ Square — top-left */
+    '<rect x="34" y="17" width="9" height="9" rx="2" fill="none" stroke="rgba(255,255,255,0.90)" stroke-width="1.7"/>' +
+    /* △ Triangle — top-right */
+    '<polygon points="60,17 65,26 55,26" fill="none" stroke="rgba(255,255,255,0.90)" stroke-width="1.7" stroke-linejoin="round"/>' +
+    /* × Cross — bottom-left */
+    '<line x1="35" y1="29" x2="42" y2="37" stroke="rgba(255,255,255,0.90)" stroke-width="1.7" stroke-linecap="round"/>' +
+    '<line x1="42" y1="29" x2="35" y2="37" stroke="rgba(255,255,255,0.90)" stroke-width="1.7" stroke-linecap="round"/>' +
+    /* ○ Circle — bottom-right */
+    '<circle cx="60" cy="33" r="5" fill="none" stroke="rgba(255,255,255,0.90)" stroke-width="1.7"/>' +
+
+    /* Orb-to-cup connector arc */
+    '<path d="M42,51 Q50,54 58,51" fill="none" stroke="#90a8c4" stroke-width="2" stroke-linecap="round"/>' +
     '</svg>';
 
   /* ══════════════════════════════════════════════════════════════
