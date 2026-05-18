@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GameTracker — Biblioteca</title>
-  <link rel="stylesheet" href="styles.css?v=20260518h">
+  <link rel="stylesheet" href="styles.css?v=20260518i">
 </head>
 <body>
 
@@ -45,22 +45,36 @@
 
   <div class="section" style="padding-bottom:0">
     <div class="filters" id="filtersBar">
-      <div class="search-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" class="search-input" id="searchInput" placeholder="Buscar juego, desarrolladora...">
+      <div class="filters__top">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" class="search-input" id="searchInput" placeholder="Buscar juego, desarrolladora, género...">
+        </div>
+        <button class="btn btn-ghost btn-sm" id="clearFilters">✕ Limpiar</button>
       </div>
-      <div class="filter-chips" id="genreChips"></div>
-      <div class="filter-chips" id="platChips"></div>
-      <button class="btn btn-ghost btn-sm" id="clearFilters">✕ Limpiar</button>
+      <div class="filters__divider"></div>
+      <div class="filters__row">
+        <span class="filters__label">Géneros</span>
+        <div class="filter-chips" id="genreChips"></div>
+      </div>
+      <div class="filters__row">
+        <span class="filters__label">Plataformas</span>
+        <div class="filter-chips" id="platChips"></div>
+      </div>
     </div>
   </div>
 
   <div class="section">
-    <div class="game-grid" id="gameGrid"></div>
-    <div id="emptyState" class="empty-state hidden">
-      <div class="empty-state__icon">🎮</div>
-      <div class="empty-state__title">No se encontraron juegos</div>
-      <p>Prueba a cambiar los filtros o añade un nuevo juego.</p>
+    <div class="bib-layout">
+      <div class="bib-main">
+        <div class="game-grid" id="gameGrid"></div>
+        <div id="emptyState" class="empty-state hidden">
+          <div class="empty-state__icon">🎮</div>
+          <div class="empty-state__title">No se encontraron juegos</div>
+          <p>Prueba a cambiar los filtros o añade un nuevo juego.</p>
+        </div>
+      </div>
+      <div class="alpha-bar" id="alphaBar"></div>
     </div>
   </div>
 </div>
@@ -175,8 +189,8 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js?v=20260518h" defer></script>
-<script src="main.js?v=20260518h"            defer></script>
-<script src="biblioteca.js?v=20260518h"      defer></script>
+<script src="firebase-config.js?v=20260518i" defer></script>
+<script src="main.js?v=20260518i"            defer></script>
+<script src="biblioteca.js?v=20260518i"      defer></script>
 </body>
 </html>

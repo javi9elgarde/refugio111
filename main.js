@@ -355,7 +355,7 @@ window.GT.GameDetailModal = (function () {
         '</div>' +
         '<div class="modal__body" id="gdBody"></div>' +
         '<div class="modal__footer">' +
-          '<a id="gdLibLink" href="biblioteca.html" class="btn btn-secondary">📚 Ver en Biblioteca</a>' +
+          '<a id="gdLibLink" href="biblioteca.html" class="btn btn-secondary">📚 Ver en Biblioteca</a>' +  // href set dynamically in open()
           '<a href="registro.html" class="btn btn-primary">📋 Ver Registro</a>' +
         '</div>' +
       '</div>';
@@ -371,6 +371,7 @@ window.GT.GameDetailModal = (function () {
     var notaMedia = window.GT.Registro.getNotaMedia(gameId);
     var Utils     = window.GT.Utils;
     document.getElementById('gdTitle').textContent = game.titulo;
+    document.getElementById('gdLibLink').href = 'biblioteca.html?open=' + gameId;
     var sc = Utils.scoreColor(notaMedia);
     document.getElementById('gdBody').innerHTML =
       '<div style="display:grid;grid-template-columns:140px 1fr;gap:1.5rem;align-items:start">' +

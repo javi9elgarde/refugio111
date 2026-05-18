@@ -21,6 +21,11 @@
   var selectedGeneros    = [];
   var selectedPlataformas = [];
   var coverPreview = null;
+  var _alphaObserver = null;
+  var _activeAlpha   = '';
+
+  var ALL_ALPHA = ['#','A','B','C','D','E','F','G','H','I','J','K','L','M',
+                   'N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
 
   /* ── RAWG API ───────────────────────────────────────────── */
   var RAWG_KEY = 'c8cd3af7977b43b287e0a19389902880';
@@ -77,6 +82,56 @@
     try { fn(); } catch(e) { console.warn('biblioteca.js ' + name + ':', e); }
   }
 
+  /* ── RENDER CARD ────────────────────────────────────────── */
+  function renderCard(game) {
+    var notaMedia = Registro.getNotaMedia(game.id);
+    var sc = Utils.scoreColor(notaMedia);
+    var objPos = Utils.escapeHtml(game.portadaPos || 'center top');
+
+    var coverContent = game.portadaUrl
+      ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\';this.parentElement.querySelector(\'.game-card__ph\').style.display=\'flex\'">' +
+        '<div class="game-card__ph" style="display:none"><span class="game-card__ph-letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span><span class="game-card__ph-name">' + Utils.escapeHtml(game.titulo) + '</span></div>'
+      : '<div class="game-card__ph"><span class="game-card__ph-letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span><span class="game-card__ph-name">' + Utils.escapeHtml(game.titulo) + '</span></div>';
+
+    var scorePill = notaMedia !== null
+      ? '<div class="game-card__score-pill" style="color:' + sc + '">' + Utils.formatScore(notaMedia) + '</div>'
+      : '';
+
+    var pendPor = game.pendientePor || (game.pendiente ? ['?'] : []);
+    var pendDots = pendPor.length
+      ? '<div class="game-card__pend-dot">' + pendPor.map(function(p) {
+          var color = p === 'David' ? 'var(--player-david)' : p === 'Javi' ? 'var(--player-javi)' : p === 'Mery' ? 'var(--player-mery)' : '#888';
+          return '<span style="background:' + color + '" title="⏳ ' + Utils.escapeHtml(p) + '"></span>';
+        }).join('') + '</div>'
+      : '';
+
+    var tipoMap = { remake:'🔄 Remake', remaster:'✨ Remaster', relanzamiento:'📦 Port' };
+    var tipoBadge = game.tipoLanzamiento && tipoMap[game.tipoLanzamiento]
+      ? '<span class="badge" style="background:rgba(168,85,247,.15);color:#a855f7;border:1px solid rgba(168,85,247,.3);font-size:0.6rem">' + tipoMap[game.tipoLanzamiento] + '</span>'
+      : '';
+
+    var scoreBar = notaMedia !== null
+      ? '<div class="score-wrap"><div class="score-bar"><div class="score-bar__fill" style="width:' + Utils.scoreWidth(notaMedia) + ';background:' + sc + '"></div></div><span class="score-num" style="color:' + sc + '">' + Utils.formatScore(notaMedia) + '</span></div>'
+      : '<div style="font-size:0.68rem;color:var(--txt3)">Sin nota</div>';
+
+    return '<div class="game-card" data-id="' + game.id + '">' +
+      '<div class="game-card__cover">' +
+        coverContent + scorePill + pendDots +
+        '<div class="game-card__overlay">' +
+          '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();window.GT_Bib.openDetail(\'' + game.id + '\')">👁 Ver</button>' +
+          '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();window.GT_Bib.openEdit(\'' + game.id + '\')">✏️ Editar</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="game-card__body">' +
+        '<div class="game-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
+        (game.desarrollador ? '<div class="game-card__dev">' + Utils.escapeHtml(game.desarrollador) + '</div>' : '') +
+        '<div class="game-card__platforms">' + Utils.platformBadgesHtml(game.plataformas) + '</div>' +
+        '<div class="game-card__genres">' + (game.generos && game.generos.length ? Utils.genreBadgesHtml(game.generos.slice(0, 2)) : '') + tipoBadge + '</div>' +
+        '<div class="game-card__score-wrap">' + scoreBar + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
   /* ── RENDER GRID ────────────────────────────────────────── */
   function renderGrid() {
     var filters = {};
@@ -93,53 +148,57 @@
     if (!games.length) {
       grid.innerHTML = '';
       empty.classList.remove('hidden');
+      updateAlphaAvailable([]);
       return;
     }
     empty.classList.add('hidden');
 
-    grid.innerHTML = games.map(function(game) {
-      var notaMedia = Registro.getNotaMedia(game.id);
-      var sc = Utils.scoreColor(notaMedia);
-      var objPos = Utils.escapeHtml(game.portadaPos || 'center top');
-      var coverContent = game.portadaUrl
-        ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="' + Utils.escapeHtml(game.titulo) + '" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
-          '<div class="game-card__ph" style="display:none"><span class="game-card__ph-letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span><span class="game-card__ph-name">' + Utils.escapeHtml(game.titulo) + '</span></div>'
-        : '<div class="game-card__ph"><span class="game-card__ph-letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span><span class="game-card__ph-name">' + Utils.escapeHtml(game.titulo) + '</span></div>';
+    // Sort alphabetically
+    games.sort(function(a, b) {
+      return a.titulo.localeCompare(b.titulo, 'es', { sensitivity: 'base' });
+    });
 
-      var scoreHtml = notaMedia !== null
-        ? '<div class="score-wrap"><div class="score-bar"><div class="score-bar__fill" style="width:' + Utils.scoreWidth(notaMedia) + ';background:' + sc + '"></div></div><span class="score-num" style="color:' + sc + '">' + Utils.formatScore(notaMedia) + '</span></div>'
-        : '<div style="font-size:0.72rem;color:var(--txt3)">Sin nota</div>';
+    // Group by first letter (numbers → '#')
+    var groups = {}, letters = [];
+    games.forEach(function(game) {
+      var ch = game.titulo.trim().charAt(0).toUpperCase();
+      var letter = /^[A-ZÁÉÍÓÚÑÜ]/.test(ch) ? ch : '#';
+      if (!groups[letter]) { groups[letter] = []; letters.push(letter); }
+      groups[letter].push(game);
+    });
+    // '#' always last
+    var sortedLetters = letters.filter(function(l) { return l !== '#'; }).sort(function(a, b) {
+      return a.localeCompare(b, 'es');
+    });
+    if (groups['#']) sortedLetters.push('#');
 
-      var pendPor = game.pendientePor || (game.pendiente ? ['?'] : []);
-      var pendBadge = pendPor.length ? pendPor.map(function(p){
-        var cls = p==='David'?'badge-david':p==='Javi'?'badge-javi':p==='Mery'?'badge-mery':'';
-        return '<span class="badge ' + cls + '" style="font-size:0.65rem">⏳ ' + Utils.escapeHtml(p) + '</span>';
-      }).join('') : '';
-      var tipoMap = { remake:'🔄 Remake', remaster:'✨ Remaster', relanzamiento:'📦 Relanzamiento' };
-      var tipoBadge = game.tipoLanzamiento && tipoMap[game.tipoLanzamiento]
-        ? '<span class="badge" style="background:rgba(168,85,247,.15);color:#a855f7;border:1px solid rgba(168,85,247,.3)">' + tipoMap[game.tipoLanzamiento] + '</span>'
-        : '';
+    updateAlphaAvailable(sortedLetters);
 
-      return '<div class="game-card card card--glow fade-up" data-id="' + game.id + '">' +
-        '<div class="game-card__cover">' + coverContent +
-          '<div class="game-card__overlay">' +
-            '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();window.GT_Bib.openDetail(\'' + game.id + '\')">Ver</button>' +
-            '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();window.GT_Bib.openEdit(\'' + game.id + '\')">✏️</button>' +
-          '</div>' +
-        '</div>' +
-        '<div class="game-card__body">' +
-          '<div class="game-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
-          (game.desarrollador ? '<div class="game-card__dev">' + Utils.escapeHtml(game.desarrollador) + '</div>' : '') +
-          '<div class="game-card__platforms">' + Utils.platformBadgesHtml(game.plataformas) + '</div>' +
-          '<div class="game-card__genres">' + Utils.genreBadgesHtml(game.generos) + pendBadge + tipoBadge + '</div>' +
-          '<div class="game-card__score-wrap">' + scoreHtml + '</div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
+    var html = '';
+    sortedLetters.forEach(function(letter) {
+      html += '<div class="letter-header" data-letter="' + letter + '">' + letter + '</div>';
+      groups[letter].forEach(function(game) { html += renderCard(game); });
+    });
+    grid.innerHTML = html;
 
-    // Click to detail
-    document.querySelectorAll('.game-card').forEach(function(card){
-      card.addEventListener('click', function(){
+    // Re-observe letter headers for scroll tracking
+    if (_alphaObserver) {
+      grid.querySelectorAll('.letter-header[data-letter]').forEach(function(el) {
+        _alphaObserver.observe(el);
+      });
+    }
+
+    // Staggered appear animation
+    requestAnimationFrame(function() {
+      grid.querySelectorAll('.game-card').forEach(function(card, i) {
+        card.style.animationDelay = Math.min(i * 0.025, 0.5) + 's';
+        card.classList.add('card-appear');
+      });
+    });
+
+    // Click → detail
+    grid.querySelectorAll('.game-card').forEach(function(card) {
+      card.addEventListener('click', function() {
         window.GT_Bib.openDetail(this.dataset.id);
       });
     });
@@ -207,6 +266,125 @@
         if (idx === -1) selectedPlataformas.push(p); else selectedPlataformas.splice(idx, 1);
         renderPlataformaChips();
       });
+    });
+  }
+
+  /* ── ALPHA SIDEBAR ──────────────────────────────────────── */
+  function initAlphaBar() {
+    var bar = document.getElementById('alphaBar');
+    if (!bar) return;
+
+    bar.innerHTML = ALL_ALPHA.map(function(l) {
+      return '<span class="alpha-bar__letter is-disabled" data-letter="' + l + '">' + l + '</span>';
+    }).join('');
+
+    var isDragging = false;
+
+    function getLetterAt(clientY) {
+      var items = bar.querySelectorAll('.alpha-bar__letter:not(.is-disabled)');
+      var best = null, bestDist = Infinity;
+      items.forEach(function(el) {
+        var rect = el.getBoundingClientRect();
+        var dist = Math.abs(clientY - (rect.top + rect.height / 2));
+        if (dist < bestDist) { bestDist = dist; best = el; }
+      });
+      return best ? best.dataset.letter : null;
+    }
+
+    function applyLens(focusLetter) {
+      var items = Array.from(bar.querySelectorAll('.alpha-bar__letter:not(.is-disabled)'));
+      var fi = items.findIndex(function(el) { return el.dataset.letter === focusLetter; });
+      items.forEach(function(el, i) {
+        var d = fi >= 0 ? Math.abs(i - fi) : 99;
+        var s, op;
+        if      (d === 0) { s = 1.95; op = 1;    el.style.color = 'var(--accent)'; el.style.fontWeight = '900'; }
+        else if (d === 1) { s = 1.35; op = 0.78; el.style.color = ''; el.style.fontWeight = ''; }
+        else if (d === 2) { s = 1.0;  op = 0.55; el.style.color = ''; el.style.fontWeight = ''; }
+        else              { s = 0.82; op = 0.28; el.style.color = ''; el.style.fontWeight = ''; }
+        el.style.transform = 'scale(' + s + ') translateX(-' + ((s - 1) * 7) + 'px)';
+        el.style.opacity   = op;
+      });
+    }
+
+    function clearLens() {
+      bar.querySelectorAll('.alpha-bar__letter:not(.is-disabled)').forEach(function(el) {
+        el.style.transform  = '';
+        el.style.opacity    = '';
+        el.style.color      = el.classList.contains('is-active') ? 'var(--accent)' : '';
+        el.style.fontWeight = el.classList.contains('is-active') ? '900' : '';
+      });
+    }
+
+    function setActive(letter) {
+      if (!letter || letter === _activeAlpha) return;
+      _activeAlpha = letter;
+      bar.querySelectorAll('.alpha-bar__letter').forEach(function(el) {
+        el.classList.toggle('is-active', el.dataset.letter === letter);
+      });
+    }
+
+    function goTo(letter) {
+      var header = document.querySelector('.letter-header[data-letter="' + letter + '"]');
+      if (header) header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Mouse events
+    bar.addEventListener('mousedown', function(e) {
+      isDragging = true;
+      var l = getLetterAt(e.clientY);
+      if (l) { applyLens(l); goTo(l); }
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      var l = getLetterAt(e.clientY);
+      if (l) applyLens(l);
+    });
+    document.addEventListener('mouseup', function() {
+      if (isDragging) { isDragging = false; clearLens(); }
+    });
+
+    // Hover (non-drag) — lens preview
+    bar.addEventListener('mouseover', function(e) {
+      if (isDragging) return;
+      var l = e.target && e.target.dataset && e.target.dataset.letter;
+      if (l && !e.target.classList.contains('is-disabled')) applyLens(l);
+    });
+    bar.addEventListener('mouseleave', function() {
+      if (!isDragging) clearLens();
+    });
+
+    // Click
+    bar.addEventListener('click', function(e) {
+      var l = e.target && e.target.dataset && e.target.dataset.letter;
+      if (l && !e.target.classList.contains('is-disabled')) goTo(l);
+    });
+
+    // Touch events
+    bar.addEventListener('touchstart', function(e) {
+      var l = getLetterAt(e.touches[0].clientY);
+      if (l) { applyLens(l); goTo(l); }
+    }, { passive: true });
+    bar.addEventListener('touchmove', function(e) {
+      var l = getLetterAt(e.touches[0].clientY);
+      if (l) { applyLens(l); goTo(l); }
+    }, { passive: true });
+    bar.addEventListener('touchend', function() { clearLens(); }, { passive: true });
+
+    // IntersectionObserver → follow page scroll
+    _alphaObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) setActive(entry.target.dataset.letter);
+      });
+    }, { rootMargin: '-8% 0px -82% 0px', threshold: 0 });
+  }
+
+  function updateAlphaAvailable(letters) {
+    var bar = document.getElementById('alphaBar');
+    if (!bar) return;
+    bar.querySelectorAll('.alpha-bar__letter').forEach(function(el) {
+      var has = letters.indexOf(el.dataset.letter) >= 0;
+      el.classList.toggle('is-disabled', !has);
     });
   }
 
@@ -496,6 +674,7 @@
   function init() {
     document.getElementById('navYear').textContent = new Date().getFullYear();
 
+    safe(initAlphaBar, 'initAlphaBar');
     coverPreview = initCoverPreview();
 
     // Search
@@ -545,6 +724,20 @@
 
     renderFilterChips();
     renderGrid();
+
+    // Handle ?open=gameId (cross-page navigation)
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var openId = params.get('open');
+      if (openId) {
+        history.replaceState(null, '', window.location.pathname);
+        setTimeout(function() {
+          var card = document.querySelector('.game-card[data-id="' + openId + '"]');
+          if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          openDetail(openId);
+        }, 180);
+      }
+    } catch(e) {}
   }
 
   // Expose for inline onclick

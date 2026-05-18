@@ -67,7 +67,11 @@
       return '<tr class="' + rowCls + '">' +
         '<td><span style="font-size:0.8rem;color:var(--txt2)">' + Utils.monthName(r.mes) + ' ' + r.año + '</span></td>' +
         '<td><span class="badge ' + Utils.playerBadge(r.jugador) + '">' + Utils.escapeHtml(r.jugador) + '</span></td>' +
-        '<td><div class="game-cell">' + coverHtml + '<span style="font-weight:600">' + Utils.escapeHtml(titulo) + '</span></div></td>' +
+        '<td><div class="game-cell">' + coverHtml +
+          (game
+            ? '<a href="biblioteca.html?open=' + game.id + '" class="game-link" onclick="event.stopPropagation()">' + Utils.escapeHtml(titulo) + '</a>'
+            : '<span style="font-weight:600;color:var(--txt3)">' + Utils.escapeHtml(titulo) + '</span>') +
+        '</div></td>' +
         '<td>' + scoreHtml + '</td>' +
         '<td><span class="badge ' + Utils.statusBadge(r.estado) + '">' + Utils.escapeHtml(r.estado) + '</span></td>' +
         '<td><span style="font-size:0.85rem;color:var(--txt2)">' + (r.horas ? r.horas + 'h' : '—') + '</span></td>' +
