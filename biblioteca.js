@@ -116,7 +116,7 @@
         (game.desarrollador ? '<div class="game-card__dev">' + Utils.escapeHtml(game.desarrollador) + '</div>' : '') +
         '<div class="game-card__meta">' +
           (durStr ? '<span class="game-card__dur">' + durStr + '</span>' : '<span></span>') +
-          (notaMedia !== null ? '<span class="game-card__score-inline" style="color:' + sc + '">★ ' + Utils.formatScore(notaMedia) + '</span>' : '') +
+          (notaMedia !== null ? '<span class="game-card__score-inline" style="color:' + sc + '">' + Utils.formatScore(notaMedia) + '</span>' : '') +
         '</div>' +
       '</div>' +
     '</div>';
