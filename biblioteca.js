@@ -498,6 +498,22 @@
     };
   }
 
+  /* ── DEV AUTOCOMPLETE ───────────────────────────────────── */
+  function populateDevSuggestions() {
+    var seen = {}, devs = [];
+    Biblioteca.getAll().forEach(function(g) {
+      if (g.desarrollador && !seen[g.desarrollador]) {
+        seen[g.desarrollador] = true;
+        devs.push(g.desarrollador);
+      }
+    });
+    devs.sort(function(a, b) { return a.localeCompare(b, 'es'); });
+    var dl = document.getElementById('devSuggestions');
+    if (dl) dl.innerHTML = devs.map(function(d) {
+      return '<option value="' + Utils.escapeHtml(d) + '">';
+    }).join('');
+  }
+
   /* ── MODAL OPEN ─────────────────────────────────────────── */
   function openAdd() {
     state.editId = null;
@@ -517,6 +533,7 @@
     document.getElementById('fDescripcion').value = '';
     document.getElementById('btnDelete').style.display = 'none';
     if (coverPreview) coverPreview.update('', '');
+    populateDevSuggestions();
     renderGeneroChips();
     renderPlataformaChips();
     document.getElementById('gameModal').classList.add('open');
@@ -544,6 +561,7 @@
     document.getElementById('fTipoLanzamiento').value = game.tipoLanzamiento || '';
     document.getElementById('fDescripcion').value = game.descripcion || '';
     document.getElementById('btnDelete').style.display = 'inline-flex';
+    populateDevSuggestions();
     renderGeneroChips();
     renderPlataformaChips();
     document.getElementById('gameModal').classList.add('open');
