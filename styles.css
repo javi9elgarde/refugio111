@@ -1438,20 +1438,32 @@ option { background: var(--bg2); }
 .rank-list-dev   { font-size: 0.7rem; color: var(--txt3); margin-top: 0.05rem; }
 .rank-list-score-wrap { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
 
-/* ── RANK WRAP (Clasificación Completa con título lateral) ─── */
-.rank-wrap {
-  display: flex; align-items: center; gap: 1.75rem;
-  max-width: 760px; margin: 0.5rem auto 0;
+/* ── RANK SECTION HEADER (Clasificación Completa centrada) ─── */
+.rank-section-header {
+  text-align: center;
+  margin: 3rem 0 1.25rem;
+  position: relative;
 }
-.rank-wrap__label {
-  flex-shrink: 0; width: 6.5rem; text-align: right;
-  font-family: 'Orbitron', sans-serif; font-size: 0.62rem;
-  font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase;
-  color: rgba(232,232,248,0.38); line-height: 1.9;
+.rank-section-header::before,
+.rank-section-header::after {
+  content: '';
+  position: absolute;
+  top: 50%; height: 1px;
+  width: 28%; background: linear-gradient(90deg, transparent, rgba(79,172,254,0.25));
 }
-.rank-wrap .rank-list { flex: 1; gap: 0.28rem; }
-.rank-wrap .rank-list-row { padding: 0.38rem 0.85rem; }
-.rank-wrap .rank-list-pos { min-width: 30px; height: 30px; font-size: 0.68rem; }
+.rank-section-header::before { right: calc(50% + 9rem); transform: scaleX(-1); }
+.rank-section-header::after  { left:  calc(50% + 9rem); }
+.rank-section-title {
+  display: inline-block;
+  font-family: 'Orbitron', sans-serif; font-size: 1.35rem;
+  font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase;
+  background: linear-gradient(135deg, #fff 30%, rgba(79,172,254,0.8));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.rank-list { max-width: 720px; margin: 0 auto; gap: 0.28rem; }
+.rank-list-row { padding: 0.38rem 0.85rem; }
+.rank-list-pos  { min-width: 30px; height: 30px; font-size: 0.68rem; }
 .rank-list .score-bar { display: none; }
 
 /* ── FOOTER ──────────────────────────────────────────────────── */

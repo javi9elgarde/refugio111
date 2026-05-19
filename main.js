@@ -15,12 +15,10 @@ window.GT.Utils = (function () {
   }
   function scoreColor(score) {
     if (score === null || score === undefined || score === '') return '#6b7280';
-    var s = parseFloat(score);
-    if (s >= 9) return '#f59e0b';
-    if (s >= 8) return '#22c55e';
-    if (s >= 7) return '#84cc16';
-    if (s >= 6) return '#f97316';
-    return '#ef4444';
+    var s = Math.max(0, Math.min(10, parseFloat(score)));
+    // Verde (120°) → Amarillo (60°) → Rojo (0°)
+    var hue = Math.round(s * 12);
+    return 'hsl(' + hue + ',90%,52%)';
   }
   function scoreWidth(score) {
     if (!score) return '0%';
