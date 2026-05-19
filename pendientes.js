@@ -254,7 +254,7 @@
       '</div>';
 
     /* ── COMPOSE SECTION ────────────────────────────────────── */
-    return '<div class="player-profile" style="--pp-color:' + color + '">' +
+    return '<div class="player-profile" id="player-' + key.toLowerCase() + '" style="--pp-color:' + color + ';scroll-margin-top:5rem">' +
       headerHtml +
       '<div class="pp-body">' +
         '<div class="pp-sub">' +
@@ -278,6 +278,17 @@
     var container = document.getElementById('playerProfiles');
     if (!container) return;
     container.innerHTML = PLAYERS.map(function(p) { return renderPlayer(p); }).join('');
+
+    // Scroll to player anchor if navigated from another page
+    try {
+      var hash = window.location.hash; // e.g. #player-david
+      if (hash) {
+        setTimeout(function() {
+          var el = document.querySelector(hash);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 120);
+      }
+    } catch(e) {}
   }
 
   /* ══════════════════════════════════════════════════════════════
