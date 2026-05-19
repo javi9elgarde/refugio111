@@ -180,7 +180,7 @@
       data: { labels: years, datasets: datasets },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             display: player === 'All',
