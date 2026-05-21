@@ -409,8 +409,24 @@ window.GT.GameDetailModal = (function () {
   return { open, close };
 })();
 
+/* ── ACTIVE PLAYER ──────────────────────────────────────────── */
+window.GT.getActivePlayer = function() {
+  try { return localStorage.getItem('GT_player') || null; } catch(e) { return null; }
+};
+window.GT.setActivePlayer = function(p) {
+  try {
+    if (p) localStorage.setItem('GT_player', p);
+    else localStorage.removeItem('GT_player');
+    window.GT.activePlayer = p || null;
+  } catch(e) {}
+};
+window.GT.activePlayer = window.GT.getActivePlayer();
+
 /* ── NAV ────────────────────────────────────────────────────── */
 window.GT.Nav = (function () {
+  var PLAYER_COLORS   = { David: 'var(--player-david)', Javi: 'var(--player-javi)', Mery: 'var(--player-mery)' };
+  var PLAYER_INITIALS = { David: 'D', Javi: 'J', Mery: 'M' };
+
   function init() {
     try {
       var current = window.location.pathname.split('/').pop() || 'index.html';
@@ -421,6 +437,26 @@ window.GT.Nav = (function () {
       var ham = document.getElementById('navHamburger');
       var mob = document.getElementById('navMobile');
       if (ham && mob) ham.addEventListener('click', function(){ mob.classList.toggle('open'); });
+    } catch(e){}
+
+    /* Active player indicator */
+    try {
+      var ap = window.GT.getActivePlayer();
+      if (ap) {
+        var indicator = document.createElement('a');
+        indicator.href = 'hub.html';
+        indicator.title = 'Jugando como ' + ap + ' · Pulsa para cambiar';
+        indicator.className = 'nav__player-pill';
+        indicator.innerHTML =
+          '<div class="nav__player-av" style="background:' + (PLAYER_COLORS[ap] || '#666') + '">' +
+            (PLAYER_INITIALS[ap] || ap[0]) +
+          '</div>' +
+          '<span class="nav__player-name">' + ap + '</span>';
+        var nav = document.querySelector('.nav');
+        var year = document.getElementById('navYear');
+        if (nav && year) nav.insertBefore(indicator, year);
+        else if (nav) nav.appendChild(indicator);
+      }
     } catch(e){}
   }
   return { init };

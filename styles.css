@@ -108,8 +108,35 @@ ul, ol { list-style: none; }
 .nav__link.active { color: var(--cyan); background: rgba(79,172,254,0.1); }
 .nav__link--hub { color: rgba(0,255,136,0.85); border: 1px solid rgba(0,255,136,0.2); }
 .nav__link--hub:hover { color: #00ff88; background: rgba(0,255,136,0.08); border-color: rgba(0,255,136,0.4); }
+/* ── Active player pill in navbar ── */
+.nav__player-pill {
+  display: flex; align-items: center; gap: 0.45rem;
+  text-decoration: none; margin-left: auto;
+  padding: 0.2rem 0.6rem 0.2rem 0.2rem;
+  border-radius: 100px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  transition: background 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+.nav__player-pill:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.18);
+}
+.nav__player-av {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Orbitron', sans-serif; font-size: 0.65rem; font-weight: 900;
+  color: #07070f; flex-shrink: 0;
+}
+.nav__player-name {
+  font-size: 0.72rem; font-weight: 600; color: rgba(232,232,248,0.6);
+  letter-spacing: 0.04em;
+}
+@media (max-width: 900px) { .nav__player-name { display: none; } }
+
 .nav__year {
-  margin-left: auto;
+  margin-left: 0.75rem;
   font-family: 'Orbitron', sans-serif;
   font-size: 0.75rem;
   font-weight: 600;

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="hub.css?v=20260521a">
+  <link rel="stylesheet" href="hub.css?v=20260522a">
 </head>
 <body>
 
@@ -79,8 +79,46 @@
   <!-- Overlay flash en click -->
   <div class="hub__flash" id="hubFlash"></div>
 
+  <!-- ── CHARACTER SELECTION ────────────────────────── -->
+  <div class="psel" id="pselOverlay">
+    <div class="psel__scanlines"></div>
+    <button class="psel__back" id="pselBack">← VOLVER</button>
+    <div class="psel__header">
+      <div class="psel__eyebrow">GAMETRACKER · VIDEOJUEGOS</div>
+      <h2 class="psel__title">¿QUIÉN JUEGA?</h2>
+      <p class="psel__sub">Selecciona tu perfil para continuar</p>
+    </div>
+    <div class="psel__cards">
+      <div class="psel__card psel__card--david" data-player="David">
+        <div class="psel__glow"></div>
+        <div class="psel__img-wrap">
+          <img src="icondavidneutral.png" class="psel__img" alt="David" draggable="false">
+        </div>
+        <div class="psel__name">DAVID</div>
+        <div class="psel__fullname">David Garde</div>
+      </div>
+      <div class="psel__card psel__card--javi" data-player="Javi">
+        <div class="psel__glow"></div>
+        <div class="psel__img-wrap">
+          <img src="iconjavineutral.png" class="psel__img" alt="Javi" draggable="false">
+        </div>
+        <div class="psel__name">JAVI</div>
+        <div class="psel__fullname">Javier Garde</div>
+      </div>
+      <div class="psel__card psel__card--mery" data-player="Mery">
+        <div class="psel__glow"></div>
+        <div class="psel__img-wrap">
+          <img src="iconmeryneutral.png" class="psel__img" alt="Mery" draggable="false">
+        </div>
+        <div class="psel__name">MERY</div>
+        <div class="psel__fullname">Mariam Moreno</div>
+      </div>
+    </div>
+    <div class="psel__flash" id="pselFlash"></div>
+  </div>
+
 </div>
 
-<script src="hub.js?v=20260521a"></script>
+<script src="hub.js?v=20260522a"></script>
 </body>
 </html>

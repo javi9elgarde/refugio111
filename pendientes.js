@@ -286,14 +286,20 @@
     if (!container) return;
     container.innerHTML = PLAYERS.map(function(p) { return renderPlayer(p); }).join('');
 
-    // Scroll to player anchor if navigated from another page
+    // Scroll to player anchor (hash > active player > nothing)
     try {
-      var hash = window.location.hash; // e.g. #player-david
+      var hash = window.location.hash;
+      var target = null;
       if (hash) {
+        target = document.querySelector(hash);
+      } else {
+        var ap = window.GT && window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;
+        if (ap) target = document.getElementById('player-' + ap.toLowerCase());
+      }
+      if (target) {
         setTimeout(function() {
-          var el = document.querySelector(hash);
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 120);
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
       }
     } catch(e) {}
   }

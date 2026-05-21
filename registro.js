@@ -254,6 +254,15 @@
   function init() {
     document.getElementById('navYear').textContent = new Date().getFullYear();
     var fy = document.getElementById('footerYear'); if (fy) fy.textContent = new Date().getFullYear();
+
+    /* Pre-select active player from localStorage */
+    var ap = window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;
+    if (ap && ap !== 'All') {
+      state.player = ap;
+      var radio = document.querySelector('#playerCards input[value="' + ap + '"]');
+      if (radio) radio.checked = true;
+    }
+
     buildYearOptions();
     initPlayerCards();
 

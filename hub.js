@@ -200,13 +200,46 @@
     });
   }
 
+  /* ── CHARACTER SELECTION ────────────────────────────────── */
+  var pselOverlay = document.getElementById('pselOverlay');
+  var pselFlash   = document.getElementById('pselFlash');
+
+  var PLAYER_COLORS = { David: '#3b82f6', Javi: '#9b1742', Mery: '#9b59ff' };
+
+  function openPlayerSelect() {
+    pselOverlay.classList.add('open');
+    document.querySelectorAll('.psel__card').forEach(function(c) { c.classList.remove('choosing'); });
+    pselFlash.style.background = '';
+    pselFlash.classList.remove('active');
+  }
+
+  function closePlayerSelect() {
+    pselOverlay.classList.remove('open');
+  }
+
+  document.getElementById('pselBack').addEventListener('click', closePlayerSelect);
+
+  document.querySelectorAll('.psel__card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      var player = this.dataset.player;
+      var color  = PLAYER_COLORS[player] || '#4facfe';
+
+      document.querySelectorAll('.psel__card').forEach(function(c) { c.classList.remove('choosing'); });
+      this.classList.add('choosing');
+
+      try { localStorage.setItem('GT_player', player); } catch(e) {}
+
+      pselFlash.style.background = color;
+      pselFlash.classList.add('active');
+      playGameSound();
+
+      setTimeout(function() { window.location.href = 'index.html'; }, 420);
+    });
+  });
+
   /* ── CLICKS ────────────────────────────────────────────── */
   zoneLeft.addEventListener('click', function () {
-    playGameSound();
-    doFlash('left');
-    setTimeout(function () {
-      window.location.href = 'index.html';
-    }, 380);
+    openPlayerSelect();
   });
 
   zoneRight.addEventListener('click', function () {
