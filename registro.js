@@ -86,13 +86,6 @@
 
     var entries = Registro.filter(opts);
 
-    // Sort by year+month
-    entries.sort(function(a, b) {
-      var byYear = state.sortAsc ? (a.año - b.año) : (b.año - a.año);
-      if (byYear !== 0) return byYear;
-      return state.sortAsc ? (a.mes - b.mes) : (b.mes - a.mes);
-    });
-
     var container = document.getElementById('regContainer');
     var empty     = document.getElementById('regEmpty');
     var count     = document.getElementById('regCount');
@@ -106,9 +99,23 @@
     }
     empty.classList.add('hidden');
 
-    // Split into "En Curso" (Jugando/Retomar) and "Historial" (rest)
+    // Split first, then sort each group independently
     var playing = entries.filter(function(r) { return r.estado === 'Jugando' || r.estado === 'Retomar'; });
     var history = entries.filter(function(r) { return r.estado !== 'Jugando' && r.estado !== 'Retomar'; });
+
+    // En Curso: respeta el orden del botón (por defecto más reciente)
+    playing.sort(function(a, b) {
+      var byYear = state.sortAsc ? (a.año - b.año) : (b.año - a.año);
+      if (byYear !== 0) return byYear;
+      return state.sortAsc ? (a.mes - b.mes) : (b.mes - a.mes);
+    });
+
+    // Historial: siempre Enero→Diciembre (ascendente)
+    history.sort(function(a, b) {
+      var byYear = a.año - b.año;
+      if (byYear !== 0) return byYear;
+      return a.mes - b.mes;
+    });
 
     var html = '';
     if (playing.length) {

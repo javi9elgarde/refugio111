@@ -1790,7 +1790,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 
 /* â”€â”€ MINI COVER TABLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .mini-cover {
-  width: 36px; height: 52px;
+  width: 80px; height: 45px;
   border-radius: 4px;
   overflow: hidden;
   background: linear-gradient(135deg, #1a1a2e, #0f3460);
