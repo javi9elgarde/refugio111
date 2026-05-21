@@ -284,7 +284,18 @@
   function render() {
     var container = document.getElementById('playerProfiles');
     if (!container) return;
-    container.innerHTML = PLAYERS.map(function(p) { return renderPlayer(p); }).join('');
+
+    /* Reorder: active player first */
+    var ap = window.GT && window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;
+    var ordered = PLAYERS.slice();
+    if (ap) {
+      ordered.sort(function(a, b) {
+        if (a.key === ap) return -1;
+        if (b.key === ap) return  1;
+        return 0;
+      });
+    }
+    container.innerHTML = ordered.map(function(p) { return renderPlayer(p); }).join('');
 
     // Scroll to player anchor (hash > active player > nothing)
     try {
