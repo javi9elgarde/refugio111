@@ -522,6 +522,15 @@
     buildYearOptions();
     buildPlayerTabs();
 
+    /* Pre-select active player from localStorage */
+    var ap = window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;
+    if (ap && ap !== 'All') {
+      state.player = ap;
+      document.querySelectorAll('#statsPlayerTabs .player-tab').forEach(function(b){ b.className = 'player-tab'; });
+      var activeTab = document.querySelector('#statsPlayerTabs [data-player="' + ap + '"]');
+      if (activeTab) activeTab.className = 'player-tab active-' + ap.toLowerCase();
+    }
+
     document.getElementById('btnExport').addEventListener('click', exportData);
     document.getElementById('btnImport').addEventListener('click', function(){ document.getElementById('importFile').click(); });
     document.getElementById('importFile').addEventListener('change', function(){ if (this.files[0]) importData(this.files[0]); this.value = ''; });
