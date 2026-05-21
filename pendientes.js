@@ -179,14 +179,20 @@
     var statsStr = totalJuegos + ' jugados · ' + totalHoras + 'h' +
       (avgScore ? ' · ★ ' + avgScore.toFixed(2).replace('.', ',') : '');
 
+    var charSprites = { Javi: 'javineutro.png' };
+    var charImg = charSprites[key]
+      ? '<img src="' + charSprites[key] + '" class="pp-char" alt="' + Utils.escapeHtml(player.name) + '" draggable="false">'
+      : '';
+
     var headerHtml =
-      '<div class="pp-header">' +
+      '<div class="pp-header' + (charImg ? ' pp-header--char' : '') + '">' +
         '<div class="pp-avatar" style="background:' + color + '">' + player.initial + '</div>' +
-        '<div style="flex:1">' +
+        '<div style="flex:1;min-width:0">' +
           '<div class="pp-name">' + Utils.escapeHtml(player.name) + '</div>' +
           '<div class="pp-stats">' + pendingGames.length + ' pendientes · ' + statsStr + '</div>' +
         '</div>' +
-        '<a href="registro.html" class="btn btn-ghost btn-sm" style="font-size:0.75rem">📋 Registro</a>' +
+        '<a href="registro.html" class="btn btn-ghost btn-sm" style="font-size:0.75rem;flex-shrink:0">📋 Registro</a>' +
+        charImg +
       '</div>';
 
     /* ── PENDING LIST (scrollable) ──────────────────────────── */

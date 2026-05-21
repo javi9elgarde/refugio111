@@ -1952,6 +1952,32 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
   padding: 1.25rem 2rem;
   background: rgba(255,255,255,0.02);
   border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.pp-header--char { padding-right: 10rem; min-height: 5rem; }
+
+.pp-char {
+  position: absolute;
+  right: 0; bottom: 0;
+  height: 160px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  animation: ppCharFloat 3.2s ease-in-out infinite;
+  filter: drop-shadow(-4px 0 18px rgba(155,23,66,0.4));
+  mask-image: linear-gradient(to left, black 60%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to left, black 60%, transparent 100%);
+}
+@keyframes ppCharFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+@media (max-width: 600px) {
+  .pp-header--char { padding-right: 1.25rem; }
+  .pp-char { display: none; }
 }
 
 .pp-avatar {
