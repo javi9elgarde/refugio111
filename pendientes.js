@@ -185,14 +185,13 @@
       : '';
 
     var headerHtml =
-      '<div class="pp-header' + (charImg ? ' pp-header--char' : '') + '">' +
+      '<div class="pp-header">' +
         '<div class="pp-avatar" style="background:' + color + '">' + player.initial + '</div>' +
         '<div style="flex:1;min-width:0">' +
           '<div class="pp-name">' + Utils.escapeHtml(player.name) + '</div>' +
           '<div class="pp-stats">' + pendingGames.length + ' pendientes · ' + statsStr + '</div>' +
         '</div>' +
         '<a href="registro.html" class="btn btn-ghost btn-sm" style="font-size:0.75rem;flex-shrink:0">📋 Registro</a>' +
-        charImg +
       '</div>';
 
     /* ── PENDING LIST (scrollable) ──────────────────────────── */
@@ -260,7 +259,8 @@
       '</div>';
 
     /* ── COMPOSE SECTION ────────────────────────────────────── */
-    return '<div class="player-profile" id="player-' + key.toLowerCase() + '" style="--pp-color:' + color + ';scroll-margin-top:5rem">' +
+    return '<div class="player-profile' + (charImg ? ' player-profile--char' : '') + '" id="player-' + key.toLowerCase() + '" style="--pp-color:' + color + ';scroll-margin-top:5rem">' +
+      charImg +
       headerHtml +
       '<div class="pp-body">' +
         '<div class="pp-sub">' +
