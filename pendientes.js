@@ -179,13 +179,15 @@
     var statsStr = totalJuegos + ' jugados · ' + totalHoras + 'h' +
       (avgScore ? ' · ★ ' + avgScore.toFixed(2).replace('.', ',') : '');
 
-    var charSprites = { Javi: 'javi-sheet.png' };
-    var charImg = charSprites[key]
-      ? '<div class="pp-char pp-char--' + key.toLowerCase() + ' pp-char--walk" role="img" aria-label="' + Utils.escapeHtml(player.name) + '"></div>'
-      : '';
+    /* Player headshot icons */
+    var playerIcons = { Javi: 'iconjavineutral.png' };
+    var iconSrc = playerIcons[key] || null;
 
     var headerHtml =
-      '<div class="pp-header">' +
+      '<div class="pp-header' + (iconSrc ? ' pp-header--icon' : '') + '">' +
+        (iconSrc
+          ? '<img src="' + iconSrc + '" class="pp-icon" alt="' + Utils.escapeHtml(player.name) + '" draggable="false">'
+          : '') +
         '<div class="pp-avatar" style="background:' + color + '">' + player.initial + '</div>' +
         '<div style="flex:1;min-width:0">' +
           '<div class="pp-name">' + Utils.escapeHtml(player.name) + '</div>' +
@@ -259,8 +261,7 @@
       '</div>';
 
     /* ── COMPOSE SECTION ────────────────────────────────────── */
-    return '<div class="player-profile' + (charImg ? ' player-profile--char' : '') + '" id="player-' + key.toLowerCase() + '" style="--pp-color:' + color + ';scroll-margin-top:5rem">' +
-      charImg +
+    return '<div class="player-profile" id="player-' + key.toLowerCase() + '" style="--pp-color:' + color + ';scroll-margin-top:5rem">' +
       headerHtml +
       '<div class="pp-body">' +
         '<div class="pp-sub">' +
@@ -280,19 +281,10 @@
   }
 
   /* ── RENDER ALL ─────────────────────────────────────────────── */
-  var _walkTimer = null;
   function render() {
     var container = document.getElementById('playerProfiles');
     if (!container) return;
     container.innerHTML = PLAYERS.map(function(p) { return renderPlayer(p); }).join('');
-
-    // Walk → idle transition after entry
-    if (_walkTimer) clearTimeout(_walkTimer);
-    _walkTimer = setTimeout(function() {
-      container.querySelectorAll('.pp-char--walk').forEach(function(el) {
-        el.classList.remove('pp-char--walk');
-      });
-    }, 2500);
 
     // Scroll to player anchor if navigated from another page
     try {

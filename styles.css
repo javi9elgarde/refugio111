@@ -1952,64 +1952,23 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
   padding: 1.25rem 2rem;
   background: rgba(255,255,255,0.02);
   border-bottom: 1px solid var(--border);
-}
-
-/* ── Player profile with sprite character ── */
-.player-profile--char {
   position: relative;
+  overflow: hidden;
 }
-.player-profile--char .pp-header,
-.player-profile--char .pp-body {
-  padding-left: 12rem;
+.pp-header--icon {
+  padding-left: 7.5rem;
+  min-height: 6rem;
 }
-
-.pp-char {
-  position: absolute;
-  left: 0; bottom: 0;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  pointer-events: none;
-  user-select: none;
-  background-repeat: no-repeat;
-  mask-image: linear-gradient(to right, black 55%, transparent 96%);
-  -webkit-mask-image: linear-gradient(to right, black 55%, transparent 96%);
-  z-index: 1;
+.pp-icon {
+  position: absolute; left: 0; bottom: 0;
+  height: 110%; width: auto;
+  image-rendering: pixelated; image-rendering: crisp-edges;
+  pointer-events: none; user-select: none; -webkit-user-drag: none;
+  object-fit: contain; object-position: bottom center;
 }
-
-/* Javi — idle (4 frames) y walk (8 frames), mismo bg-size */
-.pp-char--javi {
-  width: 176px;
-  height: 378px;
-  background-image: url('javi-sheet.png');
-  background-size: 1546px 2071px;
-  background-position: -45px -1183px;
-  filter: drop-shadow(3px 0 18px rgba(155,23,66,0.5));
-  animation: javiIdle 0.65s steps(4) infinite,
-             ppCharFloat 3.4s ease-in-out infinite;
-}
-@keyframes javiIdle {
-  from { background-position: -45px  -1183px; }
-  to   { background-position: -749px -1183px; }
-}
-
-/* Walk override — se quita con JS tras la entrada */
-.pp-char--javi.pp-char--walk {
-  background-position: -49px -196px;
-  animation: javiWalk 0.7s steps(8) infinite,
-             ppCharFloat 3.4s ease-in-out infinite;
-}
-@keyframes javiWalk {
-  from { background-position: -49px   -196px; }
-  to   { background-position: -1457px -196px; }
-}
-@keyframes ppCharFloat {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-10px); }
-}
-@media (max-width: 900px) {
-  .player-profile--char .pp-header,
-  .player-profile--char .pp-body { padding-left: 1.5rem; }
-  .pp-char { display: none; }
+@media (max-width: 768px) {
+  .pp-header--icon { padding-left: 1.5rem; }
+  .pp-icon { display: none; }
 }
 
 .pp-avatar {
@@ -2052,8 +2011,8 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
 
 /* â”€â”€ Pending list â€” scrollable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .pp-pend-list {
-  display: flex; flex-direction: column; gap: 0.3rem;
-  max-height: 320px;
+  display: flex; flex-direction: column; gap: 0.4rem;
+  max-height: 420px;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 0.25rem;
@@ -2066,8 +2025,8 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
 .pp-pend-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
 .pp-pend-item {
-  display: flex; align-items: center; gap: 0.55rem;
-  padding: 0.4rem 0.45rem; border-radius: var(--radius-sm);
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.55rem 0.5rem; border-radius: var(--radius-sm);
   background: rgba(255,255,255,0.02); border: 1px solid transparent;
   transition: all var(--transition); cursor: default;
 }
@@ -2201,7 +2160,7 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
 /* â”€â”€ PENDING ITEM â€” portrait cover + duration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .pp-pend-cover {
   position: relative;
-  width: 36px; height: 50px;
+  width: 46px; height: 64px;
   flex-shrink: 0;
   border-radius: 5px;
   overflow: hidden;
@@ -2219,7 +2178,7 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
   font-size: 0.7rem; font-weight: 700; color: var(--txt3);
 }
 .pp-pend-title {
-  font-weight: 600; font-size: 0.82rem;
+  font-weight: 600; font-size: 0.92rem;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .pp-pend-dur {
