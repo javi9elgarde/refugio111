@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Hub Friki</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="hub.css?v=20260521a">
+</head>
+<body>
+
+<div id="hub">
+
+  <!-- Atmospheric background gradients -->
+  <div class="hub__bg-left"  id="bgLeft"></div>
+  <div class="hub__bg-right" id="bgRight"></div>
+
+  <!-- Scanlines retro overlay -->
+  <div class="hub__scanlines"></div>
+
+  <!-- Particle canvas -->
+  <canvas id="hubCanvas" class="hub__canvas"></canvas>
+
+  <!-- Portrait image stack — crossfade entre los 3 estados -->
+  <div class="hub__scene" id="hubScene">
+    <img src="hub-neutral.png" class="hub__img hub__img--neutral" id="imgNeutral" alt="El Hub Friki">
+    <img src="hub-gaming.png"  class="hub__img hub__img--gaming"  id="imgGaming"  alt="Videojuegos">
+    <img src="hub-cinema.png"  class="hub__img hub__img--cinema"  id="imgCinema"  alt="Cine y Series">
+  </div>
+
+  <!-- Neon vignette edge glow -->
+  <div class="hub__vignette" id="hubVignette"></div>
+
+  <!-- Click/hover zones (encima de todo excepto UI) -->
+  <div class="hub__zone hub__zone--left"  id="zoneLeft"></div>
+  <div class="hub__zone hub__zone--right" id="zoneRight"></div>
+
+  <!-- Línea divisoria central -->
+  <div class="hub__divider"></div>
+
+  <!-- Título central flotante -->
+  <div class="hub__title" id="hubTitle">
+    <span class="hub__title-spark hub__title-spark--a">✦</span>
+    <div class="hub__title-main">
+      <span class="hub__title-el">EL HUB</span>
+      <span class="hub__title-friki">FRIKI</span>
+    </div>
+    <span class="hub__title-spark hub__title-spark--b">✦</span>
+  </div>
+
+  <!-- Label izquierdo — Videojuegos -->
+  <div class="hub__label hub__label--left" id="labelLeft">
+    <div class="hub__label-icon-row">
+      <span class="hub__label-icon hub__label-icon--pixel">🎮</span>
+      <span class="hub__label-icon hub__label-icon--pixel">⚔️</span>
+    </div>
+    <div class="hub__label-name">VIDEOJUEGOS</div>
+    <div class="hub__label-sub">Seguimiento · Reseñas · Rankings</div>
+    <div class="hub__label-enter">
+      <span class="hub__label-arrow">▶</span> ENTRAR
+    </div>
+  </div>
+
+  <!-- Label derecho — Cine / Series / Anime -->
+  <div class="hub__label hub__label--right" id="labelRight">
+    <div class="hub__label-icon-row">
+      <span class="hub__label-icon">🎬</span>
+      <span class="hub__label-icon">🎞️</span>
+    </div>
+    <div class="hub__label-name">PELÍCULAS · SERIES · ANIME</div>
+    <div class="hub__label-sub">Base de datos · Estrenos · Recomendaciones</div>
+    <div class="hub__label-enter">
+      <span class="hub__label-arrow">▶</span> ENTRAR
+    </div>
+  </div>
+
+  <!-- Overlay flash en click -->
+  <div class="hub__flash" id="hubFlash"></div>
+
+</div>
+
+<script src="hub.js?v=20260521a"></script>
+</body>
+</html>

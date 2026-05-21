@@ -1,0 +1,409 @@
+/* =====================================================
+   EL HUB FRIKI — hub.css
+   ===================================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: #07070f;
+}
+
+/* ── CONTENEDOR PRINCIPAL ──────────────────────────── */
+#hub {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Orbitron', sans-serif;
+  cursor: crosshair;
+}
+
+/* ── FONDOS ATMOSFÉRICOS ───────────────────────────── */
+.hub__bg-left,
+.hub__bg-right {
+  position: absolute;
+  top: 0;
+  width: 55%;
+  height: 100%;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  opacity: 0;
+  z-index: 0;
+}
+.hub__bg-left {
+  left: 0;
+  background: radial-gradient(
+    ellipse 80% 70% at 20% 60%,
+    rgba(0, 255, 120, 0.10) 0%,
+    rgba(0, 200, 80, 0.04) 40%,
+    transparent 70%
+  );
+}
+.hub__bg-right {
+  right: 0;
+  background: radial-gradient(
+    ellipse 80% 70% at 80% 60%,
+    rgba(79, 172, 254, 0.12) 0%,
+    rgba(0, 100, 220, 0.04) 40%,
+    transparent 70%
+  );
+}
+#hub.hover-left  .hub__bg-left  { opacity: 1; }
+#hub.hover-right .hub__bg-right { opacity: 1; }
+
+/* ── SCANLINES RETRO ───────────────────────────────── */
+.hub__scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(0,0,0,0.06) 3px,
+    rgba(0,0,0,0.06) 4px
+  );
+}
+
+/* ── CANVAS PARTÍCULAS ─────────────────────────────── */
+.hub__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* ── IMAGEN CENTRAL ────────────────────────────────── */
+.hub__scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hub__img {
+  position: absolute;
+  height: 100vh;
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  -webkit-user-drag: none;
+  /* Sombra dramática para separar del fondo */
+  filter: drop-shadow(0 0 60px rgba(0,0,0,0.8));
+}
+.hub__img--neutral { opacity: 1; z-index: 1; }
+.hub__img--gaming  { z-index: 2; }
+.hub__img--cinema  { z-index: 2; }
+
+/* Crossfade al hacer hover */
+#hub.hover-left  .hub__img--gaming  { opacity: 1; }
+#hub.hover-right .hub__img--cinema  { opacity: 1; }
+#hub.hover-left  .hub__img--neutral { opacity: 0; }
+#hub.hover-right .hub__img--neutral { opacity: 0; }
+
+/* ── VIÑETA / NEON EDGE ────────────────────────────── */
+.hub__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 50% 100% at 0% 50%,   rgba(0,0,0,0.6) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 100% at 100% 50%, rgba(0,0,0,0.6) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 20% at 50% 0%,   rgba(0,0,0,0.5) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 20% at 50% 100%, rgba(0,0,0,0.6) 0%, transparent 60%);
+  transition: opacity 0.4s;
+}
+
+/* ── ZONAS DE CLICK ────────────────────────────────── */
+.hub__zone {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  z-index: 10;
+  cursor: pointer;
+}
+.hub__zone--left  { left: 0; }
+.hub__zone--right { right: 0; }
+
+/* Línea neon en el borde interior al hover */
+.hub__zone--left::after,
+.hub__zone--right::after {
+  content: '';
+  position: absolute;
+  top: 10%;
+  height: 80%;
+  width: 2px;
+  transition: opacity 0.4s, box-shadow 0.4s;
+  opacity: 0;
+}
+.hub__zone--left::after  { right: 0; background: #00ff88; }
+.hub__zone--right::after { left: 0;  background: #4facfe; }
+
+#hub.hover-left  .hub__zone--left::after  {
+  opacity: 1;
+  box-shadow: 0 0 12px #00ff88, 0 0 28px rgba(0,255,136,0.5);
+}
+#hub.hover-right .hub__zone--right::after {
+  opacity: 1;
+  box-shadow: 0 0 12px #4facfe, 0 0 28px rgba(79,172,254,0.5);
+}
+
+/* ── DIVISOR CENTRAL ───────────────────────────────── */
+.hub__divider {
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  height: 84%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255,255,255,0.06) 15%,
+    rgba(255,255,255,0.06) 85%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ── TÍTULO CENTRAL ────────────────────────────────── */
+.hub__title {
+  position: absolute;
+  left: 50%;
+  top: 12%;
+  transform: translateX(-50%);
+  z-index: 20;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.hub__title-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  gap: 0.05em;
+}
+
+.hub__title-el {
+  font-size: clamp(1rem, 2.2vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  color: rgba(232,232,248,0.85);
+  white-space: nowrap;
+}
+
+.hub__title-friki {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #00ff88 0%, #4facfe 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% auto;
+  animation: titleShimmer 4s linear infinite;
+  filter: drop-shadow(0 0 20px rgba(79,172,254,0.3));
+}
+
+@keyframes titleShimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+.hub__title-spark {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.45);
+  animation: sparkPulse 2.4s ease-in-out infinite;
+}
+.hub__title-spark--a { animation-delay: 0s;    font-size: 0.8rem; }
+.hub__title-spark--b { animation-delay: 1.2s;  font-size: 0.8rem; }
+
+@keyframes sparkPulse {
+  0%, 100% { opacity: 0.2; transform: scale(0.7); }
+  50%       { opacity: 1;   transform: scale(1.3); }
+}
+
+/* ── LABELS LATERALES ──────────────────────────────── */
+.hub__label {
+  position: absolute;
+  bottom: 5vh;
+  z-index: 15;
+  pointer-events: none;
+  text-align: center;
+  opacity: 0.35;
+  transform: translateY(10px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.hub__label--left  { left: 2vw;  width: calc(50% - 2vw - 3rem); }
+.hub__label--right { right: 2vw; width: calc(50% - 2vw - 3rem); }
+
+#hub.hover-left  .hub__label--left  { opacity: 1; transform: translateY(0); }
+#hub.hover-right .hub__label--right { opacity: 1; transform: translateY(0); }
+
+.hub__label-icon-row {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  font-size: 1.6rem;
+}
+
+.hub__label-icon--pixel {
+  image-rendering: pixelated;
+}
+
+.hub__label-name {
+  font-size: clamp(0.65rem, 1.3vw, 0.9rem);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.35rem;
+}
+.hub__label--left  .hub__label-name { color: #00ff88; }
+.hub__label--right .hub__label-name { color: #4facfe; }
+
+.hub__label-sub {
+  font-size: clamp(0.52rem, 0.85vw, 0.68rem);
+  color: rgba(232,232,248,0.55);
+  letter-spacing: 0.06em;
+  font-family: sans-serif;
+  margin-bottom: 0.6rem;
+}
+
+.hub__label-enter {
+  font-size: clamp(0.55rem, 0.9vw, 0.72rem);
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 0.3s 0.15s, transform 0.3s 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.hub__label--left  .hub__label-enter { color: #00ff88; }
+.hub__label--right .hub__label-enter { color: #4facfe; }
+
+.hub__label-arrow {
+  display: inline-block;
+  animation: arrowPulse 1s ease-in-out infinite;
+}
+@keyframes arrowPulse {
+  0%, 100% { transform: translateX(0); }
+  50%       { transform: translateX(4px); }
+}
+
+#hub.hover-left  .hub__label--left  .hub__label-enter,
+#hub.hover-right .hub__label--right .hub__label-enter {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── FLASH DE CLICK ────────────────────────────────── */
+.hub__flash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+}
+.hub__flash--left  { background: radial-gradient(ellipse at 25% 50%, rgba(0,255,136,0.25), transparent 70%); }
+.hub__flash--right { background: radial-gradient(ellipse at 75% 50%, rgba(79,172,254,0.25), transparent 70%); }
+.hub__flash.active {
+  animation: flashFade 0.5s ease forwards;
+}
+@keyframes flashFade {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── OVERLAY PRÓXIMAMENTE ──────────────────────────── */
+.hub__soon {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(7,7,15,0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+  backdrop-filter: blur(12px);
+}
+.hub__soon.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.hub__soon-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.5rem, 4vw, 2.8rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, #4facfe, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.1em;
+}
+.hub__soon-sub {
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  color: rgba(232,232,248,0.5);
+  font-family: sans-serif;
+  letter-spacing: 0.08em;
+}
+.hub__soon-back {
+  margin-top: 1rem;
+  padding: 0.6rem 1.6rem;
+  background: transparent;
+  border: 1px solid rgba(79,172,254,0.4);
+  color: #4facfe;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s, border-color 0.2s;
+}
+.hub__soon-back:hover {
+  background: rgba(79,172,254,0.1);
+  border-color: #4facfe;
+}
+
+/* ── RESPONSIVE ────────────────────────────────────── */
+@media (max-width: 860px) {
+  .hub__img { height: auto; width: 100vw; }
+  .hub__label { bottom: 3vh; }
+}
+@media (max-width: 540px) {
+  .hub__label { bottom: 2vh; }
+  .hub__label--left  { left: 1vw; width: calc(50% - 2rem); }
+  .hub__label--right { right: 1vw; width: calc(50% - 2rem); }
+  .hub__label-icon-row { font-size: 1.1rem; }
+  .hub__label-sub { display: none; }
+  .hub__title-el { font-size: 0.85rem; }
+  .hub__title-friki { font-size: 1.5rem; }
+}
