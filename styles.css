@@ -1966,21 +1966,33 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
 .pp-char {
   position: absolute;
   left: 0; bottom: 0;
-  width: 11rem;
-  height: auto;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   pointer-events: none;
   user-select: none;
-  -webkit-user-drag: none;
-  animation: ppCharFloat 3.2s ease-in-out infinite;
-  filter: drop-shadow(4px 0 20px rgba(155,23,66,0.45));
-  mask-image: linear-gradient(to right, black 60%, transparent 98%);
-  -webkit-mask-image: linear-gradient(to right, black 60%, transparent 98%);
+  background-repeat: no-repeat;
+  mask-image: linear-gradient(to right, black 55%, transparent 96%);
+  -webkit-mask-image: linear-gradient(to right, black 55%, transparent 96%);
   z-index: 1;
 }
+
+/* Javi idle — 4 frames desde sprite sheet 1792×2400 */
+.pp-char--javi {
+  width: 176px;
+  height: 378px;
+  background-image: url('javi-sheet.png');
+  background-size: 1546px 2071px;
+  background-position: -45px -1183px;
+  filter: drop-shadow(3px 0 18px rgba(155,23,66,0.5));
+  animation: javiIdle 0.65s steps(4) infinite,
+             ppCharFloat 3.4s ease-in-out infinite;
+}
+@keyframes javiIdle {
+  from { background-position: -45px  -1183px; }
+  to   { background-position: -749px -1183px; }
+}
 @keyframes ppCharFloat {
-  0%, 100% { transform: translateY(0); }
+  0%, 100% { transform: translateY(0px); }
   50%       { transform: translateY(-10px); }
 }
 @media (max-width: 900px) {

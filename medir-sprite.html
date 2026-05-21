@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Medir Sprite — GameTracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #07070f; color: #e8e8f8; font-family: monospace; }
+    #top {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      background: rgba(7,7,15,0.95); padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid rgba(79,172,254,0.3);
+      display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;
+    }
+    #top h1 { font-size: 0.9rem; color: #4facfe; }
+    .info { font-size: 0.85rem; }
+    .info span { color: #4facfe; font-weight: bold; }
+    #coords { font-size: 1rem; color: #fbbf24; font-weight: bold; letter-spacing: 0.05em; }
+    #wrap {
+      margin-top: 60px;
+      position: relative;
+      display: inline-block;
+      cursor: crosshair;
+    }
+    #wrap img { display: block; max-width: 100%; }
+    #crossH, #crossV {
+      position: absolute; pointer-events: none;
+      background: rgba(79,172,254,0.5);
+    }
+    #crossH { height: 1px; left: 0; right: 0; }
+    #crossV { width: 1px;  top: 0; bottom: 0; }
+    #clickMark {
+      position: absolute; pointer-events: none;
+      width: 10px; height: 10px;
+      border: 2px solid #fbbf24;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+    #result {
+      position: fixed; bottom: 1rem; left: 1rem; right: 1rem;
+      background: rgba(7,7,15,0.97); border: 1px solid #fbbf24;
+      border-radius: 10px; padding: 1rem 1.5rem;
+      font-size: 0.85rem; display: none; z-index: 10;
+    }
+    #result h2 { color: #fbbf24; margin-bottom: 0.5rem; font-size: 0.9rem; }
+    #result code { color: #4facfe; font-size: 0.82rem; line-height: 1.8; display: block; }
+    button.copy {
+      margin-top: 0.5rem; padding: 0.3rem 0.9rem;
+      background: #4facfe; color: #07070f; border: none;
+      border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 0.8rem;
+    }
+    #fileWrap {
+      position: fixed; inset: 0; background: #07070f;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1rem; z-index: 20;
+    }
+    #fileWrap h2 { color: #4facfe; font-family: 'Orbitron', monospace; }
+    #fileWrap p { color: rgba(232,232,248,0.5); font-size: 0.85rem; }
+    .drop { border: 2px dashed rgba(79,172,254,0.4); border-radius: 12px;
+            padding: 2rem 3rem; text-align: center; cursor: pointer; }
+    .drop:hover { border-color: #4facfe; }
+    input[type=file] { display: none; }
+    #scaleInfo { font-size: 0.75rem; color: rgba(232,232,248,0.4); }
+    #clicks { font-size: 0.78rem; color: rgba(232,232,248,0.5); margin-left: auto; }
+  </style>
+</head>
+<body>
+
+<div id="fileWrap">
+  <h2>🎮 Medir Sprite Sheet</h2>
+  <p>Carga el sprite sheet para medir coordenadas de frames</p>
+  <div class="drop" id="dropZone">
+    <div style="font-size:2rem;margin-bottom:0.5rem">🖼️</div>
+    <div>Haz clic o arrastra <strong>javi-sheet.png</strong></div>
+    <input type="file" id="fileInput" accept="image/png,image/jpeg">
+  </div>
+</div>
+
+<div id="top" style="display:none">
+  <h1>🎮 Sprite Measurer</h1>
+  <div class="info">Cursor: <span id="coords">—</span></div>
+  <div class="info">Escala: <span id="scaleInfo">—</span></div>
+  <div id="clicks">Haz clic en el primer frame del IDLE (esquina superior izquierda del personaje)</div>
+</div>
+
+<div id="wrap" style="display:none">
+  <img id="sheet" alt="sprite sheet">
+  <div id="crossH"></div>
+  <div id="crossV"></div>
+  <div id="clickMark"></div>
+</div>
+
+<div id="result">
+  <h2>📐 Coordenadas del frame (píxeles reales de la imagen)</h2>
+  <code id="resultCode"></code>
+  <button class="copy" onclick="copyResult()">📋 Copiar</button>
+</div>
+
+<script>
+  var naturalW = 0, naturalH = 0;
+  var renderW  = 0, renderH  = 0;
+  var clicks   = [];
+
+  // File loading
+  var dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('click', function() { document.getElementById('fileInput').click(); });
+  dropZone.addEventListener('dragover', function(e) { e.preventDefault(); });
+  dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    loadFile(e.dataTransfer.files[0]);
+  });
+  document.getElementById('fileInput').addEventListener('change', function() {
+    if (this.files[0]) loadFile(this.files[0]);
+  });
+
+  function loadFile(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var img = document.getElementById('sheet');
+      img.onload = function() {
+        naturalW = img.naturalWidth;
+        naturalH = img.naturalHeight;
+        updateScale();
+        document.getElementById('fileWrap').style.display = 'none';
+        document.getElementById('top').style.display = 'flex';
+        document.getElementById('wrap').style.display = 'inline-block';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function updateScale() {
+    var img = document.getElementById('sheet');
+    renderW = img.offsetWidth  || img.clientWidth;
+    renderH = img.offsetHeight || img.clientHeight;
+    document.getElementById('scaleInfo').textContent =
+      naturalW + '×' + naturalH + 'px (render: ' + Math.round(renderW) + '×' + Math.round(renderH) + ')';
+  }
+
+  window.addEventListener('resize', updateScale);
+
+  // Mouse tracking
+  var wrap = document.getElementById('wrap');
+  wrap.addEventListener('mousemove', function(e) {
+    var rect = wrap.getBoundingClientRect();
+    var rx = e.clientX - rect.left;
+    var ry = e.clientY - rect.top;
+    var img = document.getElementById('sheet');
+    renderW = img.offsetWidth; renderH = img.offsetHeight;
+    var px = Math.round(rx / renderW * naturalW);
+    var py = Math.round(ry / renderH * naturalH);
+    document.getElementById('coords').textContent = 'X: ' + px + '  Y: ' + py;
+    document.getElementById('crossH').style.top  = ry + 'px';
+    document.getElementById('crossV').style.left = rx + 'px';
+  });
+
+  wrap.addEventListener('click', function(e) {
+    var rect = wrap.getBoundingClientRect();
+    var rx = e.clientX - rect.left;
+    var ry = e.clientY - rect.top;
+    var img = document.getElementById('sheet');
+    renderW = img.offsetWidth; renderH = img.offsetHeight;
+    var px = Math.round(rx / renderW * naturalW);
+    var py = Math.round(ry / renderH * naturalH);
+    clicks.push({ px: px, py: py, rx: rx, ry: ry });
+
+    // Move marker
+    var mark = document.getElementById('clickMark');
+    mark.style.left = rx + 'px';
+    mark.style.top  = ry + 'px';
+    mark.style.display = 'block';
+
+    showResult(px, py);
+  });
+
+  function showResult(x, y) {
+    var fw = 204, fh = 438; // frame size known from Photoshop
+    var code =
+      'Primer frame idle → X: ' + x + '  Y: ' + y + '\n' +
+      'Tamaño frame: ' + fw + ' × ' + fh + ' px\n\n' +
+      'CSS background-position para frame 1: -' + x + 'px -' + y + 'px\n' +
+      'background-size: ' + naturalW + 'px ' + naturalH + 'px\n' +
+      'width: ' + fw + 'px  height: ' + fh + 'px\n\n' +
+      '→ Pásale este resultado a Claude';
+
+    document.getElementById('resultCode').textContent = code;
+    document.getElementById('result').style.display = 'block';
+  }
+
+  function copyResult() {
+    var text = document.getElementById('resultCode').textContent;
+    navigator.clipboard.writeText(text).then(function() {
+      document.querySelector('.copy').textContent = '✅ Copiado';
+      setTimeout(function() { document.querySelector('.copy').textContent = '📋 Copiar'; }, 1500);
+    });
+  }
+</script>
+</body>
+</html>

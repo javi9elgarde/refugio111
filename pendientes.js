@@ -179,9 +179,9 @@
     var statsStr = totalJuegos + ' jugados · ' + totalHoras + 'h' +
       (avgScore ? ' · ★ ' + avgScore.toFixed(2).replace('.', ',') : '');
 
-    var charSprites = { Javi: 'javineutro.png' };
+    var charSprites = { Javi: 'javi-sheet.png' };
     var charImg = charSprites[key]
-      ? '<img src="' + charSprites[key] + '" class="pp-char" alt="' + Utils.escapeHtml(player.name) + '" draggable="false">'
+      ? '<div class="pp-char pp-char--' + key.toLowerCase() + '" role="img" aria-label="' + Utils.escapeHtml(player.name) + '"></div>'
       : '';
 
     var headerHtml =
