@@ -146,7 +146,9 @@
 
     // Sort: A-Z por saga (primeras 2 palabras), dentro de la misma saga por fecha
     function sagaPrefix(titulo) {
-      return (titulo || '').toLowerCase().trim().split(/\s+/).slice(0, 2).join(' ');
+      return (titulo || '').toLowerCase().trim()
+        .replace(/[:\-–—\/]/g, ' ').replace(/\s+/g, ' ').trim()
+        .split(/\s+/).slice(0, 2).join(' ');
     }
     games.sort(function(a, b) {
       var pa = sagaPrefix(a.titulo);
