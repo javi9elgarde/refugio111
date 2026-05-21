@@ -778,6 +778,77 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 .player-tab.active-javi   { background: rgba(155,23,66,.2);     color: var(--player-javi); }
 .player-tab.active-mery   { background: rgba(155,89,255,.2);    color: var(--player-mery); }
 
+/* ── REGISTRO — Player filter pill-cards ─────────────────────── */
+.reg-player-filter {
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+.reg-pcard { position: relative; cursor: pointer; user-select: none; }
+.reg-pcard input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+.reg-pcard__inner {
+  display: flex; align-items: center; gap: 0.45rem;
+  padding: 0.35rem 0.85rem 0.35rem 0.4rem;
+  border-radius: 100px;
+  border: 2px solid var(--border);
+  background: var(--bg2);
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+.reg-pcard:hover .reg-pcard__inner { border-color: var(--pc, var(--cyan)); }
+.reg-pcard input:checked ~ .reg-pcard__inner {
+  border-color: var(--pc, var(--cyan));
+  box-shadow: 0 0 0 1px var(--pc, var(--cyan)), 0 0 14px -4px var(--pc, var(--cyan));
+  background: var(--bg3);
+}
+.reg-pcard input:checked ~ .reg-pcard__inner .reg-pcard__avatar {
+  background: var(--pc, var(--cyan)); color: #07070f;
+}
+.reg-pcard input:checked ~ .reg-pcard__inner .reg-pcard__name { color: var(--pc, var(--cyan)); }
+.reg-pcard__avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Orbitron', sans-serif; font-size: 0.65rem; font-weight: 900;
+  background: var(--bg3); border: 1.5px solid var(--border);
+  color: var(--txt2); transition: background 0.18s, color 0.18s; flex-shrink: 0;
+}
+.reg-pcard__name {
+  font-size: 0.82rem; font-weight: 600; color: var(--txt2);
+  transition: color 0.18s; letter-spacing: 0.02em;
+}
+.reg-pcard--all   { --pc: var(--cyan); }
+.reg-pcard--david { --pc: var(--player-david); }
+.reg-pcard--javi  { --pc: var(--player-javi); }
+.reg-pcard--mery  { --pc: var(--player-mery); }
+
+/* ── REGISTRO — Compact secondary filters ─────────────────────── */
+.reg-filters-row {
+  display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap;
+}
+.form-select--sm {
+  font-size: 0.78rem; padding: 0.28rem 0.55rem; height: 30px;
+}
+.btn-sm.btn--compact { height: 30px; padding: 0 0.75rem; font-size: 0.78rem; }
+
+/* ── REGISTRO — Group sections (En Curso / Historial) ─────────── */
+.reg-group { margin-bottom: 1.5rem; }
+.reg-group__hdr {
+  display: flex; align-items: center; gap: 0.65rem;
+  padding: 0.45rem 0; margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.reg-group__title {
+  font-family: 'Orbitron', sans-serif; font-size: 0.75rem;
+  font-weight: 700; letter-spacing: 0.1em; color: var(--txt2);
+  text-transform: uppercase;
+}
+.reg-group__count {
+  font-size: 0.72rem; color: var(--txt3);
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 100px; padding: 0.08rem 0.5rem; font-weight: 600;
+}
+.reg-group--playing .reg-group__title { color: var(--cyan); }
+.reg-group--playing .reg-group__hdr { border-bottom-color: rgba(79,172,254,0.25); }
+.reg-group--history .reg-group__title { color: var(--txt2); }
+
 /* â”€â”€ TOAST â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .toast-container {
   position: fixed;

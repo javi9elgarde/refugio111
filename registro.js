@@ -1,5 +1,6 @@
 /* ============================================================
    GAMETRACKER — Registro Page
+   Version: 20260521b
    ============================================================ */
 (function () {
   'use strict';
@@ -15,6 +16,67 @@
     try { fn(); } catch(e) { console.warn('registro.js ' + name + ':', e); }
   }
 
+  /* ── RENDER ROW ─────────────────────────────────────────── */
+  function renderRow(r) {
+    var game   = Biblioteca.getById(r.juegoId);
+    var titulo = game ? game.titulo : '(Juego eliminado)';
+    var sc     = Utils.scoreColor(r.nota);
+
+    var coverHtml =
+      '<div class="mini-cover">' +
+        (game && game.portadaUrl
+          ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" style="object-position:' + Utils.escapeHtml((game && game.portadaPos) || 'center top') + '" onerror="this.style.display=\'none\'">'
+          : '') +
+        '<span class="mini-cover__letter">' + Utils.escapeHtml(titulo.charAt(0)) + '</span>' +
+      '</div>';
+
+    var scoreHtml = (r.nota !== null && r.nota !== undefined && r.nota !== '')
+      ? '<div class="score-wrap" style="min-width:120px">' +
+          '<div class="score-bar"><div class="score-bar__fill" style="width:' + Utils.scoreWidth(r.nota) + ';background:' + sc + '"></div></div>' +
+          '<span class="score-num" style="color:' + sc + '">' + Utils.formatScore(r.nota) + '</span>' +
+        '</div>'
+      : '<span style="color:var(--txt3);font-size:0.8rem">—</span>';
+
+    var rowCls = r.jugador === 'David' ? 'reg-row-david' : r.jugador === 'Javi' ? 'reg-row-javi' : r.jugador === 'Mery' ? 'reg-row-mery' : '';
+
+    return '<tr class="' + rowCls + '">' +
+      '<td><span style="font-size:0.8rem;color:var(--txt2)">' + Utils.monthName(r.mes) + ' ' + r.año + '</span></td>' +
+      '<td><span class="badge ' + Utils.playerBadge(r.jugador) + '">' + Utils.escapeHtml(r.jugador) + '</span></td>' +
+      '<td><div class="game-cell">' + coverHtml +
+        (game
+          ? '<a href="biblioteca.html?open=' + game.id + '" class="game-link" onclick="event.stopPropagation()">' + Utils.escapeHtml(titulo) + '</a>'
+          : '<span style="font-weight:600;color:var(--txt3)">' + Utils.escapeHtml(titulo) + '</span>') +
+      '</div></td>' +
+      '<td>' + scoreHtml + '</td>' +
+      '<td><span class="badge ' + Utils.statusBadge(r.estado) + '">' + Utils.escapeHtml(r.estado) + '</span></td>' +
+      '<td><span style="font-size:0.85rem;color:var(--txt2)">' + (r.horas ? r.horas + 'h' : '—') + '</span></td>' +
+      '<td>' + (game && game.generos && game.generos.length ? Utils.genreBadgesHtml(game.generos.slice(0,2)) : '—') + '</td>' +
+      '<td>' + (r.plataformaJugada ? '<span class="badge badge-plat ' + Utils.platformClass(r.plataformaJugada) + '">' + Utils.escapeHtml(r.plataformaJugada) + '</span>' : '—') + '</td>' +
+      '<td><span style="font-size:0.8rem;color:var(--txt3)">' + (game && game.fechaLanzamiento ? game.fechaLanzamiento.slice(0,4) : '—') + '</span></td>' +
+      '<td><button class="btn btn-ghost btn-icon" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar">✏️</button></td>' +
+    '</tr>';
+  }
+
+  /* ── RENDER GROUP ───────────────────────────────────────── */
+  function renderGroup(type, icon, title, entries) {
+    var rows = entries.map(renderRow).join('');
+    return '<div class="reg-group reg-group--' + type + '">' +
+      '<div class="reg-group__hdr">' +
+        '<span class="reg-group__title">' + icon + ' ' + title + '</span>' +
+        '<span class="reg-group__count">' + entries.length + ' entrada' + (entries.length !== 1 ? 's' : '') + '</span>' +
+      '</div>' +
+      '<div class="table-wrap">' +
+        '<table class="table">' +
+          '<thead><tr>' +
+            '<th>Mes</th><th>Jugador</th><th>Videojuego</th><th>Nota</th><th>Estado</th>' +
+            '<th>Horas</th><th>Géneros</th><th>Plataforma</th><th>Año lanz.</th><th style="width:60px"></th>' +
+          '</tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>' +
+      '</div>' +
+    '</div>';
+  }
+
   /* ── RENDER TABLE ───────────────────────────────────────── */
   function renderTable() {
     var opts = { jugador: state.player };
@@ -24,63 +86,38 @@
 
     var entries = Registro.filter(opts);
 
-    // Sort by year+month, direction controlled by state.sortAsc
-    entries.sort(function(a,b){
+    // Sort by year+month
+    entries.sort(function(a, b) {
       var byYear = state.sortAsc ? (a.año - b.año) : (b.año - a.año);
       if (byYear !== 0) return byYear;
       return state.sortAsc ? (a.mes - b.mes) : (b.mes - a.mes);
     });
 
-    var body  = document.getElementById('regBody');
-    var empty = document.getElementById('regEmpty');
-    var count = document.getElementById('regCount');
+    var container = document.getElementById('regContainer');
+    var empty     = document.getElementById('regEmpty');
+    var count     = document.getElementById('regCount');
 
     count.textContent = entries.length + ' entrada' + (entries.length !== 1 ? 's' : '');
 
     if (!entries.length) {
-      body.innerHTML = '';
+      container.innerHTML = '';
       empty.classList.remove('hidden');
       return;
     }
     empty.classList.add('hidden');
 
-    body.innerHTML = entries.map(function(r) {
-      var game = Biblioteca.getById(r.juegoId);
-      var titulo = game ? game.titulo : '(Juego eliminado)';
-      var sc = Utils.scoreColor(r.nota);
+    // Split into "En Curso" (Jugando/Retomar) and "Historial" (rest)
+    var playing = entries.filter(function(r) { return r.estado === 'Jugando' || r.estado === 'Retomar'; });
+    var history = entries.filter(function(r) { return r.estado !== 'Jugando' && r.estado !== 'Retomar'; });
 
-      var coverHtml = '<div class="mini-cover">' +
-        (game && game.portadaUrl
-          ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" style="object-position:' + Utils.escapeHtml((game && game.portadaPos) || 'center top') + '" onerror="this.style.display=\'none\'">'
-          : '') +
-        '<span class="mini-cover__letter">' + Utils.escapeHtml(titulo.charAt(0)) + '</span>' +
-      '</div>';
-
-      var scoreHtml = (r.nota !== null && r.nota !== undefined && r.nota !== '')
-        ? '<div class="score-wrap" style="min-width:120px">' +
-            '<div class="score-bar"><div class="score-bar__fill" style="width:' + Utils.scoreWidth(r.nota) + ';background:' + sc + '"></div></div>' +
-            '<span class="score-num" style="color:' + sc + '">' + Utils.formatScore(r.nota) + '</span>' +
-          '</div>'
-        : '<span style="color:var(--txt3);font-size:0.8rem">—</span>';
-
-      var rowCls = r.jugador === 'David' ? 'reg-row-david' : r.jugador === 'Javi' ? 'reg-row-javi' : r.jugador === 'Mery' ? 'reg-row-mery' : '';
-      return '<tr class="' + rowCls + '">' +
-        '<td><span style="font-size:0.8rem;color:var(--txt2)">' + Utils.monthName(r.mes) + ' ' + r.año + '</span></td>' +
-        '<td><span class="badge ' + Utils.playerBadge(r.jugador) + '">' + Utils.escapeHtml(r.jugador) + '</span></td>' +
-        '<td><div class="game-cell">' + coverHtml +
-          (game
-            ? '<a href="biblioteca.html?open=' + game.id + '" class="game-link" onclick="event.stopPropagation()">' + Utils.escapeHtml(titulo) + '</a>'
-            : '<span style="font-weight:600;color:var(--txt3)">' + Utils.escapeHtml(titulo) + '</span>') +
-        '</div></td>' +
-        '<td>' + scoreHtml + '</td>' +
-        '<td><span class="badge ' + Utils.statusBadge(r.estado) + '">' + Utils.escapeHtml(r.estado) + '</span></td>' +
-        '<td><span style="font-size:0.85rem;color:var(--txt2)">' + (r.horas ? r.horas + 'h' : '—') + '</span></td>' +
-        '<td>' + (game && game.generos && game.generos.length ? Utils.genreBadgesHtml(game.generos.slice(0,2)) : '—') + '</td>' +
-        '<td>' + (r.plataformaJugada ? '<span class="badge badge-plat ' + Utils.platformClass(r.plataformaJugada) + '">' + Utils.escapeHtml(r.plataformaJugada) + '</span>' : '—') + '</td>' +
-        '<td><span style="font-size:0.8rem;color:var(--txt3)">' + (game && game.fechaLanzamiento ? game.fechaLanzamiento.slice(0,4) : '—') + '</span></td>' +
-        '<td><button class="btn btn-ghost btn-icon" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar">✏️</button></td>' +
-      '</tr>';
-    }).join('');
+    var html = '';
+    if (playing.length) {
+      html += renderGroup('playing', '🎮', 'En Curso', playing);
+    }
+    if (history.length) {
+      html += renderGroup('history', '📋', 'Historial', history);
+    }
+    container.innerHTML = html;
   }
 
   /* ── YEAR OPTIONS ───────────────────────────────────────── */
@@ -89,20 +126,20 @@
     var currentYear = new Date().getFullYear();
     var years = [];
     for (var y = currentYear; y >= 2020; y--) years.push(y);
-    sel.innerHTML = '<option value="">Todos los años</option>' +
-      years.map(function(y){
+    sel.innerHTML = '<option value="">Todos</option>' +
+      years.map(function(y) {
         return '<option value="' + y + '"' + (y === currentYear ? ' selected' : '') + '>' + y + '</option>';
       }).join('');
     state.year = currentYear;
-    sel.addEventListener('change', function(){ state.year = this.value ? parseInt(this.value) : 0; renderTable(); });
+    sel.addEventListener('change', function() { state.year = this.value ? parseInt(this.value) : 0; renderTable(); });
   }
 
   /* ── POPULATE GAME SELECT ───────────────────────────────── */
   function populateGameSelect(selectedId) {
-    var games = Biblioteca.getAll().sort(function(a,b){ return a.titulo.localeCompare(b.titulo,'es'); });
+    var games = Biblioteca.getAll().sort(function(a, b) { return a.titulo.localeCompare(b.titulo, 'es'); });
     var sel = document.getElementById('fJuego');
     sel.innerHTML = '<option value="">— Seleccionar juego —</option>' +
-      games.map(function(g){
+      games.map(function(g) {
         return '<option value="' + g.id + '"' + (g.id === selectedId ? ' selected' : '') + '>' + Utils.escapeHtml(g.titulo) + '</option>';
       }).join('');
   }
@@ -194,15 +231,14 @@
     renderTable();
   }
 
-  /* ── PLAYER TABS ────────────────────────────────────────── */
-  function initPlayerTabs() {
-    document.getElementById('playerTabs').querySelectorAll('.player-tab').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        state.player = this.dataset.player;
-        document.querySelectorAll('.player-tab').forEach(function(b){ b.className = 'player-tab'; });
-        var cls = state.player === 'All' ? 'active-all' : 'active-' + state.player.toLowerCase();
-        this.className = 'player-tab ' + cls;
-        renderTable();
+  /* ── PLAYER CARDS ───────────────────────────────────────── */
+  function initPlayerCards() {
+    document.getElementById('playerCards').querySelectorAll('input[type="radio"]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        if (this.checked) {
+          state.player = this.value;
+          renderTable();
+        }
       });
     });
   }
@@ -210,15 +246,16 @@
   /* ── INIT ───────────────────────────────────────────────── */
   function init() {
     document.getElementById('navYear').textContent = new Date().getFullYear();
+    document.getElementById('footerYear').textContent = new Date().getFullYear();
     buildYearOptions();
-    initPlayerTabs();
+    initPlayerCards();
 
-    document.getElementById('filterMonth').addEventListener('change', function(){ state.month = this.value; renderTable(); });
-    document.getElementById('filterStatus').addEventListener('change', function(){ state.estado = this.value; renderTable(); });
+    document.getElementById('filterMonth').addEventListener('change', function() { state.month = this.value; renderTable(); });
+    document.getElementById('filterStatus').addEventListener('change', function() { state.estado = this.value; renderTable(); });
 
-    document.getElementById('btnSortOrder').addEventListener('click', function(){
+    document.getElementById('btnSortOrder').addEventListener('click', function() {
       state.sortAsc = !state.sortAsc;
-      this.textContent = state.sortAsc ? '↑ Enero → Dic' : '↓ Más reciente';
+      this.textContent = state.sortAsc ? '↑ Enero→Dic' : '↓ Más reciente';
       renderTable();
     });
 
@@ -229,7 +266,7 @@
     document.getElementById('entryBtnCancel').addEventListener('click', closeModal);
     document.getElementById('entryBtnSave').addEventListener('click', saveEntry);
     document.getElementById('entryBtnDelete').addEventListener('click', deleteEntry);
-    document.getElementById('entryModal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+    document.getElementById('entryModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 
     renderTable();
   }

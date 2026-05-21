@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GameTracker — Registro</title>
-  <link rel="stylesheet" href="styles.css?v=20260521f">
+  <link rel="stylesheet" href="styles.css?v=20260521g">
 </head>
 <body>
 
@@ -46,39 +46,60 @@
   </div>
 
   <div class="section" style="padding-bottom:0">
-    <div class="filters" style="gap:1rem;flex-wrap:wrap">
-      <div class="player-tabs" id="playerTabs">
-        <button class="player-tab active-all" data-player="All">Todos</button>
-        <button class="player-tab" data-player="David">David</button>
-        <button class="player-tab" data-player="Javi">Javi</button>
-        <button class="player-tab" data-player="Mery">Mery</button>
-      </div>
-      <select class="form-select" id="filterYear" style="width:90px"></select>
-      <select class="form-select" id="filterMonth" style="width:130px">
+    <!-- Player filter cards -->
+    <div class="reg-player-filter" id="playerCards">
+      <label class="reg-pcard reg-pcard--all">
+        <input type="radio" name="regPlayer" value="All" checked>
+        <div class="reg-pcard__inner">
+          <div class="reg-pcard__avatar">★</div>
+          <div class="reg-pcard__name">Todos</div>
+        </div>
+      </label>
+      <label class="reg-pcard reg-pcard--david">
+        <input type="radio" name="regPlayer" value="David">
+        <div class="reg-pcard__inner">
+          <div class="reg-pcard__avatar">D</div>
+          <div class="reg-pcard__name">David</div>
+        </div>
+      </label>
+      <label class="reg-pcard reg-pcard--javi">
+        <input type="radio" name="regPlayer" value="Javi">
+        <div class="reg-pcard__inner">
+          <div class="reg-pcard__avatar">J</div>
+          <div class="reg-pcard__name">Javi</div>
+        </div>
+      </label>
+      <label class="reg-pcard reg-pcard--mery">
+        <input type="radio" name="regPlayer" value="Mery">
+        <div class="reg-pcard__inner">
+          <div class="reg-pcard__avatar">M</div>
+          <div class="reg-pcard__name">Mery</div>
+        </div>
+      </label>
+    </div>
+    <!-- Compact secondary filters -->
+    <div class="reg-filters-row">
+      <select class="form-select form-select--sm" id="filterYear" style="width:82px"></select>
+      <select class="form-select form-select--sm" id="filterMonth" style="width:118px">
         <option value="">Todos los meses</option>
         <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
         <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
         <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
         <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
       </select>
-      <select class="form-select" id="filterStatus" style="width:130px">
+      <select class="form-select form-select--sm" id="filterStatus" style="width:128px">
         <option value="">Todos los estados</option>
         <option value="Terminado">Terminado</option><option value="Jugando">Jugando</option>
         <option value="Rejugado">Rejugado</option><option value="Platinado">Platinado</option>
         <option value="Retomar">Retomar</option><option value="Abandonado">Abandonado</option>
         <option value="Jugado">Jugado</option>
       </select>
-      <button class="btn btn-secondary btn-sm" id="btnSortOrder" title="Cambiar orden">↓ Más reciente</button>
+      <button class="btn btn-secondary btn-sm btn--compact" id="btnSortOrder" title="Cambiar orden">↓ Más reciente</button>
     </div>
   </div>
 
   <div class="section">
-    <div class="table-wrap">
-      <table class="table">
-        <thead><tr><th>Mes</th><th>Jugador</th><th>Videojuego</th><th>Nota</th><th>Estado</th><th>Horas</th><th>Géneros</th><th>Plataforma</th><th>Año lanz.</th><th style="width:60px"></th></tr></thead>
-        <tbody id="regBody"></tbody>
-      </table>
-    </div>
+    <div id="regContainer"></div>
     <div id="regEmpty" class="empty-state hidden">
       <div class="empty-state__icon">📋</div>
       <div class="empty-state__title">Sin entradas</div>
@@ -128,6 +149,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260519b" defer></script>
 <script src="main.js?v=20260519b"            defer></script>
-<script src="registro.js?v=20260519b"        defer></script>
+<script src="registro.js?v=20260521b"        defer></script>
 </body>
 </html>
