@@ -108,7 +108,7 @@
       ? (durStr ? '<span class="game-card__dur">' + durStr + '</span>' : '<span></span>')
       : (game.fechaLanzamiento
           ? '<span class="game-card__prox-date">📅 ' + fmtDate(game.fechaLanzamiento) + '</span>'
-          : '<span></span>');
+          : '<span class="game-card__no-date">Sin fecha</span>');
 
     return '<div class="game-card" data-id="' + game.id + '">' +
       '<div class="game-card__cover">' +

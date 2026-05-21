@@ -1461,25 +1461,25 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 }
 .game-card__dur   { font-size: 0.75rem; color: var(--txt3); white-space: nowrap; }
 .game-card__prox-date { font-size: 0.75rem; color: var(--cyan); white-space: nowrap; }
+.game-card__no-date  { font-size: 0.72rem; color: var(--txt3); white-space: nowrap; opacity: 0.6; font-style: italic; }
 
-/* ── PRÓXIMAMENTE diagonal ribbon ── */
+/* ── PRÓXIMAMENTE horizontal banner ── */
 .game-card__prox {
   position: absolute;
-  top: 16px; right: -28px;
-  width: 108px;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(90deg, #b45309 0%, #f59e0b 30%, #fbbf24 50%, #f59e0b 70%, #b45309 100%);
   color: #07070f;
-  font-size: 0.38rem;
+  font-size: 0.52rem;
   font-weight: 900;
   font-family: 'Orbitron', sans-serif;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
   text-align: center;
-  padding: 0.3rem 0;
-  transform: rotate(45deg);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  padding: 0.32rem 0.5rem;
   z-index: 4;
   pointer-events: none;
-  overflow: hidden;
+  box-shadow: 0 -2px 10px rgba(251,191,36,0.35);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.25);
+  border-top: 1px solid rgba(251,191,36,0.5);
 }
 .game-card__score-inline {
   font-family: 'Orbitron', monospace;
