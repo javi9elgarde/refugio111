@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — Menú Principal</title>
-  <link rel="stylesheet" href="styles.css?v=20260522b">
+  <link rel="stylesheet" href="styles.css?v=20260522c">
 </head>
 <body>
 
@@ -51,27 +51,15 @@
     <div class="hero__grid"></div>
     <img src="javineutro.png" class="hero__char hero__char--javi" alt="Javi" draggable="false">
     <div class="hero__content">
-      <div class="hero__eyebrow fade-up">🎮 &nbsp;SEGUIMIENTO DE VIDEOJUEGOS</div>
-      <h1 class="hero__logo fade-up fade-up-1">GAMETRACKER</h1>
+      <div class="hero__eyebrow fade-up">☢ &nbsp;VAULT 111 · SEGUIMIENTO DE VIDEOJUEGOS</div>
+      <h1 class="hero__logo fade-up fade-up-1">REFUGIO 111</h1>
       <p class="hero__sub fade-up fade-up-2">Registra · Compara · Clasifica</p>
-      <div class="hero__pcards fade-up fade-up-3">
-        <a href="pendientes.html#player-david" class="hero__pcard" style="--pc:var(--player-david)">
-          <div class="hero__pcard-av" style="background:var(--player-david)">D</div>
-          <div><div class="hero__pcard-name">David Garde</div><div class="hero__pcard-stat" id="heroStatsDavid">Cargando...</div></div>
-        </a>
-        <a href="pendientes.html#player-javi" class="hero__pcard" style="--pc:var(--player-javi)">
-          <div class="hero__pcard-av" style="background:var(--player-javi)">J</div>
-          <div><div class="hero__pcard-name">Javier Garde</div><div class="hero__pcard-stat" id="heroStatsJavi">Cargando...</div></div>
-        </a>
-        <a href="pendientes.html#player-mery" class="hero__pcard" style="--pc:var(--player-mery)">
-          <div class="hero__pcard-av" style="background:var(--player-mery)">M</div>
-          <div><div class="hero__pcard-name">Mariam Moreno</div><div class="hero__pcard-stat" id="heroStatsMery">Cargando...</div></div>
-        </a>
-      </div>
-      <div class="hero__cta fade-up fade-up-4">
-        <a href="biblioteca.html" class="btn btn-primary">📚 Biblioteca</a>
-        <a href="estadisticas.html#goty" class="btn btn-secondary">🏆 GOTY 2026</a>
-        <a href="registro.html"    class="btn btn-secondary">📋 Registro</a>
+      <div class="hero__nav-cards fade-up fade-up-3">
+        <a href="biblioteca.html"        class="nav-card card card--glow"><div class="nav-card__icon">📚</div><div class="nav-card__title">Biblioteca</div><div class="nav-card__desc">Todos los videojuegos</div></a>
+        <a href="registro.html"          class="nav-card card card--glow"><div class="nav-card__icon">📋</div><div class="nav-card__title">Registro</div><div class="nav-card__desc">Partidas y notas</div></a>
+        <a href="pendientes.html"        class="nav-card card card--glow"><div class="nav-card__icon">👤</div><div class="nav-card__title">Jugadores</div><div class="nav-card__desc">Perfiles · Pendientes</div></a>
+        <a href="estadisticas.html"      class="nav-card card card--glow"><div class="nav-card__icon">📊</div><div class="nav-card__title">Estadísticas</div><div class="nav-card__desc">Rankings y datos</div></a>
+        <a href="estadisticas.html#goty" class="nav-card card card--glow"><div class="nav-card__icon">🏆</div><div class="nav-card__title">GOTY</div><div class="nav-card__desc">Mejores del año</div></a>
       </div>
     </div>
   </section>
@@ -85,17 +73,6 @@
       <div style="text-align:center"><div class="font-mono" id="statLibrary" style="font-size:1.5rem;color:var(--green)">—</div><div style="font-size:0.72rem;color:var(--txt3);text-transform:uppercase;letter-spacing:0.08em">En biblioteca</div></div>
     </div>
   </div>
-
-  <!-- NAV CARDS -->
-  <div class="nav-cards">
-    <a href="biblioteca.html"      class="nav-card card card--glow fade-up">      <div class="nav-card__icon">📚</div><div class="nav-card__title">Biblioteca</div><div class="nav-card__desc">Todos los videojuegos</div></a>
-    <a href="registro.html"        class="nav-card card card--glow fade-up fade-up-1"><div class="nav-card__icon">📋</div><div class="nav-card__title">Registro</div><div class="nav-card__desc">Partidas y notas</div></a>
-    <a href="pendientes.html"      class="nav-card card card--glow fade-up fade-up-2"><div class="nav-card__icon">👤</div><div class="nav-card__title">Jugadores</div><div class="nav-card__desc">Perfiles · Pendientes</div></a>
-    <a href="estadisticas.html"    class="nav-card card card--glow fade-up fade-up-3"><div class="nav-card__icon">📊</div><div class="nav-card__title">Estadísticas</div><div class="nav-card__desc">Rankings y datos</div></a>
-    <a href="estadisticas.html#goty" class="nav-card card card--glow fade-up fade-up-4"><div class="nav-card__icon">🏆</div><div class="nav-card__title">GOTY</div><div class="nav-card__desc">Mejores del año</div></a>
-  </div>
-
-  <div style="height:1px;background:var(--border);margin:0 2rem"></div>
 
   <!-- PRÓXIMOS ESTRENOS (próximos 30 días) -->
   <section class="section" style="padding-bottom:0">
@@ -141,7 +118,7 @@
   </section>
 
   <footer class="footer">
-    <span>GAMETRACKER</span> · David · Javi · Mery · <span id="footerYear"></span>
+    <span>REFUGIO 111</span> · David · Javi · Mery · <span id="footerYear"></span>
     <br><small style="color:var(--txt3);margin-top:0.25rem;display:block">Datos sincronizados en tiempo real con Firebase 🔥</small>
   </footer>
 </div>
