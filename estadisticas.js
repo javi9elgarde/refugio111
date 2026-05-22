@@ -20,7 +20,7 @@
   var CHART_FONT = { family: "'Inter', sans-serif" };
   var PLAYER_COLORS = {
     David: 'rgba(79,172,254,0.85)',
-    Javi:  'rgba(34,197,94,0.85)',
+    Javi:  'rgba(155,23,66,0.85)',
     Mery:  'rgba(155,89,255,0.85)'
   };
 
