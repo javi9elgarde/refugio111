@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — Biblioteca</title>
-  <link rel="stylesheet" href="styles.css?v=20260522k">
+  <link rel="stylesheet" href="styles.css?v=20260522l">
 </head>
 <body>
 
@@ -178,6 +178,17 @@
           </select>
           <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Remasters y relanzamientos no cuentan en GOTY ni rankings</small>
         </div>
+        <div class="form-group">
+          <label class="form-label">Early Access</label>
+          <label class="ea-toggle">
+            <input type="checkbox" id="fEarlyAccess">
+            <span class="ea-toggle__track">
+              <span class="ea-toggle__thumb"></span>
+            </span>
+            <span class="ea-toggle__label">⚡ Acceso anticipado</span>
+          </label>
+          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Se mostrará una etiqueta ⚡ EA en la tarjeta y ficha</small>
+        </div>
         <div class="form-group" style="grid-column:1/-1">
           <label class="form-label">Géneros</label>
           <div class="chip-group" id="generoChips"></div>
@@ -254,7 +265,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
-<script src="main.js?v=20260522j"            defer></script>
-<script src="biblioteca.js?v=20260522j"      defer></script>
+<script src="main.js?v=20260522l"            defer></script>
+<script src="biblioteca.js?v=20260522l"      defer></script>
 </body>
 </html>

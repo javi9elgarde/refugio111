@@ -108,6 +108,7 @@
 
     var durStr = hasDur ? '⏱ ' + Utils.formatDuracion(game.duracion, true) : '';
     var proxRibbon = (!hasDur && isFuture) ? '<div class="game-card__prox">PRÓXIMAMENTE</div>' : '';
+    var eaBadge    = game.earlyAccess ? '<div class="game-card__ea">⚡ EARLY ACCESS</div>' : '';
     var metaLeft = hasDur
       ? (durStr ? '<span class="game-card__dur">' + durStr + '</span>' : '<span></span>')
       : (isReleasedNoDur
@@ -118,7 +119,7 @@
 
     return '<div class="game-card' + (isReleasedNoDur ? ' game-card--nodur' : '') + '" data-id="' + game.id + '">' +
       '<div class="game-card__cover">' +
-        coverContent + pendDots + proxRibbon +
+        coverContent + pendDots + proxRibbon + eaBadge +
         '<div class="game-card__overlay">' +
           '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();window.GT_Bib.openDetail(\'' + game.id + '\')">👁 Ver</button>' +
           '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();window.GT_Bib.openEdit(\'' + game.id + '\')">✏️ Editar</button>' +
@@ -675,6 +676,7 @@
     document.getElementById('fPendJavi').checked  = pPor.includes('Javi');
     document.getElementById('fPendMery').checked  = pPor.includes('Mery');
     document.getElementById('fTipoLanzamiento').value = game.tipoLanzamiento || '';
+    document.getElementById('fEarlyAccess').checked   = !!game.earlyAccess;
     document.getElementById('btnDelete').style.display = 'inline-flex';
     populateDevSuggestions();
     renderGeneroChips();
@@ -759,6 +761,10 @@
       ? '<div class="detail-tipo">' + (tipoMap[game.tipoLanzamiento] || '') + ' <span style="opacity:0.6">· no computa en rankings</span></div>'
       : '';
 
+    var eaHtml = game.earlyAccess
+      ? '<span class="badge badge-ea">⚡ Early Access</span>'
+      : '';
+
     /* ── HTML final ────────────────────────────────────────── */
     var html =
       '<div class="detail-cover">' +
@@ -768,6 +774,7 @@
 
       '<div class="detail-info">' +
         '<div class="detail-badges-row">' +
+          eaHtml +
           Utils.platformBadgesHtml(game.plataformas) +
           Utils.genreBadgesHtml(game.generos) +
         '</div>' +
@@ -821,6 +828,7 @@
                         document.getElementById('fPendJavi').checked  ||
                         document.getElementById('fPendMery').checked,
       tipoLanzamiento:  document.getElementById('fTipoLanzamiento').value,
+      earlyAccess:      !!document.getElementById('fEarlyAccess').checked,
       generos:          selectedGeneros.slice(),
       plataformas:      selectedPlataformas.slice()
     };

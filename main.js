@@ -432,6 +432,7 @@ window.GT.GameDetailModal = (function () {
       '</div>' +
       '<div class="detail-info">' +
         '<div class="detail-badges-row">' +
+          (game.earlyAccess ? '<span class="badge badge-ea">⚡ Early Access</span>' : '') +
           Utils.platformBadgesHtml(game.plataformas) +
           Utils.genreBadgesHtml(game.generos) +
         '</div>' +
