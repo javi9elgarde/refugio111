@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="logonavegador.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Refugio 111 — Eventos</title>
+  <link rel="stylesheet" href="styles.css?v=20260522m">
+</head>
+<body>
+
+<div id="gtLoading" style="position:fixed;inset:0;background:#07070f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:1rem">
+  <div style="font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#fff,#4facfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.1em">REFUGIO 111</div>
+  <div style="display:flex;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#4facfe;animation:dotPulse 1.2s ease-in-out infinite"></span><span style="width:8px;height:8px;border-radius:50%;background:#4facfe;animation:dotPulse 1.2s ease-in-out .2s infinite"></span><span style="width:8px;height:8px;border-radius:50%;background:#4facfe;animation:dotPulse 1.2s ease-in-out .4s infinite"></span></div>
+  <div style="font-size:.8rem;color:rgba(232,232,248,.4);letter-spacing:.05em">Cargando eventos...</div>
+</div>
+<style>@keyframes dotPulse{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}</style>
+
+<nav class="nav">
+  <a href="hub.html" class="nav__link nav__link--hub nav__hub">🏠 Hub</a>
+  <div class="nav__links nav__links--left">
+    <a href="biblioteca.html"   class="nav__link">Biblioteca</a>
+    <a href="registro.html"     class="nav__link">Registro</a>
+    <a href="halloffame.html"   class="nav__link nav__link--hof">🏆 Hall of Fame</a>
+  </div>
+  <a href="index.html" class="nav__logo">
+    <img src="logo.png" alt="Refugio 111" class="nav__logo-img">
+  </a>
+  <div class="nav__links nav__links--right">
+    <a href="estadisticas.html" class="nav__link">Estadísticas</a>
+    <a href="pendientes.html"   class="nav__link">Jugadores</a>
+    <a href="backlog.html"      class="nav__link">Pendientes</a>
+    <a href="eventos.html"      class="nav__link nav__link--eventos">🎰 Eventos</a>
+  </div>
+  <button class="nav__hamburger" id="navHamburger" aria-label="Menú">☰</button>
+</nav>
+<div class="nav__mobile" id="navMobile">
+  <a href="hub.html"          class="nav__link nav__link--hub">🏠 Hub</a>
+  <a href="index.html"        class="nav__link">Inicio</a>
+  <a href="biblioteca.html"   class="nav__link">Biblioteca</a>
+  <a href="registro.html"     class="nav__link">Registro</a>
+  <a href="halloffame.html"   class="nav__link nav__link--hof">🏆 Hall of Fame</a>
+  <a href="estadisticas.html" class="nav__link">Estadísticas</a>
+  <a href="pendientes.html"   class="nav__link">Jugadores</a>
+  <a href="backlog.html"      class="nav__link">Pendientes</a>
+  <a href="eventos.html"      class="nav__link">🎰 Eventos</a>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-header__inner">
+      <div>
+        <h1 class="page-header__title">🎰 Bingo de Eventos</h1>
+        <p class="page-header__sub">Predice lo que saldrá en cada conferencia gaming</p>
+      </div>
+      <button class="btn btn-primary" id="btnNewBingo">+ Nuevo Bingo</button>
+    </div>
+  </div>
+
+  <!-- Selector de jugador -->
+  <div class="section" style="padding-bottom:0.5rem">
+    <div class="reg-player-filter" id="bingoPlayerCards">
+      <label class="reg-pcard reg-pcard--david">
+        <input type="radio" name="bingoPlayer" value="David">
+        <div class="reg-pcard__inner">
+          <div class="reg-pcard__avatar">D</div>
+          <div class="reg-pcard__name">David</div>
+        </div>
+      </label>
+      <label class="reg-pcard reg-pcard--javi">
+        <input type="radio" name="bingoPlayer" value="Javi" checked>
+        <div class="reg-pcard__inner">
+          <div class="reg-pcard__avatar">J</div>
+          <div class="reg-pcard__name">Javi</div>
+        </div>
+      </label>
+      <label class="reg-pcard reg-pcard--mery">
+        <input type="radio" name="bingoPlayer" value="Mery">
+        <div class="reg-pcard__inner">
+          <div class="reg-pcard__avatar">M</div>
+          <div class="reg-pcard__name">Mery</div>
+        </div>
+      </label>
+      <div style="display:flex;align-items:center;padding:0 0.5rem;color:var(--txt3);font-size:0.78rem;line-height:1.35;max-width:200px">
+        Selecciona quién marca las casillas
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs de bingos -->
+  <div class="section" style="padding-top:0.5rem;padding-bottom:0.5rem">
+    <div class="bingo-tabs" id="bingoTabs"></div>
+  </div>
+
+  <!-- Tablero -->
+  <div class="section" style="padding-top:0">
+    <div id="bingoBoardWrap"></div>
+    <div id="bingoStats" style="margin-top:1.25rem"></div>
+  </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR BINGO -->
+<div class="modal-overlay" id="bingoModalOverlay">
+  <div class="modal" style="max-width:680px">
+    <div class="modal__header">
+      <h2 class="modal__title" id="bingoModalHeading">Nuevo Bingo</h2>
+      <button class="modal__close" onclick="window.GT_Bingo.closeCardModal()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="form-group" style="margin-bottom:1.25rem">
+        <label class="form-label">Nombre del evento *</label>
+        <input type="text" class="form-input" id="bingoModalName" placeholder="Ej: Summer Game Fest 2026" maxlength="80">
+      </div>
+      <div class="form-group">
+        <label class="form-label">
+          Predicciones (5×5)
+          <span style="color:var(--txt3);font-weight:400;font-size:0.75rem;margin-left:0.5rem">— la casilla central es LIBRE</span>
+        </label>
+        <div id="bingoModalGrid"></div>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn-danger btn-sm" id="bingoModalDelete" style="margin-right:auto;display:none" onclick="window.GT_Bingo.deleteCard()">Eliminar</button>
+      <button class="btn btn-secondary" id="bingoModalCancel">Cancelar</button>
+      <button class="btn btn-primary" id="bingoModalSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js?v=20260521c" defer></script>
+<script src="main.js?v=20260522m"            defer></script>
+<script src="eventos.js?v=20260522m"         defer></script>
+</body>
+</html>
