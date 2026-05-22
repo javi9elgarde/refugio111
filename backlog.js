@@ -1,14 +1,12 @@
 /* ============================================================
    REFUGIO 111 — Backlog / Juegos Pendientes
-   Muestra los juegos pendientes de cada jugador en paneles
-   con el check de "jugado" y la animación de celebración.
+   Selector de jugador · portadas 16:9 · check → celebración
    ============================================================ */
 (function () {
   'use strict';
 
   var Utils      = window.GT.Utils;
   var Biblioteca = window.GT.Biblioteca;
-  var Registro   = window.GT.Registro;
   var Toast      = window.GT.Toast;
 
   var PLAYERS = [
@@ -17,6 +15,7 @@
     { key: 'Mery',  name: 'Mariam Moreno', initial: 'M', color: 'var(--player-mery)',  hex: '#9b59ff' }
   ];
 
+  var state = { player: 'David' };
   var _doneModal = { gameId: null, playerKey: null };
 
   function safe(fn, name) {
@@ -87,87 +86,91 @@
   }
 
   /* ── RENDER ──────────────────────────────────────────────────── */
-  function renderPlayerPanel(player) {
-    var key   = player.key;
-    var color = player.color;
-    var hex   = player.hex;
+  function render() {
+    var playerData = PLAYERS.find(function(p) { return p.key === state.player; });
+    if (!playerData) return;
+
+    var key   = playerData.key;
+    var color = playerData.color;
+    var hex   = playerData.hex;
 
     var pendingGames = Biblioteca.getAll().filter(function(g) {
-      return (g.pendientePor || []).includes(key);
+      return (g.pendientePor || []).indexOf(key) !== -1;
     }).sort(function(a, b) { return a.titulo.localeCompare(b.titulo, 'es'); });
 
-    var playerIcons = { David: 'icondavidneutral.png', Javi: 'iconjavineutral.png', Mery: 'iconmeryneutral.png' };
-    var iconSrc = playerIcons[key];
-
-    /* ── Panel header ─ */
-    var headerHtml =
-      '<div class="blg-panel__header" style="--pc:' + color + '">' +
-        (iconSrc ? '<img src="' + iconSrc + '" class="blg-panel__icon" alt="">' : '') +
-        '<div class="blg-panel__av" style="background:' + hex + '">' + player.initial + '</div>' +
-        '<div class="blg-panel__info">' +
-          '<div class="blg-panel__name">' + Utils.escapeHtml(player.name) + '</div>' +
-          '<div class="blg-panel__count">' + pendingGames.length + ' juego' + (pendingGames.length !== 1 ? 's' : '') + ' pendiente' + (pendingGames.length !== 1 ? 's' : '') + '</div>' +
+    /* ── Player bar ── */
+    var bar = document.getElementById('blgPlayerBar');
+    if (bar) {
+      bar.style.display = 'flex';
+      bar.style.setProperty('--pc', color);
+      bar.innerHTML =
+        '<div class="blg-player-bar__av" style="background:' + hex + ';box-shadow:0 2px 20px -4px ' + hex + '">' +
+          playerData.initial +
         '</div>' +
-      '</div>';
-
-    /* ── Games list ─ */
-    var listHtml;
-    if (pendingGames.length) {
-      listHtml = '<div class="blg-panel__list">' +
-        pendingGames.map(function(game) {
-          var safeId  = game.id.replace(/'/g, "\\'");
-          var safeKey = key.replace(/'/g, "\\'");
-          var dur = game.duracion && game.duracion !== 999 ? '⏱ ' + game.duracion + 'h' : (game.duracion === 999 ? '∞' : '');
-          var plats = Utils.platformBadgesHtml ? Utils.platformBadgesHtml(game.plataformas) : '';
-          return '<div class="blg-item">' +
-            '<div class="blg-item__cover">' +
-              (game.portadaUrl
-                ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" ' +
-                  'style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center top') + '" ' +
-                  'onerror="this.style.display=\'none\'">'
-                : '<span class="blg-item__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span>') +
-            '</div>' +
-            '<div class="blg-item__body">' +
-              '<div class="blg-item__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
-              (dur ? '<div class="blg-item__dur">' + dur + '</div>' : '') +
-            '</div>' +
-            '<button class="blg-item__check" title="Marcar como jugado" ' +
-              'onclick="window.GT_Backlog.openDoneModal(\'' + safeId + '\',\'' + safeKey + '\')">' +
-              '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="4,10 8,14 16,6"/></svg>' +
-            '</button>' +
-          '</div>';
-        }).join('') +
-      '</div>';
-    } else {
-      listHtml =
-        '<div class="blg-panel__empty">' +
-          '<div style="font-size:1.8rem;margin-bottom:0.5rem">✅</div>' +
-          '<div style="font-weight:600;margin-bottom:0.25rem">¡Sin pendientes!</div>' +
-          '<a href="biblioteca.html" style="font-size:0.78rem;color:' + hex + '">Añadir juegos en Biblioteca →</a>' +
+        '<div>' +
+          '<div class="blg-player-bar__name">' + Utils.escapeHtml(playerData.name) + '</div>' +
+          '<div class="blg-player-bar__count">' +
+            pendingGames.length + ' juego' + (pendingGames.length !== 1 ? 's' : '') +
+            ' pendiente' + (pendingGames.length !== 1 ? 's' : '') +
+          '</div>' +
         '</div>';
     }
 
-    return '<div class="blg-panel" style="--pc:' + color + ';border-top:3px solid ' + hex + '">' +
-      headerHtml +
-      listHtml +
-    '</div>';
+    /* ── Game grid ── */
+    var grid = document.getElementById('backlogGrid');
+    if (!grid) return;
+
+    if (!pendingGames.length) {
+      grid.innerHTML =
+        '<div class="blg-empty">' +
+          '<div class="blg-empty__icon">✅</div>' +
+          '<div class="blg-empty__title">¡Sin pendientes!</div>' +
+          '<a href="biblioteca.html" class="blg-empty__link" style="color:' + hex + '">Añadir juegos en Biblioteca →</a>' +
+        '</div>';
+      return;
+    }
+
+    grid.innerHTML = pendingGames.map(function(game) {
+      var safeId  = game.id.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      var safeKey = key.replace(/'/g, "\\'");
+      var dur     = game.duracion && game.duracion !== 999
+        ? '⏱ ~' + game.duracion + 'h'
+        : (game.duracion === 999 ? '⏱ ∞' : '');
+
+      var imgHtml = game.portadaUrl
+        ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" ' +
+            'class="blg-game-card__img" ' +
+            'style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center center') + '" ' +
+            'loading="lazy" onerror="this.style.display=\'none\'">'
+        : '<div class="blg-game-card__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>';
+
+      return '<div class="blg-game-card" style="--pc:' + color + '">' +
+        '<div class="blg-game-card__img-wrap">' +
+          imgHtml +
+          '<div class="blg-game-card__overlay">' +
+            '<div class="blg-game-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
+            (dur ? '<div class="blg-game-card__meta">' + dur + '</div>' : '') +
+          '</div>' +
+          '<button class="blg-game-card__check-btn" title="Marcar como jugado" ' +
+            'onclick="event.stopPropagation();window.GT_Backlog.openDoneModal(\'' + safeId + '\',\'' + safeKey + '\')">' +
+            '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">' +
+              '<polyline points="4,10 8,14 16,6"/>' +
+            '</svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
   }
 
-  function render() {
-    var container = document.getElementById('backlogGrid');
-    if (!container) return;
-
-    /* Reorder: active player first */
-    var ap = window.GT && window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;
-    var ordered = PLAYERS.slice();
-    if (ap) {
-      ordered.sort(function(a, b) {
-        if (a.key === ap) return -1;
-        if (b.key === ap) return  1;
-        return 0;
+  /* ── PLAYER TABS ─────────────────────────────────────────────── */
+  function initPlayerTabs() {
+    var cards = document.getElementById('blgPlayerCards');
+    if (!cards) return;
+    cards.querySelectorAll('input[type="radio"]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        if (this.checked) { state.player = this.value; render(); }
       });
-    }
-    container.innerHTML = ordered.map(renderPlayerPanel).join('');
+    });
   }
 
   /* ── CELEBRATION ─────────────────────────────────────────────── */
@@ -211,17 +214,17 @@
       { freq: 783.99, t: 0.32, dur: 0.18 },
       { freq: 1046.5, t: 0.50, dur: 0.55 }
     ];
-    function playNote(freq, startT, dur, vol) {
+    function playNote(freq, startT, dur) {
       var osc = ctx.createOscillator(); var gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'sine'; osc.frequency.setValueAtTime(freq, startT);
       gain.gain.setValueAtTime(0, startT);
-      gain.gain.linearRampToValueAtTime(vol, startT + 0.04);
+      gain.gain.linearRampToValueAtTime(0.35, startT + 0.04);
       gain.gain.exponentialRampToValueAtTime(0.001, startT + dur);
       osc.start(startT); osc.stop(startT + dur + 0.05);
     }
     var now = ctx.currentTime;
-    melody.forEach(function(n) { playNote(n.freq, now + n.t, n.dur, 0.35); });
+    melody.forEach(function(n) { playNote(n.freq, now + n.t, n.dur); });
   }
 
   function launchFireworks(canvas) {
@@ -269,7 +272,16 @@
   function init() {
     var _ny = document.getElementById('navYear'); if (_ny) _ny.textContent = new Date().getFullYear();
     var _fy = document.getElementById('footerYear'); if (_fy) _fy.textContent = new Date().getFullYear();
+
+    /* Pre-select active player */
+    var ap = window.GT && window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;
+    if (ap && ap !== 'All') { state.player = ap; }
+
+    var radio = document.querySelector('#blgPlayerCards input[value="' + state.player + '"]');
+    if (radio) radio.checked = true;
+
     injectDoneModal();
+    initPlayerTabs();
     render();
   }
 
