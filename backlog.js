@@ -144,7 +144,8 @@
             'loading="lazy" onerror="this.style.display=\'none\'">'
         : '<div class="blg-game-card__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>';
 
-      return '<div class="blg-game-card" style="--pc:' + color + '">' +
+      return '<div class="blg-game-card" style="--pc:' + color + ';cursor:pointer" ' +
+          'onclick="window.GT.GameDetailModal.open(\'' + safeId + '\')">' +
         '<div class="blg-game-card__img-wrap">' +
           imgHtml +
           '<div class="blg-game-card__overlay">' +

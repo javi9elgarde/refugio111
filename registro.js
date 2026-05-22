@@ -10,10 +10,185 @@
   var Registro   = window.GT.Registro;
   var Toast      = window.GT.Toast;
 
-  var state = { player: 'All', year: 0, month: '', estado: '', editId: null, sortAsc: false };
+  var state      = { player: 'All', year: 0, month: '', estado: '', editId: null, sortAsc: false };
+  var _quickModal = { entryId: null };
 
   function safe(fn, name) {
     try { fn(); } catch(e) { console.warn('registro.js ' + name + ':', e); }
+  }
+
+  /* ── QUICK COMPLETE MODAL ───────────────────────────────────── */
+  function injectQuickModal() {
+    if (document.getElementById('regQuickOverlay')) return;
+    var el = document.createElement('div');
+    el.id = 'regQuickOverlay';
+    el.className = 'reg-quick-overlay';
+    el.innerHTML =
+      '<div class="reg-quick-box">' +
+        '<div class="reg-quick-icon">🎮</div>' +
+        '<div class="reg-quick-title" id="regQuickTitle">—</div>' +
+        '<div class="reg-quick-fields">' +
+          '<div class="reg-quick-field">' +
+            '<label class="reg-quick-label">Estado</label>' +
+            '<select class="form-select" id="regQuickEstado">' +
+              '<option value="Terminado">Terminado</option>' +
+              '<option value="Platinado">Platinado</option>' +
+              '<option value="Rejugado">Rejugado</option>' +
+              '<option value="Jugando">Jugando</option>' +
+              '<option value="Retomar">Retomar</option>' +
+              '<option value="Abandonado">Abandonado</option>' +
+              '<option value="Jugado">Jugado</option>' +
+            '</select>' +
+          '</div>' +
+          '<div class="reg-quick-field">' +
+            '<label class="reg-quick-label">Nota (0–10)</label>' +
+            '<input type="number" class="form-input" id="regQuickNota" min="0" max="10" step="0.5" placeholder="Ej: 8.5">' +
+          '</div>' +
+          '<div class="reg-quick-field">' +
+            '<label class="reg-quick-label">Horas jugadas</label>' +
+            '<input type="number" class="form-input" id="regQuickHoras" min="0" step="0.5" placeholder="Ej: 25">' +
+          '</div>' +
+        '</div>' +
+        '<div class="reg-quick-footer">' +
+          '<button class="pend-done-cancel" id="regQuickCancel">✕ Cancelar</button>' +
+          '<button class="reg-quick-save" id="regQuickSave">✓ Guardar</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(el);
+    el.addEventListener('click', function(e) { if (e.target === el) closeQuickModal(); });
+    document.getElementById('regQuickCancel').addEventListener('click', closeQuickModal);
+    document.getElementById('regQuickSave').addEventListener('click', saveQuickEntry);
+  }
+
+  function openQuickModal(entryId) {
+    var r = Registro.getById(entryId);
+    if (!r) return;
+    var game = Biblioteca.getById(r.juegoId);
+    _quickModal.entryId = entryId;
+    document.getElementById('regQuickTitle').textContent = game ? game.titulo : 'Sin título';
+    document.getElementById('regQuickEstado').value = r.estado || 'Terminado';
+    document.getElementById('regQuickNota').value   = (r.nota !== null && r.nota !== undefined && r.nota !== '') ? r.nota : '';
+    document.getElementById('regQuickHoras').value  = r.horas || '';
+    document.getElementById('regQuickOverlay').classList.add('open');
+  }
+
+  function closeQuickModal() {
+    var overlay = document.getElementById('regQuickOverlay');
+    if (overlay) overlay.classList.remove('open');
+  }
+
+  function saveQuickEntry() {
+    var entryId = _quickModal.entryId;
+    if (!entryId) return;
+    var r = Registro.getById(entryId);
+    if (!r) return;
+
+    var notaRaw = document.getElementById('regQuickNota').value.trim();
+    var nota    = notaRaw !== '' ? parseFloat(notaRaw) : null;
+    if (nota !== null && (isNaN(nota) || nota < 0 || nota > 10)) {
+      Toast.show('La nota debe estar entre 0 y 10', 'error'); return;
+    }
+    var horas  = parseFloat(document.getElementById('regQuickHoras').value) || null;
+    var estado = document.getElementById('regQuickEstado').value;
+
+    Registro.update(entryId, { estado: estado, nota: nota, horas: horas });
+    Toast.show('Entrada actualizada ✓');
+    closeQuickModal();
+    renderTable();
+
+    if (estado === 'Terminado' || estado === 'Platinado') {
+      var game = Biblioteca.getById(r.juegoId);
+      showCelebration(game ? game.titulo : '—', r.jugador);
+    }
+  }
+
+  /* ── CELEBRATION (fuegos artificiales) ─────────────────────── */
+  function showCelebration(gameTitle, playerKey) {
+    safe(playCelebrationSound, 'sound');
+    var playerColor = playerKey === 'David' ? '#3b82f6' :
+                      playerKey === 'Javi'  ? '#9b1742' : '#9b59ff';
+    var overlay = document.createElement('div');
+    overlay.id = 'celebrationOverlay';
+    overlay.innerHTML =
+      '<canvas id="celebFireworks"></canvas>' +
+      '<div class="celeb-text">' +
+        '<div class="celeb-trophy">🏆</div>' +
+        '<div class="celeb-badge">¡¡JUEGO FINALIZADO!!</div>' +
+        '<div class="celeb-game">' + Utils.escapeHtml(gameTitle) + '</div>' +
+        '<div class="celeb-player" style="color:' + playerColor + '">— ' + Utils.escapeHtml(playerKey) + ' —</div>' +
+        '<div class="celeb-hint">Toca en cualquier lugar para cerrar</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    requestAnimationFrame(function() { overlay.classList.add('show'); });
+    var stopFW = launchFireworks(document.getElementById('celebFireworks'));
+    function closeIt() {
+      overlay.style.opacity = '0'; overlay.style.transition = 'opacity 0.5s';
+      if (stopFW) stopFW();
+      setTimeout(function() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 520);
+    }
+    overlay.addEventListener('click', closeIt);
+    setTimeout(closeIt, 6000);
+  }
+
+  function playCelebrationSound() {
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    var ctx = new AudioCtx();
+    var melody = [
+      { freq: 523.25, t: 0,    dur: 0.18 },
+      { freq: 659.25, t: 0.16, dur: 0.18 },
+      { freq: 783.99, t: 0.32, dur: 0.18 },
+      { freq: 1046.5, t: 0.50, dur: 0.55 }
+    ];
+    var now = ctx.currentTime;
+    melody.forEach(function(n) {
+      var osc = ctx.createOscillator(); var gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.setValueAtTime(n.freq, now + n.t);
+      gain.gain.setValueAtTime(0, now + n.t);
+      gain.gain.linearRampToValueAtTime(0.35, now + n.t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.dur);
+      osc.start(now + n.t); osc.stop(now + n.t + n.dur + 0.05);
+    });
+  }
+
+  function launchFireworks(canvas) {
+    var W = canvas.width = window.innerWidth;
+    var H = canvas.height = window.innerHeight;
+    var ctx = canvas.getContext('2d');
+    var parts = []; var rafId = null; var stopped = false;
+    var COLORS = ['#ff6b6b','#ffd700','#4facfe','#00f2fe','#f093fb','#43e97b','#fa709a','#fff4b2','#a8edea'];
+    function burst(x, y) {
+      var color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      var count = 70 + Math.floor(Math.random() * 40);
+      for (var i = 0; i < count; i++) {
+        var angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.3;
+        var speed = 2.5 + Math.random() * 5.5;
+        parts.push({ x:x, y:y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed - 1,
+          life:1, decay:0.012+Math.random()*0.012, size:2.5+Math.random()*2.5, color:color });
+      }
+    }
+    var burstCount = 0; var maxBursts = 14;
+    function scheduleBurst() {
+      if (stopped || burstCount >= maxBursts) return;
+      burstCount++;
+      burst(W*0.15 + Math.random()*W*0.7, H*0.08 + Math.random()*H*0.55);
+      if (burstCount < maxBursts) setTimeout(scheduleBurst, 250 + Math.random()*350);
+    }
+    scheduleBurst(); setTimeout(scheduleBurst, 100); setTimeout(scheduleBurst, 220);
+    function tick() {
+      ctx.fillStyle = 'rgba(7,7,15,0.18)'; ctx.fillRect(0, 0, W, H);
+      parts = parts.filter(function(p) {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.09; p.vx *= 0.985; p.life -= p.decay;
+        if (p.life <= 0) return false;
+        ctx.save(); ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI*2); ctx.fill();
+        ctx.restore(); return true;
+      });
+      if (!stopped && (parts.length > 0 || burstCount < maxBursts)) rafId = requestAnimationFrame(tick);
+    }
+    tick();
+    return function stop() { stopped = true; if (rafId) cancelAnimationFrame(rafId); };
   }
 
   /* ── RENDER ROW ─────────────────────────────────────────── */
@@ -53,7 +228,12 @@
       '<td>' + (game && game.generos && game.generos.length ? Utils.genreBadgesHtml(game.generos.slice(0,2)) : '—') + '</td>' +
       '<td>' + (r.plataformaJugada ? '<span class="badge badge-plat ' + Utils.platformClass(r.plataformaJugada) + '">' + Utils.escapeHtml(r.plataformaJugada) + '</span>' : '—') + '</td>' +
       '<td><span style="font-size:0.8rem;color:var(--txt3)">' + (game && game.fechaLanzamiento ? game.fechaLanzamiento.slice(0,4) : '—') + '</span></td>' +
-      '<td><button class="btn btn-ghost btn-icon" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar">✏️</button></td>' +
+      '<td style="white-space:nowrap">' +
+        '<button class="btn btn-ghost btn-icon reg-tick-btn" onclick="window.GT_Reg.openQuickModal(\'' + r.id + '\')" title="Actualizar rápido">' +
+          '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><polyline points="4,10 8,14 16,6"/></svg>' +
+        '</button>' +
+        '<button class="btn btn-ghost btn-icon" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar">✏️</button>' +
+      '</td>' +
     '</tr>';
   }
 
@@ -275,6 +455,8 @@
       renderTable();
     });
 
+    injectQuickModal();
+
     document.getElementById('btnAddEntry').addEventListener('click', openAdd);
     document.getElementById('fabAdd').addEventListener('click', openAdd);
 
@@ -287,7 +469,7 @@
     renderTable();
   }
 
-  window.GT_Reg = { openEdit: openEdit };
+  window.GT_Reg = { openEdit: openEdit, openQuickModal: openQuickModal };
   document.addEventListener('DOMContentLoaded', function () {
     window.GT.onDataReady(function () {
       safe(init, 'init');
