@@ -17,7 +17,7 @@
   var PLATFORMS = ['PC','PS5','PS4','PS3','Xbox Series X','Xbox One','Xbox 360',
     'Nintendo Switch 2','Nintendo Switch','PS2'];
 
-  var state = { search:'', genero:'', plataforma:'', año:'', editId: null, detailId: null };
+  var state = { search:'', genero:'', plataforma:'', año:'', jugador:'All', editId: null, detailId: null };
   var selectedGeneros    = [];
   var selectedPlataformas = [];
   var coverPreview = null;
@@ -177,6 +177,17 @@
     if (state.plataforma) filters.plataforma = state.plataforma;
     if (state.año)        filters.año        = state.año;
     var games = Biblioteca.search(state.search, filters);
+
+    // Post-filter by player
+    if (state.jugador && state.jugador !== 'All') {
+      var pk = state.jugador;
+      var playerEntries = Registro.filter({ jugador: pk });
+      var playedSet = {};
+      playerEntries.forEach(function(r) { playedSet[r.juegoId] = true; });
+      games = games.filter(function(g) {
+        return playedSet[g.id] || (g.pendientePor || []).indexOf(pk) !== -1;
+      });
+    }
 
     var grid    = document.getElementById('gameGrid');
     var empty   = document.getElementById('emptyState');
@@ -825,11 +836,13 @@
 
     // Clear filters
     document.getElementById('clearFilters').addEventListener('click', function(){
-      state.search = ''; state.genero = ''; state.plataforma = ''; state.año = '';
+      state.search = ''; state.genero = ''; state.plataforma = ''; state.año = ''; state.jugador = 'All';
       document.getElementById('searchInput').value = '';
       document.getElementById('genreFilter').value = '';
       document.getElementById('platFilter').value = '';
       document.getElementById('yearFilter').value = '';
+      var allRadio = document.querySelector('#bibPlayerCards input[value="All"]');
+      if (allRadio) allRadio.checked = true;
       renderGrid();
     });
 
@@ -863,6 +876,24 @@
         this.value = '';
       }
     });
+
+    // Player filter tabs (biblioteca)
+    var bibCards = document.getElementById('bibPlayerCards');
+    if (bibCards) {
+      bibCards.querySelectorAll('input[type="radio"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+          if (this.checked) { state.jugador = this.value; renderGrid(); }
+        });
+      });
+    }
+
+    // Pre-select active player
+    var ap = window.GT && window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;
+    if (ap && ap !== 'All') {
+      state.jugador = ap;
+      var apRadio = document.querySelector('#bibPlayerCards input[value="' + ap + '"]');
+      if (apRadio) apRadio.checked = true;
+    }
 
     renderFilterDropdowns();
     renderGrid();

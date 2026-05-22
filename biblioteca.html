@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — Biblioteca</title>
-  <link rel="stylesheet" href="styles.css?v=20260522d">
+  <link rel="stylesheet" href="styles.css?v=20260522g">
 </head>
 <body>
 
@@ -53,16 +53,50 @@
   </div>
 
   <div class="section" style="padding-bottom:0.75rem">
-    <div class="filters" id="filtersBar">
-      <div class="filters__top">
-        <div class="search-wrap" style="flex:1;min-width:180px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" class="search-input" id="searchInput" placeholder="Buscar juego, desarrolladora, género...">
-        </div>
-        <select class="form-select filter-select" id="genreFilter"><option value="">🎮 Géneros</option></select>
-        <select class="form-select filter-select" id="platFilter"><option value="">🖥 Plataformas</option></select>
-        <select class="form-select filter-select" id="yearFilter"><option value="">📅 Año</option></select>
-        <button class="btn btn-ghost btn-sm" id="clearFilters">✕</button>
+    <!-- Fila 1: jugadores + filtros secundarios -->
+    <div class="bib-filter-top">
+      <div class="reg-player-filter" id="bibPlayerCards" style="margin-bottom:0">
+        <label class="reg-pcard reg-pcard--all">
+          <input type="radio" name="bibPlayer" value="All" checked>
+          <div class="reg-pcard__inner">
+            <div class="reg-pcard__avatar">★</div>
+            <div class="reg-pcard__name">Todos</div>
+          </div>
+        </label>
+        <label class="reg-pcard reg-pcard--david">
+          <input type="radio" name="bibPlayer" value="David">
+          <div class="reg-pcard__inner">
+            <div class="reg-pcard__avatar">D</div>
+            <div class="reg-pcard__name">David</div>
+          </div>
+        </label>
+        <label class="reg-pcard reg-pcard--javi">
+          <input type="radio" name="bibPlayer" value="Javi">
+          <div class="reg-pcard__inner">
+            <div class="reg-pcard__avatar">J</div>
+            <div class="reg-pcard__name">Javi</div>
+          </div>
+        </label>
+        <label class="reg-pcard reg-pcard--mery">
+          <input type="radio" name="bibPlayer" value="Mery">
+          <div class="reg-pcard__inner">
+            <div class="reg-pcard__avatar">M</div>
+            <div class="reg-pcard__name">Mery</div>
+          </div>
+        </label>
+      </div>
+      <div class="bib-filter-selects">
+        <select class="form-select form-select--sm" id="genreFilter"><option value="">🎮 Géneros</option></select>
+        <select class="form-select form-select--sm" id="platFilter"><option value="">🖥 Plataformas</option></select>
+        <select class="form-select form-select--sm" id="yearFilter"><option value="">📅 Año</option></select>
+        <button class="btn btn-ghost btn-sm btn--compact" id="clearFilters" title="Limpiar filtros">✕</button>
+      </div>
+    </div>
+    <!-- Fila 2: buscador -->
+    <div class="bib-search-row">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" class="search-input" id="searchInput" placeholder="Buscar juego, desarrolladora, género...">
       </div>
     </div>
   </div>
@@ -221,6 +255,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260521c"            defer></script>
-<script src="biblioteca.js?v=20260521c"      defer></script>
+<script src="biblioteca.js?v=20260522g"      defer></script>
 </body>
 </html>

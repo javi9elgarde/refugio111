@@ -868,14 +868,44 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 .reg-pcard--javi  { --pc: var(--player-javi); }
 .reg-pcard--mery  { --pc: var(--player-mery); }
 
+/* ── REGISTRO — Flex wrapper: player cards ←→ secondary filters ── */
+.reg-filter-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+.reg-filter-wrap .reg-player-filter { margin-bottom: 0; }
+
 /* ── REGISTRO — Compact secondary filters ─────────────────────── */
 .reg-filters-row {
   display: flex; gap: 0.45rem; align-items: center; flex-wrap: wrap;
+  flex-shrink: 0;
 }
 .form-select--sm {
   font-size: 0.78rem; padding: 0.28rem 0.55rem; height: 30px;
 }
 .btn-sm.btn--compact { height: 30px; padding: 0 0.75rem; font-size: 0.78rem; }
+
+/* ── BIBLIOTECA — Nuevo layout de filtros ─────────────────────── */
+.bib-filter-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+.bib-filter-selects {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.bib-search-row { /* buscador ancho completo */ }
+.bib-search-row .search-wrap { max-width: 100%; }
 
 /* ── REGISTRO — Group sections (En Curso / Historial) ─────────── */
 .reg-group { margin-bottom: 1.5rem; }
