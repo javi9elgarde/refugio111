@@ -184,6 +184,62 @@
         '<a href="registro.html" class="btn btn-ghost btn-sm" style="font-size:0.75rem;flex-shrink:0">📋 Registro</a>' +
       '</div>';
 
+    /* ── LOGROS del jugador ──────────────────────────────────── */
+    var completados = new Set(
+      entries.filter(function(r) {
+        return r.estado === 'Terminado' || r.estado === 'Platinado' ||
+               r.estado === 'Rejugado' || r.estado === 'Jugado';
+      }).map(function(r) { return r.juegoId; })
+    ).size;
+
+    var rejugados = new Set(
+      entries.filter(function(r) { return r.estado === 'Rejugado'; })
+             .map(function(r) { return r.juegoId; })
+    ).size;
+
+    var genSet = {};
+    entries.forEach(function(r) {
+      var g = Biblioteca.getById(r.juegoId);
+      if (g && g.generos) g.generos.forEach(function(gen) { genSet[gen] = true; });
+    });
+    var totalGeneros = Object.keys(genSet).length;
+
+    var scored      = entries.filter(function(r) { return r.nota !== null && r.nota !== undefined && r.nota !== ''; });
+    var avgScore    = scored.length
+      ? (scored.reduce(function(a, r) { return a + parseFloat(r.nota); }, 0) / scored.length)
+      : null;
+
+    var years = entries.map(function(r) { return r.año; }).filter(Boolean);
+    var minYear = years.length ? Math.min.apply(null, years) : null;
+    var maxYear = years.length ? Math.max.apply(null, years) : null;
+    var yearsActive = (minYear && maxYear) ? (maxYear - minYear + 1) : null;
+
+    var chipDefs = [
+      { icon: '🎮', name: 'Maratonista',  val: totalHoras + 'h jugadas' },
+      { icon: '🏆', name: 'Platinero',    val: platCount + (platCount !== 1 ? ' platinos' : ' platino') },
+      { icon: '✅', name: 'Completista',  val: completados + (completados !== 1 ? ' juegos' : ' juego') + ' completados' },
+      { icon: '🌍', name: 'Explorador',   val: totalGeneros + (totalGeneros !== 1 ? ' géneros' : ' género') + ' distintos' },
+      { icon: '⭐', name: 'Crítico',      val: avgScore !== null ? '★ ' + avgScore.toFixed(1).replace('.', ',') + ' de media' : 'Sin notas' },
+      { icon: '🔥', name: 'Rejugador',    val: rejugados + (rejugados !== 1 ? ' juegos' : ' juego') + ' rejugados' }
+    ];
+    if (yearsActive) chipDefs.push({ icon: '📅', name: 'Veterano', val: yearsActive + (yearsActive !== 1 ? ' años' : ' año') + ' jugando' });
+
+    var logrosHtml =
+      '<div class="pp-logros-section">' +
+        '<div class="pp-sub-title" style="margin-bottom:0.55rem">🏅 Logros</div>' +
+        '<div class="pp-logros-grid">' +
+          chipDefs.map(function(c) {
+            return '<div class="pp-logro-chip">' +
+              '<span class="pp-logro-chip__icon">' + c.icon + '</span>' +
+              '<div class="pp-logro-chip__body">' +
+                '<div class="pp-logro-chip__name">' + Utils.escapeHtml(c.name) + '</div>' +
+                '<div class="pp-logro-chip__val">' + Utils.escapeHtml(c.val) + '</div>' +
+              '</div>' +
+            '</div>';
+          }).join('') +
+        '</div>' +
+      '</div>';
+
     /* ── TOP 10 FAVORITOS — grid 16:9 ───────────────────────── */
     var favIds  = _favs[key] || [];
     var safeKey = key.replace(/'/g, "\\'");
@@ -255,6 +311,7 @@
         '<div class="pp-main">' +
           '<div class="pp-sub-title">❤️ Top 10 Favoritos</div>' +
           favsHtml +
+          logrosHtml +
         '</div>' +
         '<div class="pp-sidebar">' +
           '<div class="pp-sub-title">🎮 Platinos</div>' +
