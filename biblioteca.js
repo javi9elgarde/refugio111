@@ -102,7 +102,7 @@
       : '';
 
     var today = new Date().toISOString().slice(0, 10);
-    var hasDur = game.duracion !== null && game.duracion !== undefined && game.duracion !== '';
+    var hasDur = game.duracion !== null && game.duracion !== undefined && game.duracion !== '' && parseFloat(game.duracion) > 0;
     var isFuture = game.fechaLanzamiento && game.fechaLanzamiento > today;
     var isReleasedNoDur = !hasDur && game.fechaLanzamiento && game.fechaLanzamiento <= today;
 
@@ -143,7 +143,7 @@
     var all = Biblioteca.getAll();
 
     var noDur = all.filter(function(g) {
-      var hasDur = g.duracion !== null && g.duracion !== undefined && g.duracion !== '';
+      var hasDur = g.duracion !== null && g.duracion !== undefined && g.duracion !== '' && parseFloat(g.duracion) > 0;
       return !hasDur && g.fechaLanzamiento && g.fechaLanzamiento <= today;
     });
     var noCover = all.filter(function(g) {
