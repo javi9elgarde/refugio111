@@ -278,8 +278,55 @@
 
   function renderUpcomingList() { /* replaced by renderUpcomingCards */ }
 
+  /* ── TODAY LAUNCH PANEL HTML ─────────────────────────────── */
+  function renderTodayPanel(games) {
+    if (games.length === 1) {
+      var g = games[0];
+      var sid    = g.id.replace(/'/g, "\\'");
+      var objPos = Utils.escapeHtml(g.portadaPos || 'center top');
+      return '<div class="today-launch">' +
+        '<div class="today-launch__header">' +
+          '<span class="today-launch__badge">🎮 YA A LA VENTA</span>' +
+        '</div>' +
+        '<div class="today-launch__cover" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" style="cursor:pointer" title="' + Utils.escapeHtml(g.titulo) + '">' +
+          (g.portadaUrl
+            ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" alt="' + Utils.escapeHtml(g.titulo) + '" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+            : '<div class="today-launch__ph">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>') +
+          '<div class="today-launch__overlay">' +
+            '<div class="today-launch__title">' + Utils.escapeHtml(g.titulo) + '</div>' +
+            '<div style="margin-top:0.25rem">' + Utils.platformBadgesHtml(g.plataformas) + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    /* 2+ games: split side-by-side */
+    var extra = games.length > 2 ? games.length - 2 : 0;
+    var cards = games.slice(0, 2).map(function(g) {
+      var sid    = g.id.replace(/'/g, "\\'");
+      var objPos = Utils.escapeHtml(g.portadaPos || 'center top');
+      return '<div class="today-launch__multi-card" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" style="cursor:pointer" title="' + Utils.escapeHtml(g.titulo) + '">' +
+        (g.portadaUrl
+          ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" alt="' + Utils.escapeHtml(g.titulo) + '" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+          : '<div class="today-launch__ph">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>') +
+        '<div class="today-launch__multi-overlay">' +
+          '<div class="today-launch__multi-title">' + Utils.escapeHtml(g.titulo) + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    return '<div class="today-launch">' +
+      '<div class="today-launch__header">' +
+        '<span class="today-launch__badge">🎮 YA A LA VENTA</span>' +
+        (extra ? '<span class="today-launch__extra">+' + extra + ' más</span>' : '') +
+      '</div>' +
+      '<div class="today-launch__multi">' + cards + '</div>' +
+    '</div>';
+  }
+
   function renderUpcomingCards() {
-    var el = document.getElementById('upcomingCardsGrid');
+    var el         = document.getElementById('upcomingCardsGrid');
+    var todayPanel = document.getElementById('todayLaunchPanel');
     if (!el) return;
 
     var today = new Date();
@@ -287,7 +334,7 @@
     var limit = new Date(today);
     limit.setDate(limit.getDate() + 30);
 
-    var games = Biblioteca.getUpcoming().filter(function(g) {
+    var allGames = Biblioteca.getUpcoming().filter(function(g) {
       if (!g.fechaLanzamiento) return false;
       var parts = g.fechaLanzamiento.split('-');
       if (!parts[2] || parts[2] === 'xx') return false;
@@ -295,17 +342,39 @@
       return d >= today && d <= limit;
     });
 
-    if (!games.length) {
+    /* Split: hoy vs futuro */
+    var todayTs    = today.getTime();
+    var todayGames  = allGames.filter(function(g) {
+      var p = g.fechaLanzamiento.split('-');
+      return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2])).getTime() === todayTs;
+    });
+    var futureGames = allGames.filter(function(g) {
+      var p = g.fechaLanzamiento.split('-');
+      return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2])).getTime() > todayTs;
+    });
+
+    /* Today panel */
+    if (todayPanel) {
+      if (todayGames.length) {
+        todayPanel.style.display = '';
+        todayPanel.innerHTML = renderTodayPanel(todayGames);
+      } else {
+        todayPanel.style.display = 'none';
+      }
+    }
+
+    /* Future cards */
+    if (!futureGames.length) {
       el.innerHTML = '<p class="text-muted" style="grid-column:1/-1;text-align:center;padding:2rem">No hay estrenos en los próximos 30 días</p>';
       return;
     }
 
-    el.innerHTML = games.map(function(g) {
-      var parts = g.fechaLanzamiento.split('-');
-      var day   = parseInt(parts[2]);
-      var month = MONTH_NAMES[parseInt(parts[1]) - 1];
+    el.innerHTML = futureGames.map(function(g) {
+      var parts  = g.fechaLanzamiento.split('-');
+      var day    = parseInt(parts[2]);
+      var month  = MONTH_NAMES[parseInt(parts[1]) - 1];
       var dateStr = day + ' ' + month;
-      var objPos = Utils.escapeHtml(g.portadaPos || 'center top');
+      var objPos  = Utils.escapeHtml(g.portadaPos || 'center top');
 
       return '<div class="upcoming-card" onclick="window.GT.GameDetailModal.open(\'' + g.id + '\')" style="cursor:pointer">' +
         '<div class="upcoming-card__cover">' +

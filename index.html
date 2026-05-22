@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — Menú Principal</title>
-  <link rel="stylesheet" href="styles.css?v=20260522h">
+  <link rel="stylesheet" href="styles.css?v=20260522i">
 </head>
 <body>
 
@@ -70,10 +70,17 @@
 
   <!-- PRÓXIMOS ESTRENOS (próximos 30 días) -->
   <section class="section" style="padding-bottom:0">
-    <div class="section__header" style="margin-bottom:1rem">
-      <div><h2 class="section__title">🔜 Próximos <span>Estrenos</span></h2><p class="section__subtitle">Lanzamientos en los próximos 30 días · pincha para ver ficha</p></div>
+    <div class="upcoming-wrapper">
+      <!-- Panel YA A LA VENTA (izquierda, visible solo el día del lanzamiento) -->
+      <div id="todayLaunchPanel" style="display:none"></div>
+      <!-- Próximos estrenos (derecha) -->
+      <div class="upcoming-main">
+        <div class="section__header" style="margin-bottom:1rem">
+          <div><h2 class="section__title">🔜 Próximos <span>Estrenos</span></h2><p class="section__subtitle">Lanzamientos en los próximos 30 días · pincha para ver ficha</p></div>
+        </div>
+        <div id="upcomingCardsGrid" class="upcoming-grid"></div>
+      </div>
     </div>
-    <div id="upcomingCardsGrid" class="upcoming-grid"></div>
   </section>
 
   <!-- CALENDARIO DE LANZAMIENTOS (al final) -->
@@ -100,6 +107,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260519n" defer></script>
 <script src="main.js?v=20260522e"            defer></script>
-<script src="index.js?v=20260522e"           defer></script>
+<script src="index.js?v=20260522i"           defer></script>
 </body>
 </html>
