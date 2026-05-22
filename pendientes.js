@@ -17,9 +17,12 @@
   ];
 
   /* ── State ─────────────────────────────────────────────────── */
-  var _favs     = { David: [], Javi: [], Mery: [] };
-  var _favModal = { playerKey: null, slotIdx: null };
-  var _doneModal = { gameId: null, playerKey: null };
+  var _favs        = { David: [], Javi: [], Mery: [] };
+  var _logros      = { David: [], Javi: [], Mery: [] };
+  var _favModal    = { playerKey: null, slotIdx: null };
+  var _doneModal   = { gameId: null, playerKey: null };
+  var _logrosPick  = { playerKey: null, selected: [] };
+  var _LOGRO_DEFAULT = ['maratonista', 'platinero', 'completista', 'explorador'];
 
   function safe(fn, name) {
     try { fn(); } catch(e) { console.warn('pendientes.js ' + name + ':', e); }
@@ -32,7 +35,8 @@
     window.GT.db.collection('jugadores').get().then(function(snap) {
       snap.forEach(function(doc) {
         if (_favs.hasOwnProperty(doc.id)) {
-          _favs[doc.id] = doc.data().favoritos || [];
+          _favs[doc.id]   = doc.data().favoritos || [];
+          _logros[doc.id] = doc.data().logrosSeleccionados || [];
         }
       });
       if (cb) cb();
@@ -43,10 +47,15 @@
   }
 
   function saveFavoritos(playerKey) {
-    // Compact nulls from ends, keep internal nulls (preserve slot positions)
     window.GT.db.collection('jugadores').doc(playerKey)
       .set({ favoritos: _favs[playerKey] }, { merge: true })
       .catch(function(e) { console.warn('saveFavoritos:', e); });
+  }
+
+  function saveLogros(playerKey) {
+    window.GT.db.collection('jugadores').doc(playerKey)
+      .set({ logrosSeleccionados: _logros[playerKey] }, { merge: true })
+      .catch(function(e) { console.warn('saveLogros:', e); });
   }
 
   /* ── OPEN / CLOSE PICKER ────────────────────────────────────── */
@@ -138,6 +147,200 @@
   }
 
   /* ══════════════════════════════════════════════════════════════
+     LOGROS PICKER MODAL
+  ══════════════════════════════════════════════════════════════ */
+  function injectLogrosModal() {
+    if (document.getElementById('logrosPickerOverlay')) return;
+    var el = document.createElement('div');
+    el.id = 'logrosPickerOverlay';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:3000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.22s;backdrop-filter:blur(6px)';
+    el.innerHTML =
+      '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;max-width:680px;width:95%;max-height:85vh;overflow-y:auto">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem">' +
+          '<div>' +
+            '<div style="font-family:\'Orbitron\',sans-serif;font-size:0.9rem;font-weight:700" id="logrosPickerTitle">Elige tus 4 logros</div>' +
+            '<div style="font-size:0.75rem;color:var(--txt3);margin-top:0.2rem">Selecciona exactamente 4 · Los que elijas aparecerán en tu perfil</div>' +
+          '</div>' +
+          '<button class="modal__close" onclick="window.GT_Pend.closeLogrosPicker()">✕</button>' +
+        '</div>' +
+        '<div id="logrosPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0.65rem;margin-bottom:1.1rem"></div>' +
+        '<div style="display:flex;justify-content:flex-end;gap:0.5rem">' +
+          '<button class="btn btn-secondary" onclick="window.GT_Pend.closeLogrosPicker()">Cancelar</button>' +
+          '<button class="btn btn-primary" id="logrosPickerSave">Guardar</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(el);
+    el.addEventListener('click', function(e) { if (e.target === el) closeLogrosPicker(); });
+    document.getElementById('logrosPickerSave').addEventListener('click', saveLogrosPick);
+  }
+
+  function openLogrosPicker(playerKey) {
+    var player = PLAYERS.find(function(p) { return p.key === playerKey; });
+    _logrosPick.playerKey = playerKey;
+    _logrosPick.selected  = (_logros[playerKey].length ? _logros[playerKey] : _LOGRO_DEFAULT).slice();
+
+    document.getElementById('logrosPickerTitle').textContent =
+      'Elige 4 logros · ' + (player ? player.name : playerKey);
+
+    renderLogrosPickerGrid(playerKey);
+
+    var overlay = document.getElementById('logrosPickerOverlay');
+    overlay.style.opacity = '1';
+    overlay.style.pointerEvents = 'all';
+  }
+
+  function closeLogrosPicker() {
+    var overlay = document.getElementById('logrosPickerOverlay');
+    if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
+    _logrosPick.playerKey = null;
+    _logrosPick.selected  = [];
+  }
+
+  function renderLogrosPickerGrid(playerKey) {
+    var player = PLAYERS.find(function(p) { return p.key === playerKey; });
+    var color  = player ? player.color : 'var(--cyan)';
+    // Compute all logros for this player to show in picker
+    var all = _buildAllLogros(playerKey, color);
+    var grid = document.getElementById('logrosPickerGrid');
+    if (!grid) return;
+    grid.innerHTML = all.map(function(l) {
+      var isSel = _logrosPick.selected.indexOf(l.id) !== -1;
+      return '<div class="lgr-pick-card' + (isSel ? ' lgr-pick-card--sel' : '') + '" ' +
+        'onclick="window.GT_Pend.toggleLogroSel(\'' + l.id + '\')" ' +
+        'style="--pp-color:' + color + '">' +
+        '<div style="font-size:1.4rem;line-height:1;margin-bottom:0.3rem">' + l.emoji + '</div>' +
+        '<div style="font-family:\'Rajdhani\',sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--txt3);line-height:1;margin-bottom:0.15rem">' + Utils.escapeHtml(l.shortName) + '</div>' +
+        '<div style="font-size:0.82rem;font-weight:700;color:' + (isSel ? color : 'var(--txt2)') + '">' + Utils.escapeHtml(String(l.value)) + '</div>' +
+        (isSel ? '<div style="position:absolute;top:0.35rem;right:0.35rem;width:18px;height:18px;border-radius:50%;background:' + color + ';display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#07070f;font-weight:900">✓</div>' : '') +
+      '</div>';
+    }).join('');
+  }
+
+  function toggleLogroSel(logroId) {
+    var idx = _logrosPick.selected.indexOf(logroId);
+    if (idx !== -1) {
+      _logrosPick.selected.splice(idx, 1);
+    } else {
+      if (_logrosPick.selected.length >= 4) {
+        _logrosPick.selected.shift(); // quita el más antiguo
+      }
+      _logrosPick.selected.push(logroId);
+    }
+    renderLogrosPickerGrid(_logrosPick.playerKey);
+  }
+
+  function saveLogrosPick() {
+    var pk = _logrosPick.playerKey;
+    if (!pk) return;
+    _logros[pk] = _logrosPick.selected.slice();
+    saveLogros(pk);
+    closeLogrosPicker();
+    render();
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     BUILD ALL LOGROS — computa todos los logros disponibles
+  ══════════════════════════════════════════════════════════════ */
+  function _buildAllLogros(key, color) {
+    var entries     = Registro.filter({ jugador: key });
+    var totalHoras  = Math.round(entries.reduce(function(acc, r) { return acc + (parseFloat(r.horas) || 0); }, 0));
+    var platSeen = {}; var platCount = 0;
+    entries.forEach(function(r) {
+      if (r.estado === 'Platinado' && !platSeen[r.juegoId]) { platSeen[r.juegoId] = true; platCount++; }
+    });
+    var completados = new Set(
+      entries.filter(function(r) { return r.estado === 'Terminado' || r.estado === 'Platinado' || r.estado === 'Rejugado' || r.estado === 'Jugado'; })
+             .map(function(r) { return r.juegoId; })
+    ).size;
+    var rejugados = new Set(
+      entries.filter(function(r) { return r.estado === 'Rejugado'; }).map(function(r) { return r.juegoId; })
+    ).size;
+    var genSet = {};
+    entries.forEach(function(r) { var bg = Biblioteca.getById(r.juegoId); if (bg && bg.generos) bg.generos.forEach(function(g) { genSet[g] = true; }); });
+    var totalGeneros = Object.keys(genSet).length;
+    var scored = entries.filter(function(r) { return r.nota !== null && r.nota !== undefined && r.nota !== ''; });
+    var avgScore = scored.length ? scored.reduce(function(a, r) { return a + parseFloat(r.nota); }, 0) / scored.length : null;
+    var years = entries.map(function(r) { return r.año; }).filter(Boolean);
+    var yearsActive = years.length ? (Math.max.apply(null, years) - Math.min.apply(null, years) + 1) : null;
+    var conHoras = entries.filter(function(r) { return parseFloat(r.horas) > 0; })
+      .sort(function(a, b) { return (parseFloat(b.horas)||0) - (parseFloat(a.horas)||0); });
+
+    var all = [];
+
+    if (conHoras.length) {
+      var topR = conHoras[0]; var gR = Biblioteca.getById(topR.juegoId);
+      all.push({
+        id: 'maratonista', emoji: '🎮', shortName: 'Rey del Maratón',
+        badge: '🎮 REY DEL MARATÓN', desc: 'Más horas en un único juego',
+        bg: 'linear-gradient(160deg,#050d1f,#0b1c38)',
+        visual: gR && gR.portadaUrl ? { type: 'cover', src: gR.portadaUrl, pos: gR.portadaPos || 'center top' } : { type: 'icon', icon: '🎮' },
+        detail: gR ? gR.titulo : '—', value: topR.horas + 'h'
+      });
+    }
+    all.push({
+      id: 'platinero', emoji: '🏆', shortName: 'Platinero',
+      badge: '🏆 PLATINERO', desc: 'Trofeos platino conseguidos',
+      bg: 'linear-gradient(135deg,#020818,#060e2e)',
+      visual: { type: 'trophy', src: 'platinum-trophy.png' },
+      detail: platCount + (platCount !== 1 ? ' platinos' : ' platino'), value: platCount
+    });
+    all.push({
+      id: 'completista', emoji: '✅', shortName: 'Completista',
+      badge: '✅ COMPLETISTA', desc: 'Juegos completados o platinados',
+      bg: 'linear-gradient(135deg,#041a0c,#082e14)',
+      visual: { type: 'bigtext', text: completados + '', sub: completados !== 1 ? 'juegos' : 'juego' },
+      detail: completados + (completados !== 1 ? ' juegos completados' : ' juego completado'), value: completados
+    });
+    all.push({
+      id: 'explorador', emoji: '🌍', shortName: 'Explorador',
+      badge: '🌍 EXPLORADOR', desc: 'Géneros distintos explorados',
+      bg: 'linear-gradient(135deg,#031420,#04203a)',
+      visual: { type: 'bigtext', text: totalGeneros + '', sub: totalGeneros !== 1 ? 'géneros' : 'género' },
+      detail: totalGeneros + (totalGeneros !== 1 ? ' géneros distintos' : ' género distinto'),
+      value: totalGeneros + (totalGeneros !== 1 ? ' géneros' : ' género')
+    });
+    if (avgScore !== null) {
+      all.push({
+        id: 'critico', emoji: '⭐', shortName: 'El Crítico',
+        badge: '⭐ EL CRÍTICO', desc: 'Nota media de sus valoraciones',
+        bg: 'linear-gradient(135deg,#1a0a00,#2e1500)',
+        visual: { type: 'bigtext', text: avgScore.toFixed(1).replace('.', ','), sub: '/ 10' },
+        detail: 'Media sobre ' + scored.length + (scored.length !== 1 ? ' valoraciones' : ' valoración'),
+        value: avgScore.toFixed(1).replace('.', ',') + ' ★'
+      });
+    }
+    if (rejugados > 0) {
+      all.push({
+        id: 'rejugador', emoji: '🔥', shortName: 'Rejugador',
+        badge: '🔥 REJUGADOR', desc: 'Juegos completados más de una vez',
+        bg: 'linear-gradient(135deg,#1a0505,#2e0808)',
+        visual: { type: 'bigtext', text: rejugados + '', sub: rejugados !== 1 ? 'juegos' : 'juego' },
+        detail: rejugados + (rejugados !== 1 ? ' juegos rejugados' : ' juego rejugado'), value: rejugados
+      });
+    }
+    if (totalHoras > 0) {
+      all.push({
+        id: 'horas', emoji: '⏱', shortName: 'Maratonista',
+        badge: '⏱ MARATONISTA', desc: 'Horas totales jugadas',
+        bg: 'linear-gradient(135deg,#0d0522,#1c0d40)',
+        visual: { type: 'bigtext', text: totalHoras + 'h', sub: 'en total' },
+        detail: totalHoras + 'h totales registradas', value: totalHoras + 'h'
+      });
+    }
+    if (yearsActive && yearsActive > 1) {
+      all.push({
+        id: 'veterano', emoji: '📅', shortName: 'Veterano',
+        badge: '📅 VETERANO', desc: 'Años jugando en el Refugio',
+        bg: 'linear-gradient(135deg,#0d0a1a,#1c1630)',
+        visual: { type: 'bigtext', text: yearsActive + '', sub: yearsActive !== 1 ? 'años' : 'año' },
+        detail: 'Desde ' + Math.min.apply(null, years) + ' hasta ' + Math.max.apply(null, years),
+        value: yearsActive + (yearsActive !== 1 ? ' años' : ' año')
+      });
+    }
+    return all;
+  }
+
+  /* ══════════════════════════════════════════════════════════════
      PLATINUM TROPHY SVG
   ══════════════════════════════════════════════════════════════ */
   /* PlayStation Platinum Trophy — imagen PNG oficial */
@@ -184,152 +387,66 @@
         '<a href="registro.html" class="btn btn-ghost btn-sm" style="font-size:0.75rem;flex-shrink:0">📋 Registro</a>' +
       '</div>';
 
-    /* ── LOGROS del jugador — tarjetas estilo estadísticas ───── */
-    var completados = new Set(
-      entries.filter(function(r) {
-        return r.estado === 'Terminado' || r.estado === 'Platinado' ||
-               r.estado === 'Rejugado'  || r.estado === 'Jugado';
-      }).map(function(r) { return r.juegoId; })
-    ).size;
-
-    var rejugados = new Set(
-      entries.filter(function(r) { return r.estado === 'Rejugado'; })
-             .map(function(r) { return r.juegoId; })
-    ).size;
-
-    var genSet = {};
-    entries.forEach(function(r) {
-      var bg = Biblioteca.getById(r.juegoId);
-      if (bg && bg.generos) bg.generos.forEach(function(gen) { genSet[gen] = true; });
-    });
-    var totalGeneros = Object.keys(genSet).length;
-
-    var scored   = entries.filter(function(r) { return r.nota !== null && r.nota !== undefined && r.nota !== ''; });
-    var avgScore = scored.length
-      ? scored.reduce(function(a, r) { return a + parseFloat(r.nota); }, 0) / scored.length
-      : null;
-
-    var years = entries.map(function(r) { return r.año; }).filter(Boolean);
-    var yearsActive = years.length ? (Math.max.apply(null, years) - Math.min.apply(null, years) + 1) : null;
-
-    /* Definiciones de tarjetas de logro */
-    var logroDefs = [];
-
-    /* 1 — Rey del Maratón: juego con más horas */
-    var conHoras = entries.filter(function(r) { return parseFloat(r.horas) > 0; })
-      .sort(function(a, b) { return (parseFloat(b.horas)||0) - (parseFloat(a.horas)||0); });
-    if (conHoras.length) {
-      var topR = conHoras[0];
-      var gR   = Biblioteca.getById(topR.juegoId);
-      logroDefs.push({
-        badge: '🎮 REY DEL MARATÓN', desc: 'Más horas en un único juego',
-        bg: 'linear-gradient(160deg,#050d1f,#0b1c38)',
-        visual: gR && gR.portadaUrl
-          ? { type: 'cover', src: gR.portadaUrl, pos: gR.portadaPos || 'center top' }
-          : { type: 'icon', icon: '🎮' },
-        detail: gR ? gR.titulo : '—',
-        value: topR.horas + 'h'
+    /* ── LOGROS — 4 seleccionables ──────────────────────────── */
+    var allLogros    = _buildAllLogros(key, color);
+    var selIds       = _logros[key].length ? _logros[key] : _LOGRO_DEFAULT;
+    var logroDefs    = selIds.map(function(id) {
+      return allLogros.find(function(l) { return l.id === id; });
+    }).filter(Boolean);
+    /* Si faltan, rellena con los primeros disponibles no seleccionados */
+    if (logroDefs.length < 4) {
+      allLogros.forEach(function(l) {
+        if (logroDefs.length < 4 && !logroDefs.find(function(x) { return x.id === l.id; })) {
+          logroDefs.push(l);
+        }
       });
     }
 
-    /* 2 — Platinero */
-    logroDefs.push({
-      badge: '🏆 PLATINERO', desc: 'Trofeos platino conseguidos',
-      bg: 'linear-gradient(135deg,#020818,#060e2e)',
-      visual: { type: 'trophy', src: 'platinum-trophy.png' },
-      detail: platCount + (platCount !== 1 ? ' platinos' : ' platino'),
-      value: platCount
-    });
+    var safeKeyL = key.replace(/'/g, "\\'");
 
-    /* 3 — Completista */
-    logroDefs.push({
-      badge: '✅ COMPLETISTA', desc: 'Juegos completados o platinados',
-      bg: 'linear-gradient(135deg,#041a0c,#082e14)',
-      visual: { type: 'bigtext', text: completados + '', sub: completados !== 1 ? 'juegos' : 'juego' },
-      detail: completados + (completados !== 1 ? ' juegos completados' : ' juego completado'),
-      value: completados
-    });
-
-    /* 4 — Explorador */
-    logroDefs.push({
-      badge: '🌍 EXPLORADOR', desc: 'Géneros distintos explorados',
-      bg: 'linear-gradient(135deg,#031420,#04203a)',
-      visual: { type: 'bigtext', text: totalGeneros + '', sub: totalGeneros !== 1 ? 'géneros' : 'género' },
-      detail: totalGeneros + (totalGeneros !== 1 ? ' géneros distintos' : ' género distinto'),
-      value: totalGeneros + (totalGeneros !== 1 ? ' géneros' : ' género')
-    });
-
-    /* 5 — El Crítico */
-    if (avgScore !== null) {
-      logroDefs.push({
-        badge: '⭐ EL CRÍTICO', desc: 'Nota media de sus valoraciones',
-        bg: 'linear-gradient(135deg,#1a0a00,#2e1500)',
-        visual: { type: 'bigtext', text: avgScore.toFixed(1).replace('.', ','), sub: '/ 10' },
-        detail: 'Media sobre ' + scored.length + (scored.length !== 1 ? ' valoraciones' : ' valoración'),
-        value: avgScore.toFixed(1).replace('.', ',') + ' ★'
-      });
+    function renderLogroCard(l) {
+      var v = l.visual;
+      var bannerInner = '';
+      if (v.type === 'cover' && v.src) {
+        bannerInner = '<img class="logro-banner__cover" src="' + Utils.escapeHtml(v.src) + '" ' +
+          'style="object-position:' + Utils.escapeHtml(v.pos || 'center top') + '" ' +
+          'onerror="this.style.display=\'none\'">';
+      } else if (v.type === 'trophy') {
+        bannerInner = '<img class="logro-banner__trophy" src="' + Utils.escapeHtml(v.src) + '" alt="Platino" onerror="this.style.display=\'none\'">';
+      } else if (v.type === 'bigtext') {
+        bannerInner = '<div class="logro-banner__bignum">' + Utils.escapeHtml(v.text) +
+          (v.sub ? '<span class="logro-banner__bignumsub">' + Utils.escapeHtml(v.sub) + '</span>' : '') +
+        '</div>';
+      } else {
+        bannerInner = '<div class="logro-banner__icon">' + (v.icon || '') + '</div>';
+      }
+      return '<div class="logro-card">' +
+        '<div class="logro-banner" style="background:' + l.bg + '">' +
+          bannerInner +
+          '<div class="logro-banner__overlay">' +
+            '<span class="logro-badge">' + Utils.escapeHtml(l.badge) + '</span>' +
+            '<span class="logro-desc-badge">' + Utils.escapeHtml(l.desc) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="logro-footer">' +
+          '<div class="logro-footer__info">' +
+            '<div class="logro-winner-name" style="color:' + color + '">' + Utils.escapeHtml(player.name) + '</div>' +
+            '<div class="logro-winner-detail">' + Utils.escapeHtml(l.detail) + '</div>' +
+          '</div>' +
+          '<div class="logro-footer__val" style="color:' + color + '">' + Utils.escapeHtml(String(l.value)) + '</div>' +
+        '</div>' +
+      '</div>';
     }
 
-    /* 6 — Rejugador */
-    if (rejugados > 0) {
-      logroDefs.push({
-        badge: '🔥 REJUGADOR', desc: 'Juegos completados más de una vez',
-        bg: 'linear-gradient(135deg,#1a0505,#2e0808)',
-        visual: { type: 'bigtext', text: rejugados + '', sub: rejugados !== 1 ? 'juegos' : 'juego' },
-        detail: rejugados + (rejugados !== 1 ? ' juegos rejugados' : ' juego rejugado'),
-        value: rejugados
-      });
-    }
-
-    /* 7 — Veterano */
-    if (yearsActive && yearsActive > 1) {
-      logroDefs.push({
-        badge: '📅 VETERANO', desc: 'Años jugando en el Refugio',
-        bg: 'linear-gradient(135deg,#0d0a1a,#1c1630)',
-        visual: { type: 'bigtext', text: yearsActive + '', sub: yearsActive !== 1 ? 'años' : 'año' },
-        detail: 'Desde ' + Math.min.apply(null, years) + ' hasta ' + Math.max.apply(null, years),
-        value: yearsActive + (yearsActive !== 1 ? ' años' : ' año')
-      });
-    }
-
-    /* Renderizado usando las mismas clases .logro-card / .logro-banner de styles.css */
     var logrosHtml =
       '<div class="pp-logros-section">' +
-        '<div class="pp-sub-title" style="margin-bottom:0.75rem">🏅 Logros</div>' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">' +
+          '<div class="pp-sub-title" style="margin:0">🏅 Logros</div>' +
+          '<button class="btn btn-ghost btn-sm" style="font-size:0.72rem" ' +
+            'onclick="window.GT_Pend.openLogrosPicker(\'' + safeKeyL + '\')">✏️ Editar</button>' +
+        '</div>' +
         '<div class="pp-logros-grid">' +
-          logroDefs.map(function(l) {
-            var v = l.visual;
-            var bannerInner = '';
-            if (v.type === 'cover' && v.src) {
-              bannerInner = '<img class="logro-banner__cover" src="' + Utils.escapeHtml(v.src) + '" ' +
-                'style="object-position:' + Utils.escapeHtml(v.pos || 'center top') + '" ' +
-                'onerror="this.style.display=\'none\'">';
-            } else if (v.type === 'trophy') {
-              bannerInner = '<img class="logro-banner__trophy" src="' + Utils.escapeHtml(v.src) + '" alt="Platino" onerror="this.style.display=\'none\'">';
-            } else if (v.type === 'bigtext') {
-              bannerInner = '<div class="logro-banner__bignum">' + Utils.escapeHtml(v.text) +
-                (v.sub ? '<span class="logro-banner__bignumsub">' + Utils.escapeHtml(v.sub) + '</span>' : '') +
-              '</div>';
-            } else {
-              bannerInner = '<div class="logro-banner__icon">' + (v.icon || '') + '</div>';
-            }
-            return '<div class="logro-card">' +
-              '<div class="logro-banner" style="background:' + l.bg + '">' +
-                bannerInner +
-                '<div class="logro-banner__overlay">' +
-                  '<span class="logro-badge">' + Utils.escapeHtml(l.badge) + '</span>' +
-                  '<span class="logro-desc-badge">' + Utils.escapeHtml(l.desc) + '</span>' +
-                '</div>' +
-              '</div>' +
-              '<div class="logro-footer">' +
-                '<div class="logro-footer__info">' +
-                  '<div class="logro-winner-name" style="color:' + color + '">' + Utils.escapeHtml(player.name) + '</div>' +
-                  '<div class="logro-winner-detail">' + Utils.escapeHtml(l.detail) + '</div>' +
-                '</div>' +
-                '<div class="logro-footer__val" style="color:' + color + '">' + Utils.escapeHtml(String(l.value)) + '</div>' +
-              '</div>' +
-            '</div>';
-          }).join('') +
+          logroDefs.map(renderLogroCard).join('') +
         '</div>' +
       '</div>';
 
@@ -640,16 +757,20 @@
     var _fy = document.getElementById('footerYear'); if (_fy) _fy.textContent = new Date().getFullYear();
     injectDoneModal();
     injectFavPicker();
+    injectLogrosModal();
     render();
   }
 
   window.GT_Pend = {
-    openDoneModal:    openDoneModal,
-    openFavPicker:    openFavPicker,
-    closeFavPicker:   closeFavPicker,
-    renderPickerList: renderPickerList,
-    pickFav:          pickFav,
-    removeFav:        removeFav
+    openDoneModal:     openDoneModal,
+    openFavPicker:     openFavPicker,
+    closeFavPicker:    closeFavPicker,
+    renderPickerList:  renderPickerList,
+    pickFav:           pickFav,
+    removeFav:         removeFav,
+    openLogrosPicker:  openLogrosPicker,
+    closeLogrosPicker: closeLogrosPicker,
+    toggleLogroSel:    toggleLogroSel
   };
 
   document.addEventListener('DOMContentLoaded', function () {

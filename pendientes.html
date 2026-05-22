@@ -32,8 +32,8 @@
     /* ── Grid 16:9 favoritos ── */
     .pp-fav-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 0.45rem;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.55rem;
       margin-top: 0.65rem;
     }
     @media (max-width: 700px) { .pp-fav-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -138,6 +138,29 @@
       font-size: 0.62rem; color: var(--txt3);
       text-transform: uppercase; letter-spacing: 0.07em; margin-top: 0.18rem;
     }
+
+    /* ── Logros picker mini-cards ── */
+    .lgr-pick-card {
+      position: relative;
+      background: rgba(255,255,255,0.035);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 0.65rem;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 0.18s, background 0.18s, transform 0.14s;
+      user-select: none;
+    }
+    .lgr-pick-card:hover {
+      border-color: var(--pp-color, var(--cyan));
+      background: rgba(255,255,255,0.06);
+      transform: translateY(-2px);
+    }
+    .lgr-pick-card--sel {
+      border-color: var(--pp-color, var(--cyan));
+      background: rgba(255,255,255,0.07);
+      box-shadow: 0 0 12px -3px var(--pp-color, var(--cyan));
+    }
   </style>
 </head>
 <body>
@@ -204,6 +227,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260519b" defer></script>
 <script src="main.js?v=20260522f"            defer></script>
-<script src="pendientes.js?v=20260522e"      defer></script>
+<script src="pendientes.js?v=20260522f"      defer></script>
 </body>
 </html>
