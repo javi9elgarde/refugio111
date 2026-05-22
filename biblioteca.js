@@ -135,29 +135,54 @@
     '</div>';
   }
 
-  /* ── NOTICE: juegos lanzados sin duración ──────────────── */
+  /* ── NOTICE: juegos lanzados sin duración / sin portada ─── */
   function renderNoduNotice() {
     var el = document.getElementById('noduNotice');
     if (!el) return;
     var today = new Date().toISOString().slice(0, 10);
-    var games = Biblioteca.getAll().filter(function(g) {
+    var all = Biblioteca.getAll();
+
+    var noDur = all.filter(function(g) {
       var hasDur = g.duracion !== null && g.duracion !== undefined && g.duracion !== '';
       return !hasDur && g.fechaLanzamiento && g.fechaLanzamiento <= today;
     });
-    if (!games.length) { el.innerHTML = ''; return; }
-    var chips = games.map(function(g) {
-      return '<span class="nodur-notice__chip" onclick="window.GT_Bib.goToGame(\'' + g.id + '\')">' +
-        Utils.escapeHtml(g.titulo) + '</span>';
-    }).join('');
-    el.innerHTML =
-      '<div class="nodur-notice">' +
-        '<div class="nodur-notice__header">' +
-          '<span class="nodur-notice__icon">⚠️</span>' +
-          '<strong class="nodur-notice__count">' + games.length + ' juego' + (games.length !== 1 ? 's' : '') + '</strong>' +
-          '<span class="nodur-notice__label"> ya lanzado' + (games.length !== 1 ? 's' : '') + ' sin duración — pincha para ir al juego:</span>' +
-        '</div>' +
-        '<div class="nodur-notice__chips">' + chips + '</div>' +
-      '</div>';
+    var noCover = all.filter(function(g) {
+      return !g.portadaUrl || g.portadaUrl.trim() === '';
+    });
+
+    if (!noDur.length && !noCover.length) { el.innerHTML = ''; return; }
+
+    function chips(games) {
+      return games.map(function(g) {
+        return '<span class="nodur-notice__chip" onclick="window.GT_Bib.goToGame(\'' + g.id + '\')">' +
+          Utils.escapeHtml(g.titulo) + '</span>';
+      }).join('');
+    }
+
+    var html = '';
+    if (noDur.length) {
+      html +=
+        '<div class="nodur-notice">' +
+          '<div class="nodur-notice__header">' +
+            '<span class="nodur-notice__icon">⚠️</span>' +
+            '<strong class="nodur-notice__count">' + noDur.length + ' juego' + (noDur.length !== 1 ? 's' : '') + '</strong>' +
+            '<span class="nodur-notice__label"> ya lanzado' + (noDur.length !== 1 ? 's' : '') + ' sin duración — pincha para ir al juego:</span>' +
+          '</div>' +
+          '<div class="nodur-notice__chips">' + chips(noDur) + '</div>' +
+        '</div>';
+    }
+    if (noCover.length) {
+      html +=
+        '<div class="nodur-notice nodur-notice--cover">' +
+          '<div class="nodur-notice__header">' +
+            '<span class="nodur-notice__icon">🖼️</span>' +
+            '<strong class="nodur-notice__count nodur-notice__count--cover">' + noCover.length + ' juego' + (noCover.length !== 1 ? 's' : '') + '</strong>' +
+            '<span class="nodur-notice__label"> sin portada — pincha para añadirla:</span>' +
+          '</div>' +
+          '<div class="nodur-notice__chips">' + chips(noCover) + '</div>' +
+        '</div>';
+    }
+    el.innerHTML = html;
   }
 
   function goToGame(id) {
