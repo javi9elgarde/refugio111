@@ -219,13 +219,57 @@
       var cell = document.createElement('div');
       var games = byDay[d] || [];
       var isToday = today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
-      cell.className = 'cal-day' + (games.length ? ' has-game' : '') + (isToday ? ' today' : '');
-      var html = '<div class="cal-day__num">' + d + '</div>';
-      games.slice(0,3).forEach(function(g){
-        html += '<div class="cal-game" title="' + Utils.escapeHtml(g.titulo) + '">' + Utils.escapeHtml(g.titulo) + '</div>';
-      });
-      if (games.length > 3) html += '<div class="cal-game" style="opacity:0.5">+' + (games.length-3) + ' más</div>';
-      cell.innerHTML = html;
+      var todayCls = isToday ? ' today' : '';
+      var numCls   = isToday ? ' cal-cover__num--today' : '';
+
+      if (!games.length) {
+        /* ── Empty day ── */
+        cell.className = 'cal-day' + todayCls;
+        cell.innerHTML = '<div class="cal-day__num' + numCls + '">' + d + '</div>';
+
+      } else if (games.length === 1) {
+        /* ── Single game: full 16:9 cover ── */
+        var g = games[0];
+        var sid = g.id.replace(/'/g, "\\'");
+        cell.className = 'cal-day cal-day--cover' + todayCls;
+        cell.innerHTML =
+          '<div class="cal-cover cal-cover--full" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')">' +
+            (g.portadaUrl
+              ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" class="cal-cover__img" loading="lazy" onerror="this.style.display=\'none\'">'
+              : '<div class="cal-cover__ph">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>') +
+            '<div class="cal-cover__overlay">' +
+              '<span class="cal-cover__num' + numCls + '">' + d + '</span>' +
+              '<span class="cal-cover__title">' + Utils.escapeHtml(g.titulo) + '</span>' +
+            '</div>' +
+          '</div>';
+
+      } else {
+        /* ── 2+ games: diagonal split ── */
+        var g1 = games[0], g2 = games[1];
+        var extra = games.length > 2 ? games.length - 2 : 0;
+        var s1 = g1.id.replace(/'/g, "\\'");
+        var s2 = g2.id.replace(/'/g, "\\'");
+        cell.className = 'cal-day cal-day--cover cal-day--split' + todayCls;
+        cell.innerHTML =
+          '<div class="cal-day__num' + numCls + '">' + d + '</div>' +
+          (extra ? '<div class="cal-more">+' + extra + '</div>' : '') +
+          '<div class="cal-covers-split">' +
+            '<div class="cal-cover cal-cover--diag-left" onclick="window.GT.GameDetailModal.open(\'' + s1 + '\')" title="' + Utils.escapeHtml(g1.titulo) + '">' +
+              (g1.portadaUrl
+                ? '<img src="' + Utils.escapeHtml(g1.portadaUrl) + '" class="cal-cover__img" loading="lazy" onerror="this.style.display=\'none\'">'
+                : '<div class="cal-cover__ph">' + Utils.escapeHtml(g1.titulo.charAt(0)) + '</div>') +
+              '<div class="cal-cover__grad cal-cover__grad--left"></div>' +
+              '<div class="cal-cover__label cal-cover__label--left">' + Utils.escapeHtml(g1.titulo) + '</div>' +
+            '</div>' +
+            '<div class="cal-cover cal-cover--diag-right" onclick="window.GT.GameDetailModal.open(\'' + s2 + '\')" title="' + Utils.escapeHtml(g2.titulo) + '">' +
+              (g2.portadaUrl
+                ? '<img src="' + Utils.escapeHtml(g2.portadaUrl) + '" class="cal-cover__img" loading="lazy" onerror="this.style.display=\'none\'">'
+                : '<div class="cal-cover__ph">' + Utils.escapeHtml(g2.titulo.charAt(0)) + '</div>') +
+              '<div class="cal-cover__grad cal-cover__grad--right"></div>' +
+              '<div class="cal-cover__label cal-cover__label--right">' + Utils.escapeHtml(g2.titulo) + '</div>' +
+            '</div>' +
+          '</div>';
+      }
       grid.appendChild(cell);
     }
 

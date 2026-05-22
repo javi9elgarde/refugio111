@@ -1286,74 +1286,230 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 }
 .nav-card__desc { font-size: 0.78rem; color: var(--txt3); }
 
-/* â”€â”€ CALENDAR (index) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── CALENDAR (index) ─────────────────────────────────────── */
 .calendar-nav {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 .calendar-nav h3 {
   font-family: 'Orbitron', sans-serif;
   font-size: 1rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--cyan);
+  color: #f5c842;
   min-width: 180px;
   text-align: center;
+  text-shadow: 0 0 10px rgba(245,200,66,0.4);
 }
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 5px;
 }
 .cal-day-header {
   text-align: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--txt3);
-  padding: 0.5rem 0;
+  color: rgba(245,200,66,0.5);
+  padding: 0.5rem 0 0.6rem;
 }
+
+/* ── Base day cell ── */
 .cal-day {
-  min-height: 80px;
-  padding: 0.5rem;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid transparent;
+  min-height: 100px;
+  padding: 0.4rem 0.45rem;
+  background: rgba(255,255,255,0.015);
+  border: 1px solid rgba(255,255,255,0.05);
   border-radius: 8px;
-  transition: all var(--transition);
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.2s;
 }
-.cal-day.has-game {
-  background: rgba(79,172,254,0.05);
-  border-color: rgba(79,172,254,0.15);
-}
-.cal-day.has-game:hover { background: rgba(79,172,254,0.1); border-color: rgba(79,172,254,0.3); }
 .cal-day.today {
-  border-color: var(--cyan);
-  box-shadow: 0 0 12px rgba(79,172,254,0.2);
+  border-color: #f5c842;
+  box-shadow: 0 0 16px rgba(245,200,66,0.18);
 }
+.cal-day.other-month { opacity: 0.18; }
+
+/* ── Day number ── */
 .cal-day__num {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--txt3);
-  margin-bottom: 0.25rem;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(232,232,248,0.38);
+  line-height: 1;
 }
-.cal-day.today .cal-day__num { color: var(--cyan); }
-.cal-day.other-month { opacity: 0.3; }
-.cal-game {
-  font-size: 0.65rem;
-  color: var(--txt);
-  background: rgba(79,172,254,0.12);
-  border-radius: 4px;
-  padding: 1px 4px;
-  margin-bottom: 2px;
+.cal-cover__num--today,
+.cal-day__num.cal-cover__num--today { color: #f5c842; text-shadow: 0 0 8px rgba(245,200,66,0.5); }
+
+/* ── Cover day (has game) ── */
+.cal-day--cover {
+  padding: 0;
+  cursor: default;
+}
+
+/* ── Full cover: 1 game ── */
+.cal-cover--full {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 8px;
+  display: block;
+}
+.cal-cover--full:hover .cal-cover__img { transform: scale(1.06); filter: brightness(1.1); }
+.cal-cover--full:hover .cal-cover__overlay {
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.35) 45%, rgba(0,0,0,0.08) 100%);
+}
+.cal-cover__img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  transition: transform 0.3s, filter 0.3s;
+}
+.cal-cover__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.2) 42%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.38rem 0.45rem 0.42rem;
+  transition: background 0.2s;
+}
+.cal-cover__num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.88);
+  line-height: 1;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+}
+.cal-cover__title {
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.95);
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.5;
-  cursor: pointer;
+  text-shadow: 0 1px 5px rgba(0,0,0,0.95);
+  letter-spacing: 0.02em;
 }
+.cal-cover__ph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: rgba(245,200,66,0.5);
+  background: rgba(12,10,3,0.8);
+}
+
+/* ── Diagonal split: 2+ games ── */
+.cal-day--split .cal-day__num {
+  position: absolute;
+  top: 0.38rem;
+  left: 0.45rem;
+  z-index: 5;
+  text-shadow: 0 1px 5px rgba(0,0,0,0.95);
+  color: rgba(255,255,255,0.88);
+  pointer-events: none;
+}
+.cal-more {
+  position: absolute;
+  top: 0.38rem;
+  right: 0.42rem;
+  z-index: 5;
+  font-size: 0.52rem;
+  font-weight: 700;
+  color: #f5c842;
+  background: rgba(0,0,0,0.72);
+  padding: 0.1rem 0.28rem;
+  border-radius: 4px;
+  pointer-events: none;
+}
+.cal-covers-split {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 8px;
+}
+/* Amber diagonal separator line */
+.cal-covers-split::after {
+  content: '';
+  position: absolute;
+  top: -15%; bottom: -15%;
+  left: calc(50% - 1.5px);
+  width: 3px;
+  background: linear-gradient(to bottom, rgba(245,200,66,0.95), rgba(245,200,66,0.35));
+  transform: rotate(13deg);
+  transform-origin: center;
+  z-index: 3;
+  pointer-events: none;
+  box-shadow: 0 0 6px rgba(245,200,66,0.4);
+}
+.cal-cover--diag-left {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 60% 0, 40% 100%, 0 100%);
+  cursor: pointer;
+  overflow: hidden;
+  transition: clip-path 0.22s ease;
+}
+.cal-cover--diag-right {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(60% 0, 100% 0, 100% 100%, 40% 100%);
+  cursor: pointer;
+  overflow: hidden;
+  transition: clip-path 0.22s ease;
+}
+/* Hover expand via :has() */
+.cal-covers-split:has(.cal-cover--diag-left:hover) .cal-cover--diag-left  { clip-path: polygon(0 0, 72% 0, 52% 100%, 0 100%); }
+.cal-covers-split:has(.cal-cover--diag-left:hover) .cal-cover--diag-right { clip-path: polygon(72% 0, 100% 0, 100% 100%, 52% 100%); }
+.cal-covers-split:has(.cal-cover--diag-right:hover) .cal-cover--diag-left  { clip-path: polygon(0 0, 48% 0, 28% 100%, 0 100%); }
+.cal-covers-split:has(.cal-cover--diag-right:hover) .cal-cover--diag-right { clip-path: polygon(48% 0, 100% 0, 100% 100%, 28% 100%); }
+.cal-cover--diag-left .cal-cover__img,
+.cal-cover--diag-right .cal-cover__img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  transition: filter 0.22s;
+}
+.cal-cover--diag-left:hover .cal-cover__img,
+.cal-cover--diag-right:hover .cal-cover__img { filter: brightness(1.12); }
+.cal-cover__grad {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.cal-cover__grad--left  { background: linear-gradient(135deg, rgba(0,0,0,0.55) 0%, transparent 55%); }
+.cal-cover__grad--right { background: linear-gradient(-135deg, rgba(0,0,0,0.55) 0%, transparent 55%); }
+.cal-cover__label {
+  position: absolute;
+  bottom: 0.3rem;
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 48%;
+  pointer-events: none;
+  z-index: 2;
+}
+.cal-cover__label--left  { left: 0.35rem; }
+.cal-cover__label--right { right: 0.35rem; text-align: right; }
 
 /* â”€â”€ TOP 5 CARDS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .top5-grid {
