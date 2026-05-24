@@ -2242,6 +2242,12 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
   border-bottom: 1px solid var(--border);
   padding: 2.5rem 2rem 2rem;
 }
+.bib-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
 .page-header--biblio {
   background-image: url('fondobiblio1.jpg');
   background-size: cover;
