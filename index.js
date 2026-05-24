@@ -517,8 +517,66 @@
     renderRanking(new Date().getFullYear());
   }
 
+  /* ── CUENTAS ATRÁS ───────────────────────────────────────── */
+  var EVENTOS_COUNTDOWN = [
+    { nombre: 'State of Play',    emoji: '🎮', fecha: '2026-06-02T00:00:00', color: '#0070f3' },
+    { nombre: 'Summer Game Fest', emoji: '🎪', fecha: '2026-06-05T00:00:00', color: '#f5c842' }
+  ];
+
+  function initCountdowns() {
+    var wrap = document.getElementById('heroCountdowns');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+
+    EVENTOS_COUNTDOWN.forEach(function (ev) {
+      var card = document.createElement('div');
+      card.className = 'cd-card';
+      card.style.setProperty('--cd-color', ev.color);
+      card.innerHTML =
+        '<div class="cd-card__header">' +
+          '<span class="cd-card__emoji">' + ev.emoji + '</span>' +
+          '<span class="cd-card__name">' + ev.nombre + '</span>' +
+        '</div>' +
+        '<div class="cd-card__timer" id="cd-' + ev.nombre.replace(/\s/g,'') + '">' +
+          '<div class="cd-unit"><span class="cd-val cd-days">--</span><span class="cd-lbl">días</span></div>' +
+          '<div class="cd-sep">:</div>' +
+          '<div class="cd-unit"><span class="cd-val cd-hours">--</span><span class="cd-lbl">h</span></div>' +
+          '<div class="cd-sep">:</div>' +
+          '<div class="cd-unit"><span class="cd-val cd-mins">--</span><span class="cd-lbl">min</span></div>' +
+          '<div class="cd-sep">:</div>' +
+          '<div class="cd-unit"><span class="cd-val cd-secs">--</span><span class="cd-lbl">seg</span></div>' +
+        '</div>';
+      wrap.appendChild(card);
+    });
+
+    function tick() {
+      var now = new Date().getTime();
+      EVENTOS_COUNTDOWN.forEach(function (ev) {
+        var id  = 'cd-' + ev.nombre.replace(/\s/g,'');
+        var box = document.getElementById(id);
+        if (!box) return;
+        var diff = new Date(ev.fecha).getTime() - now;
+        if (diff <= 0) {
+          box.innerHTML = '<span style="color:var(--cd-color);font-size:.9rem;font-weight:700">¡YA EMPIEZA!</span>';
+          return;
+        }
+        var d  = Math.floor(diff / 86400000);
+        var h  = Math.floor((diff % 86400000) / 3600000);
+        var m  = Math.floor((diff % 3600000)  / 60000);
+        var s  = Math.floor((diff % 60000)    / 1000);
+        box.querySelector('.cd-days').textContent = d;
+        box.querySelector('.cd-hours').textContent = String(h).padStart(2,'0');
+        box.querySelector('.cd-mins').textContent  = String(m).padStart(2,'0');
+        box.querySelector('.cd-secs').textContent  = String(s).padStart(2,'0');
+      });
+    }
+    tick();
+    setInterval(tick, 1000);
+  }
+
   /* ── BOOT ────────────────────────────────────────────────── */
   document.addEventListener('DOMContentLoaded', function () {
+    safe(initCountdowns, 'initCountdowns');
     window.GT.onDataReady(function () {
       safe(initHeroCanvas,        'initHeroCanvas');
       safe(initHeroParallax,      'initHeroParallax');
