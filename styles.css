@@ -2243,7 +2243,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
   padding: 2.5rem 2rem 2rem;
 }
 .page-header--biblio {
-  background: url('fondobiblio1.jpg') center center / 100% auto no-repeat;
+  background-image: url('fondobiblio1.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
   border-bottom: 1px solid rgba(79,172,254,0.2);
   height: 250px;
   display: flex;
