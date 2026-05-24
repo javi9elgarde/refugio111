@@ -519,8 +519,8 @@
 
   /* ── CUENTAS ATRÁS ───────────────────────────────────────── */
   var EVENTOS_COUNTDOWN = [
-    { nombre: 'State of Play',    emoji: '🎮', fecha: '2026-06-02T00:00:00', color: '#0070f3' },
-    { nombre: 'Summer Game Fest', emoji: '🎪', fecha: '2026-06-05T00:00:00', color: '#f5c842' }
+    { nombre: 'State of Play',    emoji: '🎮', fecha: '2026-06-02T00:00:00', color: '#0070f3', fechaLabel: '2 Jun 2026' },
+    { nombre: 'Summer Game Fest', emoji: '🎪', fecha: '2026-06-05T00:00:00', color: '#f5c842', fechaLabel: '5 Jun 2026' }
   ];
 
   function initCountdowns() {
@@ -535,7 +535,10 @@
       card.innerHTML =
         '<div class="cd-card__header">' +
           '<span class="cd-card__emoji">' + ev.emoji + '</span>' +
-          '<span class="cd-card__name">' + ev.nombre + '</span>' +
+          '<div>' +
+            '<div class="cd-card__name">' + ev.nombre + '</div>' +
+            '<div class="cd-card__date">📅 ' + ev.fechaLabel + '</div>' +
+          '</div>' +
         '</div>' +
         '<div class="cd-card__timer" id="cd-' + ev.nombre.replace(/\s/g,'') + '">' +
           '<div class="cd-unit"><span class="cd-val cd-days">--</span><span class="cd-lbl">días</span></div>' +
