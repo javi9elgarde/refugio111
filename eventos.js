@@ -1,17 +1,68 @@
 /* ============================================================
    EVENTOS — Bingo Interactivo de Conferencias Gaming
-   Version: 20260522m
+   Version: 20260525e
    ============================================================ */
 (function () {
   'use strict';
 
-  var db = null;
-  var _cards = [];
+  /* ── LISTA DE EVENTOS ──────────────────────────────────────── */
+  var EVENTS = [
+    {
+      id         : 'state-of-play-jun-2026',
+      nombre     : 'State of Play',
+      tag        : '🎮 PlayStation Showcase',
+      isoDate    : '2026-06-02T23:00:00+02:00',
+      fechaLabel : 'Martes, 2 de junio de 2026',
+      hora       : '23:00 h · hora peninsular España',
+      donde      : 'YouTube · Twitch · PlayStation.com',
+      duracion   : 'Más de 60 minutos',
+      desc       : 'Más de 60 minutos de noticias, anuncios y tráileres de gameplay de los mejores estudios del mundo. Con un vistazo extendido a <strong style="color:var(--txt)">Marvel\'s Wolverine</strong> de Insomniac Games, que llega a PS5 el 15 de septiembre de 2026.',
+      img        : 'https://blog.es.playstation.com/tachyon/sites/14/2026/05/4d07649023989d3599bc6d90588574e4487eaf50.jpg',
+      link       : 'https://www.youtube.com/@PlayStation',
+      linkLabel  : '🔴 Ver en directo — YouTube PlayStation',
+      linkBg     : 'linear-gradient(135deg,#0070f3,#0050cc)',
+      linkBorder : '#0070f3',
+      brand      : 'PLAYSTATION',
+      brandColor : '#0070f3',
+      cdColor    : '#4facfe',
+      cdBg       : 'rgba(79,172,254,0.07)',
+      cdBorder   : 'rgba(79,172,254,0.2)'
+    },
+    {
+      id         : 'summer-game-fest-jun-2026',
+      nombre     : 'Summer Game Fest',
+      tag        : '🎪 Gaming Showcase',
+      isoDate    : '2026-06-05T20:00:00+02:00',
+      fechaLabel : 'Viernes, 5 de junio de 2026',
+      hora       : '20:00 h · hora peninsular España',
+      donde      : 'YouTube · Twitch · summergamefest.com',
+      duracion   : 'Aproximadamente 2 horas',
+      desc       : 'El mayor evento independiente de verano del gaming mundial. Geoff Keighley reúne a los estudios más importantes para presentar anuncios en exclusiva, tráileres de grandes títulos y sorpresas que nadie espera.',
+      img        : '',
+      link       : 'https://www.youtube.com/@summergamefest',
+      linkLabel  : '▶ Ver en directo — YouTube SGF',
+      linkBg     : 'linear-gradient(135deg,#f5c842,#b38a00)',
+      linkBorder : '#f5c842',
+      brand      : 'SUMMER GAME FEST',
+      brandColor : '#f5c842',
+      cdColor    : '#f5c842',
+      cdBg       : 'rgba(245,200,66,0.07)',
+      cdBorder   : 'rgba(245,200,66,0.25)'
+    }
+  ];
+
+  var ARCHIVE_DAYS = 7;   /* días tras el evento para pasarlo a histórico */
+
+  /* ── ESTADO ─────────────────────────────────────────────────── */
+  var db            = null;
+  var _cards        = [];
   var _activeCardId = null;
-  var _player = 'Javi';
-  var _unsubCard = null;
-  var _editingCardId = null;
+  var _player       = 'Javi';
+  var _unsubCard    = null;
+  var _editingCardId= null;
   var _prevWinCount = 0;
+  var _currentEvtIdx= 0;
+  var _cdInterval   = null;
 
   /* Todas las líneas ganadoras: 5 filas + 5 columnas + 2 diagonales */
   var LINES = [
@@ -20,12 +71,40 @@
     [0,6,12,18,24],[4,8,12,16,20]
   ];
 
+  /* ── HELPERS EVENTOS ────────────────────────────────────────── */
+  function isHistoric(ev) {
+    return Date.now() > new Date(ev.isoDate).getTime() + ARCHIVE_DAYS * 86400000;
+  }
+
+  function getCardsForEvent(idx) {
+    var ev = EVENTS[idx];
+    return _cards.filter(function (c) {
+      /* Tarjetas sin eventoId (legacy) → van con el primer evento */
+      return c.eventoId === ev.id || (!c.eventoId && idx === 0);
+    });
+  }
+
   /* ── INIT ───────────────────────────────────────────────────── */
   function init() {
     waitForDb(function (firedb) {
       db = firedb;
       loadCards();
     });
+
+    /* Índice inicial: el primer evento no archivado (o el último si todos archivados) */
+    var firstActive = 0;
+    for (var i = 0; i < EVENTS.length; i++) {
+      if (!isHistoric(EVENTS[i])) { firstActive = i; break; }
+      firstActive = i;
+    }
+    _currentEvtIdx = firstActive;
+
+    renderFeaturedEvent(_currentEvtIdx);
+    renderCarouselDots();
+    updateCarouselNav();
+
+    document.getElementById('evtPrev').addEventListener('click', function () { goToEvent(_currentEvtIdx - 1); });
+    document.getElementById('evtNext').addEventListener('click', function () { goToEvent(_currentEvtIdx + 1); });
 
     document.getElementById('btnNewBingo').addEventListener('click', openNewCardModal);
     document.getElementById('bingoModalSave').addEventListener('click', saveCardModal);
@@ -45,32 +124,199 @@
     setTimeout(function () { waitForDb(cb); }, 60);
   }
 
+  /* ── CARRUSEL ───────────────────────────────────────────────── */
+  function goToEvent(idx) {
+    if (idx < 0 || idx >= EVENTS.length) return;
+    _currentEvtIdx = idx;
+    _activeCardId  = null;   /* reset para buscar la primera tarjeta del nuevo evento */
+    renderFeaturedEvent(idx);
+    renderCarouselDots();
+    updateCarouselNav();
+    renderBingoSection();
+  }
+
+  function renderFeaturedEvent(idx) {
+    var ev     = EVENTS[idx];
+    var target = new Date(ev.isoDate).getTime();
+    var diff   = target - Date.now();
+    var isLive = diff <= 0;
+    var badgeText = isLive ? '🔴 EN DIRECTO' : (diff < 86400000 ? '¡HOY!' : 'PRÓXIMAMENTE');
+    var badgeCls  = isLive ? 'evt-badge evt-badge--live' : 'evt-badge';
+
+    var visualHtml = ev.img
+      ? '<div class="evt-featured__img-wrap"><img src="' + escHtml(ev.img) + '" class="evt-featured__img" alt="' + escHtml(ev.nombre) + '" loading="eager"></div>'
+      : '<div class="evt-featured__img-wrap evt-featured__placeholder"><div class="evt-featured__placeholder-icon">🎮</div><div class="evt-featured__placeholder-lbl">' + escHtml(ev.nombre) + '</div></div>';
+
+    var cdUnit = function (id) {
+      return '<div class="evt-cd-unit" style="background:' + ev.cdBg + ';border-color:' + ev.cdBorder + '">' +
+        '<span class="evt-cd-val" id="' + id + '" style="color:' + ev.cdColor + ';text-shadow:0 0 12px ' + ev.cdColor + '80">--</span>' +
+        '<span class="evt-cd-lbl">' + { evtCdDays:'días', evtCdHours:'horas', evtCdMins:'min', evtCdSecs:'seg' }[id] + '</span>' +
+      '</div>';
+    };
+    var cdSep = '<span class="evt-cd-sep" style="color:' + ev.cdColor + '40">:</span>';
+
+    var container = document.getElementById('evtFeaturedCard');
+    container.innerHTML =
+      '<div class="evt-featured__visual">' +
+        visualHtml +
+        '<div class="' + badgeCls + '" id="evtBadge">' + badgeText + '</div>' +
+        '<div style="position:absolute;bottom:0.7rem;right:0.7rem;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);border-radius:6px;padding:0.3rem 0.55rem;border:1px solid rgba(255,255,255,0.1)">' +
+          '<span style="font-family:\'Orbitron\',sans-serif;font-size:0.6rem;font-weight:700;color:' + ev.brandColor + ';letter-spacing:0.1em">' + escHtml(ev.brand) + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="evt-featured__info">' +
+        '<div class="evt-featured__header">' +
+          '<div class="evt-featured__tag">' + escHtml(ev.tag) + '</div>' +
+          '<h2 class="evt-featured__name">' + escHtml(ev.nombre) + '</h2>' +
+          '<p class="evt-featured__desc">' + ev.desc + '</p>' +
+        '</div>' +
+        '<div class="evt-schedule">' +
+          '<div class="evt-schedule__row"><span class="evt-schedule__icon">📅</span><div><div class="evt-schedule__label">Fecha</div><div class="evt-schedule__val">' + escHtml(ev.fechaLabel) + '</div></div></div>' +
+          '<div class="evt-schedule__row"><span class="evt-schedule__icon">🕐</span><div><div class="evt-schedule__label">Hora</div><div class="evt-schedule__val">' + escHtml(ev.hora) + '</div></div></div>' +
+          '<div class="evt-schedule__row"><span class="evt-schedule__icon">📺</span><div><div class="evt-schedule__label">Dónde verlo</div><div class="evt-schedule__val">' + escHtml(ev.donde) + '</div></div></div>' +
+          '<div class="evt-schedule__row"><span class="evt-schedule__icon">⏱</span><div><div class="evt-schedule__label">Duración estimada</div><div class="evt-schedule__val">' + escHtml(ev.duracion) + '</div></div></div>' +
+        '</div>' +
+        '<div class="evt-countdown">' +
+          '<div class="evt-countdown__label">Cuenta atrás</div>' +
+          '<div class="evt-countdown__timer">' +
+            cdUnit('evtCdDays') + cdSep + cdUnit('evtCdHours') + cdSep + cdUnit('evtCdMins') + cdSep + cdUnit('evtCdSecs') +
+          '</div>' +
+        '</div>' +
+        '<a href="' + escHtml(ev.link) + '" class="btn btn-primary evt-featured__link" target="_blank" style="display:inline-flex;gap:0.45rem;align-items:center;background:' + ev.linkBg + ';border-color:' + ev.linkBorder + '">' +
+          escHtml(ev.linkLabel) +
+        '</a>' +
+      '</div>';
+
+    startCountdown(ev);
+  }
+
+  function startCountdown(ev) {
+    if (_cdInterval) clearInterval(_cdInterval);
+    var target = new Date(ev.isoDate).getTime();
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function tick() {
+      var dDays  = document.getElementById('evtCdDays');
+      if (!dDays) { clearInterval(_cdInterval); return; }   /* DOM reemplazado */
+      var dHours = document.getElementById('evtCdHours');
+      var dMins  = document.getElementById('evtCdMins');
+      var dSecs  = document.getElementById('evtCdSecs');
+      var badge  = document.getElementById('evtBadge');
+      var diff   = target - Date.now();
+
+      if (diff <= 0) {
+        dDays.textContent = dHours.textContent = dMins.textContent = dSecs.textContent = '00';
+        if (badge && !badge.classList.contains('evt-badge--live')) {
+          badge.textContent = '🔴 EN DIRECTO';
+          badge.classList.add('evt-badge--live');
+        }
+        return;
+      }
+
+      dDays.textContent  = pad(Math.floor(diff / 86400000));
+      dHours.textContent = pad(Math.floor((diff % 86400000) / 3600000));
+      dMins.textContent  = pad(Math.floor((diff % 3600000) / 60000));
+      dSecs.textContent  = pad(Math.floor((diff % 60000) / 1000));
+
+      if (badge && !badge.classList.contains('evt-badge--live')) {
+        badge.textContent = diff < 86400000 ? '¡HOY!' : 'PRÓXIMAMENTE';
+      }
+    }
+
+    tick();
+    _cdInterval = setInterval(tick, 1000);
+  }
+
+  function renderCarouselDots() {
+    var dots = document.getElementById('evtDots');
+    if (!dots) return;
+    if (EVENTS.length <= 1) { dots.innerHTML = ''; return; }
+    dots.innerHTML = EVENTS.map(function (ev, i) {
+      var cls = 'evt-dot' + (i === _currentEvtIdx ? ' evt-dot--active' : '');
+      return '<button class="' + cls + '" onclick="window.GT_Bingo.goToEvent(' + i + ')" title="' + escHtml(ev.nombre) + '" aria-label="' + escHtml(ev.nombre) + '"></button>';
+    }).join('');
+  }
+
+  function updateCarouselNav() {
+    var prev = document.getElementById('evtPrev');
+    var next = document.getElementById('evtNext');
+    if (prev) prev.disabled = (_currentEvtIdx === 0);
+    if (next) next.disabled = (_currentEvtIdx === EVENTS.length - 1);
+  }
+
+  /* ── HISTÓRICO ──────────────────────────────────────────────── */
+  function renderHistorico() {
+    var el = document.getElementById('evtHistorico');
+    if (!el) return;
+    var historic = EVENTS.filter(isHistoric);
+    if (historic.length === 0) { el.style.display = 'none'; return; }
+    el.style.display = '';
+
+    var grid = document.getElementById('evtHistoricoGrid');
+    if (!grid) return;
+    grid.innerHTML = historic.map(function (ev, hi) {
+      var evIdx    = EVENTS.indexOf(ev);
+      var evCards  = getCardsForEvent(evIdx);
+      var imgHtml  = ev.img
+        ? '<img src="' + escHtml(ev.img) + '" class="evt-hist-card__img" alt="' + escHtml(ev.nombre) + '">'
+        : '<div class="evt-hist-card__noimg">🎮</div>';
+      var bingoBadge = evCards.length > 0
+        ? '<div class="evt-hist-card__bingos">🎰 ' + evCards.length + ' bingo' + (evCards.length !== 1 ? 's' : '') + ' archivado' + (evCards.length !== 1 ? 's' : '') + '</div>'
+        : '';
+      return '<div class="evt-hist-card">' +
+        '<div class="evt-hist-card__thumb">' + imgHtml + '</div>' +
+        '<div class="evt-hist-card__body">' +
+          '<div class="evt-hist-card__tag">' + escHtml(ev.tag) + '</div>' +
+          '<div class="evt-hist-card__name">' + escHtml(ev.nombre) + '</div>' +
+          '<div class="evt-hist-card__date">' + escHtml(ev.fechaLabel) + '</div>' +
+          bingoBadge +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
   /* ── CARGAR TARJETAS ────────────────────────────────────────── */
   function loadCards() {
     db.collection('bingo_cards').orderBy('createdAt', 'desc')
       .onSnapshot(function (snap) {
         _cards = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        renderTabs();
-        if (_cards.length > 0) {
-          var hasActive = _activeCardId && _cards.some(function (c) { return c.id === _activeCardId; });
-          setActiveCard(hasActive ? _activeCardId : _cards[0].id);
-        } else {
-          document.getElementById('bingoBoardWrap').innerHTML =
-            '<div class="empty-state" style="margin-top:3rem">' +
-              '<div class="empty-state__icon">🎰</div>' +
-              '<div class="empty-state__title">No hay ningún bingo todavía</div>' +
-              '<p>Crea el primero con el botón de arriba.</p>' +
-            '</div>';
-          document.getElementById('bingoStats').innerHTML = '';
-          hideLoading();
-        }
+        renderBingoSection();
+        renderHistorico();
       });
+  }
+
+  /* ── SECCIÓN BINGO (filtrada por evento actual) ─────────────── */
+  function renderBingoSection() {
+    var ev      = EVENTS[_currentEvtIdx];
+    var evCards = getCardsForEvent(_currentEvtIdx);
+
+    /* Actualizar subtítulo */
+    var sub = document.getElementById('bingoEventSub');
+    if (sub) sub.textContent = ev.nombre;
+
+    renderTabs(evCards);
+
+    if (evCards.length > 0) {
+      var hasActive = _activeCardId && evCards.some(function (c) { return c.id === _activeCardId; });
+      setActiveCard(hasActive ? _activeCardId : evCards[0].id);
+    } else {
+      _activeCardId = null;
+      document.getElementById('bingoBoardWrap').innerHTML =
+        '<div class="empty-state" style="margin-top:3rem">' +
+          '<div class="empty-state__icon">🎰</div>' +
+          '<div class="empty-state__title">No hay bingos para ' + escHtml(ev.nombre) + '</div>' +
+          '<p>Crea el primero con el botón de arriba.</p>' +
+        '</div>';
+      document.getElementById('bingoStats').innerHTML = '';
+      hideLoading();
+    }
   }
 
   function setActiveCard(cardId) {
     _activeCardId = cardId;
     _prevWinCount = 0;
-    renderTabs();
+    renderTabs(getCardsForEvent(_currentEvtIdx));
     if (_unsubCard) _unsubCard();
     _unsubCard = db.collection('bingo_cards').doc(cardId)
       .onSnapshot(function (doc) {
@@ -89,10 +335,12 @@
   }
 
   /* ── TABS ───────────────────────────────────────────────────── */
-  function renderTabs() {
+  function renderTabs(evCards) {
+    var cards     = evCards || getCardsForEvent(_currentEvtIdx);
     var container = document.getElementById('bingoTabs');
-    if (_cards.length === 0) { container.innerHTML = ''; return; }
-    container.innerHTML = _cards.map(function (c) {
+    if (!container) return;
+    if (cards.length === 0) { container.innerHTML = ''; return; }
+    container.innerHTML = cards.map(function (c) {
       var active = c.id === _activeCardId ? ' bingo-tab--active' : '';
       return '<button class="bingo-tab' + active + '" onclick="window.GT_Bingo.setActiveCard(\'' + escId(c.id) + '\')">' +
         escHtml(c.titulo) + '</button>';
@@ -101,13 +349,13 @@
 
   /* ── RENDER TABLERO ─────────────────────────────────────────── */
   function renderBoard(card) {
-    var cells = card.cells || [];
+    var cells    = card.cells || [];
     var winLines = getWinLines(cells);
-    var winSet = new Set();
+    var winSet   = new Set();
     winLines.forEach(function (line) { line.forEach(function (i) { winSet.add(i); }); });
 
-    var letters = ['B','I','N','G','O'];
-    var headerHtml = letters.map(function (l) {
+    var letters     = ['B','I','N','G','O'];
+    var headerHtml  = letters.map(function (l) {
       return '<div class="bingo-letter bingo-letter--' + l.toLowerCase() + '">' + l + '</div>';
     }).join('');
 
@@ -115,7 +363,7 @@
       var marked = !!cell.marcada;
       var libre  = !!cell.libre;
       var win    = winSet.has(i);
-      var cls = 'bingo-cell' +
+      var cls    = 'bingo-cell' +
         (marked ? ' bingo-cell--marked' : '') +
         (win    ? ' bingo-cell--win'    : '') +
         (libre  ? ' bingo-cell--free'   : '');
@@ -138,9 +386,9 @@
       return '<div class="' + cls + '"' + click + '>' + inner + '</div>';
     }).join('');
 
-    var marked = cells.filter(function (c) { return c.marcada && !c.libre; }).length;
-    var total  = cells.filter(function (c) { return !c.libre; }).length;
-    var prevWins = _prevWinCount;
+    var marked    = cells.filter(function (c) { return c.marcada && !c.libre; }).length;
+    var total     = cells.filter(function (c) { return !c.libre; }).length;
+    var prevWins  = _prevWinCount;
     _prevWinCount = winLines.length;
 
     document.getElementById('bingoBoardWrap').innerHTML =
@@ -172,7 +420,7 @@
     db.collection('bingo_cards').doc(cardId).get().then(function (doc) {
       if (!doc.exists) return;
       var cells = (doc.data().cells || []).map(function (c) { return Object.assign({}, c); });
-      var cell = cells[cellIndex];
+      var cell  = cells[cellIndex];
       if (!cell || cell.libre) return;
       if (cell.marcada) {
         cells[cellIndex] = Object.assign(cell, { marcada: false, marcadoPor: null, marcadaAt: null });
@@ -238,7 +486,6 @@
     }
     overlay.addEventListener('click', closeIt);
     setTimeout(closeIt, 5000);
-
     playBingoSound();
   }
 
@@ -294,7 +541,7 @@
         {f:1047,t:0.45,d:0.35},{f:784,t:0.65,d:0.15},{f:1047,t:0.75,d:0.5}
       ];
       melody.forEach(function (n) {
-        var osc = ctx.createOscillator();
+        var osc  = ctx.createOscillator();
         var gain = ctx.createGain();
         osc.connect(gain); gain.connect(ctx.destination);
         osc.type = 'sine'; osc.frequency.value = n.f;
@@ -310,12 +557,14 @@
   /* ── MODAL CREAR / EDITAR ───────────────────────────────────── */
   function openNewCardModal() {
     _editingCardId = null;
-    document.getElementById('bingoModalHeading').textContent = 'Nuevo Bingo';
-    document.getElementById('bingoModalName').value = '';
+    var ev = EVENTS[_currentEvtIdx];
+    document.getElementById('bingoModalHeading').textContent = 'Nuevo Bingo — ' + ev.nombre;
+    document.getElementById('bingoModalName').value = ev.nombre;
     document.getElementById('bingoModalDelete').style.display = 'none';
     buildModalGrid(null);
     document.getElementById('bingoModalOverlay').classList.add('open');
     document.getElementById('bingoModalName').focus();
+    document.getElementById('bingoModalName').select();
   }
 
   function openEditCard(cardId) {
@@ -335,13 +584,11 @@
     var container = document.getElementById('bingoModalGrid');
     container.innerHTML = '';
     for (var i = 0; i < 25; i++) {
-      var cell   = existingCells ? existingCells[i] : null;
+      var cell    = existingCells ? existingCells[i] : null;
       var isLibre = cell ? !!cell.libre : (i === 12);
-      var text   = cell ? (isLibre ? '' : (cell.texto || '')) : '';
-
+      var text    = cell ? (isLibre ? '' : (cell.texto || '')) : '';
       var inp = document.createElement('input');
-      inp.type = 'text';
-      inp.maxLength = 60;
+      inp.type = 'text'; inp.maxLength = 60;
       inp.className = 'bingo-modal-input' + (isLibre ? ' bingo-modal-input--free' : '');
       inp.dataset.idx = i;
       inp.value    = isLibre ? '' : text;
@@ -356,12 +603,12 @@
     if (!nombre) { document.getElementById('bingoModalName').focus(); return; }
 
     var inputs = document.querySelectorAll('#bingoModalGrid .bingo-modal-input');
-    var cells  = Array.from(inputs).map(function (inp, i) {
+    var cells  = Array.from(inputs).map(function (inp) {
       var libre = inp.classList.contains('bingo-modal-input--free');
       return {
-        texto    : libre ? 'LIBRE' : inp.value.trim(),
-        marcada  : libre,
-        libre    : libre,
+        texto     : libre ? 'LIBRE' : inp.value.trim(),
+        marcada   : libre,
+        libre     : libre,
         marcadoPor: null,
         marcadaAt : null
       };
@@ -372,8 +619,10 @@
         .update({ titulo: nombre, cells: cells })
         .then(closeCardModal);
     } else {
+      var ev = EVENTS[_currentEvtIdx];
       db.collection('bingo_cards').add({
         titulo    : nombre,
+        eventoId  : ev.id,           /* ← vincula al evento actual */
         cells     : cells,
         createdAt : window.firebase.firestore.FieldValue.serverTimestamp()
       }).then(function (ref) {
@@ -398,7 +647,6 @@
     });
   }
 
-  /* ── RESET MARCAS ───────────────────────────────────────────── */
   function resetMarks(cardId) {
     if (!confirm('¿Resetear todas las marcas? Las casillas quedarán vacías (el texto se mantiene).')) return;
     db.collection('bingo_cards').doc(cardId).get().then(function (doc) {
@@ -421,6 +669,7 @@
 
   /* ── EXPOSE ─────────────────────────────────────────────────── */
   window.GT_Bingo = {
+    goToEvent      : goToEvent,
     setActiveCard  : setActiveCard,
     toggleCell     : toggleCell,
     openEditCard   : openEditCard,
