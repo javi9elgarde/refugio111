@@ -233,6 +233,7 @@
         visual: { type: 'cover', src: game1 && game1.portadaUrl ? game1.portadaUrl : '',
                   pos: game1 && game1.portadaPos ? game1.portadaPos : 'center top',
                   bg: 'linear-gradient(160deg,#050d1f,#0b1c38)' },
+        gameId: top1.juegoId,
         winner: top1.jugador, valColor: '#4facfe',
         detail: game1 ? game1.titulo : '—',
         value:  top1.horas + 'h'
@@ -336,6 +337,7 @@
         visual: minGame && minGame.portadaUrl
           ? { type: 'cover', src: minGame.portadaUrl, pos: minGame.portadaPos || 'center top', bg: 'linear-gradient(160deg,#1a0505,#2e0808)' }
           : { type: 'bigtext', text: minNota, sub: '/ 10', bg: 'linear-gradient(160deg,#1a0505,#2e0808)' },
+        gameId: minGame ? minEntry.juegoId : null,
         winner: minEntry.jugador, valColor: '#f87171',
         detail: (minGame ? minGame.titulo : '—') + ' — ' + minNota + ' / 10',
         value:  minNota + ' / 10'
@@ -354,7 +356,7 @@
       var yr = parseInt((g.fechaLanzamiento + '').substring(0, 4));
       if (!yr || isNaN(yr)) return;
       if (!retroPJ[r.jugador] || yr < retroPJ[r.jugador].año) {
-        retroPJ[r.jugador] = { año: yr, titulo: g.titulo, portadaUrl: g.portadaUrl || '', portadaPos: g.portadaPos || 'center top' };
+        retroPJ[r.jugador] = { año: yr, titulo: g.titulo, portadaUrl: g.portadaUrl || '', portadaPos: g.portadaPos || 'center top', juegoId: r.juegoId };
       }
     });
     var retroPlayers = Object.keys(retroPJ);
@@ -366,6 +368,7 @@
         visual: retroGame.portadaUrl
           ? { type: 'cover', src: retroGame.portadaUrl, pos: retroGame.portadaPos, bg: 'linear-gradient(160deg,#12080a,#251018)' }
           : { type: 'bigtext', text: retroGame.año + '', sub: 'año', bg: 'linear-gradient(160deg,#12080a,#251018)' },
+        gameId: retroGame.juegoId || null,
         winner: topRetro, valColor: '#f59e0b',
         detail: retroGame.titulo + ' (' + retroGame.año + ')',
         value:  retroGame.año + ''
@@ -444,7 +447,10 @@
           '</div>';
       }
 
-      return '<div class="logro-card">' +
+      var cardClick = l.gameId
+        ? ' onclick="window.GT.GameDetailModal.open(\'' + l.gameId.replace(/'/g, "\\'") + '\')" style="cursor:pointer" title="Ver ficha del juego"'
+        : '';
+      return '<div class="logro-card"' + cardClick + '>' +
         '<div class="logro-banner" style="background:' + v.bg + '">' +
           bannerInner +
           '<div class="logro-banner__overlay">' +
