@@ -324,23 +324,26 @@
         winner:null, detail:'Necesita al menos 2 notas', value:'' });
     }
 
-    /* 6 — El Generoso: nota media más alta (contrapunto a El Exigente) */
-    var jugConNotasPos = Object.keys(notasPJ).filter(function(p){ return notasPJ[p].length >= 2; });
-    if (jugConNotasPos.length) {
-      var avgFnPos = function(arr){ return arr.reduce(function(s,x){return s+x;},0)/arr.length; };
-      var topPos = jugConNotasPos.sort(function(a,b){ return avgFnPos(notasPJ[b]) - avgFnPos(notasPJ[a]); })[0];
-      var avgPos = avgFnPos(notasPJ[topPos]).toFixed(1).replace('.', ',');
+    /* 6 — La nota más baja: registro individual con la puntuación más baja */
+    var conNotaMin = entries.filter(function(r){ return r.nota !== null && r.nota !== '' && r.nota !== undefined; })
+                            .sort(function(a,b){ return parseFloat(a.nota) - parseFloat(b.nota); });
+    if (conNotaMin.length) {
+      var minEntry = conNotaMin[0];
+      var minGame  = Biblioteca.getById(minEntry.juegoId);
+      var minNota  = parseFloat(minEntry.nota).toFixed(1).replace('.', ',');
       logros.push({
-        badge: '😄 EL GENEROSO', desc: 'Nota media más alta — el más optimista',
-        visual: { type: 'bigtext', text: avgPos, sub: '/ 10', bg: 'linear-gradient(135deg,#071a08,#0e3015)' },
-        winner: topPos, valColor: '#4ade80',
-        detail: 'Media de ' + avgPos + ' puntos sobre 10',
-        value:  avgPos + ' ★'
+        badge: '💀 LA NOTA MÁS BAJA', desc: 'La puntuación individual más baja puesta',
+        visual: minGame && minGame.portadaUrl
+          ? { type: 'cover', src: minGame.portadaUrl, pos: minGame.portadaPos || 'center top', bg: 'linear-gradient(160deg,#1a0505,#2e0808)' }
+          : { type: 'bigtext', text: minNota, sub: '/ 10', bg: 'linear-gradient(160deg,#1a0505,#2e0808)' },
+        winner: minEntry.jugador, valColor: '#f87171',
+        detail: (minGame ? minGame.titulo : '—') + ' — ' + minNota + ' / 10',
+        value:  minNota + ' / 10'
       });
     } else {
-      logros.push({ badge:'😄 EL GENEROSO', desc:'Nota media más alta',
-        visual:{ type:'icon', icon:'😄', bg:'linear-gradient(135deg,#071a08,#0e3015)' },
-        winner:null, detail:'Necesita al menos 2 notas', value:'' });
+      logros.push({ badge:'💀 LA NOTA MÁS BAJA', desc:'La puntuación individual más baja puesta',
+        visual:{ type:'icon', icon:'💀', bg:'linear-gradient(160deg,#1a0505,#2e0808)' },
+        winner:null, detail:'Sin notas registradas', value:'' });
     }
 
     /* 7 — El Retro: jugador cuyo juego más antiguo tiene el año de lanzamiento más bajo */
