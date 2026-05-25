@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — Noticias</title>
-  <link rel="stylesheet" href="styles.css?v=20260525m">
+  <link rel="stylesheet" href="styles.css?v=20260525p">
 </head>
 <body>
 
@@ -53,54 +53,91 @@
     <div class="page-header__inner">
       <div>
         <h1 class="page-header__title">📰 Noticias Gaming</h1>
-        <p class="page-header__sub">Feed en directo · Marca una noticia con ⭐ para destacarla en el inicio</p>
+        <p class="page-header__sub">Pegad un enlace y guardamos la noticia · ⭐ para destacarla en el inicio</p>
       </div>
-      <button class="btn btn-secondary" id="btnRefreshNews">🔄 Actualizar</button>
+      <button class="btn btn-primary" id="btnNuevaNoticia">+ Nueva Noticia</button>
     </div>
   </div>
 
-  <!-- Noticia destacada actual -->
+  <!-- Noticia destacada -->
   <div id="featuredNewsBanner" class="news-featured-banner" style="display:none"></div>
 
-  <!-- Barra de fuentes -->
-  <div class="section" style="padding-bottom:0">
-    <div class="news-sources-bar">
-      <button class="news-source-tab news-source-tab--active" data-source="hobbyconsolas">
-        <span class="news-source-tab__dot" style="background:#00c7ff"></span>
-        HobbyConsolas
-      </button>
-      <button class="news-source-tab" data-source="vandal">
-        <span class="news-source-tab__dot" style="background:#f59e0b"></span>
-        Vandal
-      </button>
-      <button class="news-source-tab" data-source="meristation">
-        <span class="news-source-tab__dot" style="background:#22c55e"></span>
-        Meristation
-      </button>
-    </div>
-  </div>
-
-  <!-- Estado de carga -->
-  <div id="newsStatus" class="section news-status">
-    <div class="news-spinner"></div>
-    <span id="newsStatusText">Cargando noticias...</span>
-  </div>
-
-  <!-- Grid de noticias -->
+  <!-- Grid -->
   <div class="section">
-    <div id="newsGrid" class="news-grid"></div>
+    <div id="newsGrid" class="news-grid">
+      <div class="news-empty" id="newsEmpty" style="display:none">
+        <div class="news-empty__icon">📰</div>
+        <div class="news-empty__title">Sin noticias todavía</div>
+        <div class="news-empty__sub">Pulsa "+ Nueva Noticia" para añadir la primera</div>
+      </div>
+    </div>
   </div>
 
   <footer class="footer">
     <span>REFUGIO 111</span> · David · Javi · Mery · <span id="footerYear"></span>
-    <br><small style="color:var(--txt3);margin-top:0.25rem;display:block">Noticias vía RSS · Destacadas sincronizadas con Firebase 🔥</small>
+    <br><small style="color:var(--txt3);margin-top:0.25rem;display:block">Noticias guardadas en Firebase 🔥 · Sincronizadas en tiempo real</small>
   </footer>
+</div>
+
+<!-- ══ MODAL: Nueva / Editar Noticia ══════════════════════════ -->
+<div class="modal-overlay" id="newsModalOverlay" style="display:none">
+  <div class="modal news-modal" id="newsModal">
+    <div class="modal__header">
+      <h2 class="modal__title" id="newsModalTitle">📰 Nueva Noticia</h2>
+      <button class="modal__close" id="btnCloseNewsModal">✕</button>
+    </div>
+    <div class="modal__body">
+
+      <!-- URL + botón obtener -->
+      <div class="form-group">
+        <label class="form-label">Enlace de la noticia</label>
+        <div class="news-url-row">
+          <input type="url" id="nUrl" class="form-input" placeholder="https://vandal.elespanol.com/noticia/...">
+          <button class="btn btn-secondary" id="btnFetchOg">🔍 Obtener datos</button>
+        </div>
+        <div id="fetchStatus" class="news-fetch-status" style="display:none"></div>
+      </div>
+
+      <!-- Preview de imagen -->
+      <div class="form-group">
+        <label class="form-label">Imagen de portada <span style="color:var(--txt3);font-weight:400">(16:9 recomendado)</span></label>
+        <div class="news-img-preview-wrap" id="newsImgPreviewWrap">
+          <div class="news-img-preview-ph" id="newsImgPreviewPh">Sin imagen</div>
+          <img id="newsImgPreview" class="news-img-preview" src="" alt="" style="display:none">
+        </div>
+        <input type="url" id="nImagen" class="form-input" placeholder="URL de la imagen (se rellena automáticamente)" style="margin-top:0.5rem">
+      </div>
+
+      <!-- Título -->
+      <div class="form-group">
+        <label class="form-label">Titular</label>
+        <input type="text" id="nTitulo" class="form-input" placeholder="Título de la noticia">
+      </div>
+
+      <!-- Fuente + fecha -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+        <div class="form-group">
+          <label class="form-label">Fuente</label>
+          <input type="text" id="nFuente" class="form-input" placeholder="Vandal, 3DJuegos…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha (opcional)</label>
+          <input type="date" id="nFecha" class="form-input">
+        </div>
+      </div>
+
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn-secondary" id="btnCancelNewsModal">Cancelar</button>
+      <button class="btn btn-primary" id="btnSaveNewsModal">💾 Guardar</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260519b" defer></script>
 <script src="main.js?v=20260522n"            defer></script>
-<script src="noticias.js?v=20260525b"        defer></script>
+<script src="noticias.js?v=20260525c"        defer></script>
 </body>
 </html>
