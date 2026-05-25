@@ -113,18 +113,23 @@
       flex: 1;
       min-width: 0;
       display: grid;
-      grid-template-columns: 1fr 440px;
+      grid-template-columns: 1fr 420px;
       gap: 0;
       background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
-      align-items: stretch;
+      align-items: start;
     }
     @media (max-width: 960px) { .evt-featured { grid-template-columns: 1fr; } }
 
-    /* Visual */
-    .evt-featured__visual { position: relative; overflow: hidden; min-height: 260px; }
+    /* Visual — ratio 16:9 fijo */
+    .evt-featured__visual {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+      width: 100%;
+    }
     .evt-featured__img-wrap {
       position: absolute; inset: 0;
       overflow: hidden; background: var(--bg3);
@@ -429,6 +434,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260522n"            defer></script>
-<script src="eventos.js?v=20260525h"         defer></script>
+<script src="eventos.js?v=20260525i"         defer></script>
 </body>
 </html>

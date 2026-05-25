@@ -1,6 +1,6 @@
 /* ============================================================
    EVENTOS — Bingo Interactivo de Conferencias Gaming
-   Version: 20260525h
+   Version: 20260525i
    ============================================================ */
 (function () {
   'use strict';
@@ -316,7 +316,6 @@
             '</div>' +
             '<button class="evt-edit-btn" onclick="window.GT_Bingo.openEditEventModal(\'' + escId(ev.id) + '\')" title="Editar evento">✏️</button>' +
           '</div>' +
-          '<p class="evt-featured__desc">' + (ev.desc || '') + '</p>' +
         '</div>' +
         '<div class="evt-schedule">' +
           '<div class="evt-schedule__row"><span class="evt-schedule__icon">📅</span><div><div class="evt-schedule__label">Fecha</div><div class="evt-schedule__val">' + escHtml(ev.fechaLabel) + '</div></div></div>' +
