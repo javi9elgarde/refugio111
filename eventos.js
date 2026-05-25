@@ -1,6 +1,6 @@
 /* ============================================================
    EVENTOS — Bingo Interactivo de Conferencias Gaming
-   Version: 20260525f
+   Version: 20260525g
    ============================================================ */
 (function () {
   'use strict';
@@ -383,7 +383,12 @@
   function renderHistorico() {
     var el = document.getElementById('evtHistorico');
     if (!el) return;
-    var historic = EVENTS.filter(isHistoric);
+    /* Solo archivamos eventos históricos que tengan al menos un bingo creado */
+    var historic = EVENTS.filter(function (ev) {
+      if (!isHistoric(ev)) return false;
+      var evIdx = EVENTS.indexOf(ev);
+      return getCardsForEvent(evIdx).length > 0;
+    });
     if (historic.length === 0) { el.style.display = 'none'; return; }
     el.style.display = '';
 
