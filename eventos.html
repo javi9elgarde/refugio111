@@ -57,24 +57,27 @@
       <!-- Imagen 16:9 del evento -->
       <div class="evt-featured__visual">
         <div class="evt-featured__img-wrap" id="evtImgWrap">
-          <!-- Si hay imagen: <img src="..." class="evt-featured__img"> -->
-          <!-- Placeholder por defecto -->
-          <div class="evt-featured__placeholder" id="evtPlaceholder">
-            <span class="evt-featured__placeholder-icon">🎮</span>
-            <span class="evt-featured__placeholder-lbl">Imagen del evento</span>
-          </div>
+          <img
+            src="https://blog.es.playstation.com/tachyon/sites/14/2026/05/4d07649023989d3599bc6d90588574e4487eaf50.jpg"
+            class="evt-featured__img"
+            alt="State of Play — 2 de junio 2026"
+            loading="eager">
         </div>
         <!-- Badge estado -->
         <div class="evt-badge" id="evtBadge">PRÓXIMAMENTE</div>
+        <!-- Logo PlayStation encima de la imagen -->
+        <div style="position:absolute;bottom:0.7rem;right:0.7rem;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);border-radius:6px;padding:0.3rem 0.55rem;border:1px solid rgba(255,255,255,0.1)">
+          <span style="font-family:'Orbitron',sans-serif;font-size:0.6rem;font-weight:700;color:#0070f3;letter-spacing:0.1em">PLAYSTATION</span>
+        </div>
       </div>
 
       <!-- Info lateral -->
       <div class="evt-featured__info">
         <!-- Cabecera -->
         <div class="evt-featured__header">
-          <div class="evt-featured__tag" id="evtTag">Gaming Event</div>
-          <h2 class="evt-featured__name" id="evtName">— Próximo Evento —</h2>
-          <p class="evt-featured__desc" id="evtDesc">Los detalles del evento aparecerán aquí.</p>
+          <div class="evt-featured__tag" id="evtTag">🎮 PlayStation Showcase</div>
+          <h2 class="evt-featured__name" id="evtName">State of Play</h2>
+          <p class="evt-featured__desc" id="evtDesc">Más de 60 minutos de noticias, anuncios y tráileres de gameplay de los mejores estudios del mundo. Con un vistazo extendido a <strong style="color:var(--txt)">Marvel's Wolverine</strong> de Insomniac Games, que llega a PS5 el 15 de septiembre de 2026.</p>
         </div>
 
         <!-- Horario / detalles -->
@@ -83,28 +86,28 @@
             <span class="evt-schedule__icon">📅</span>
             <div>
               <div class="evt-schedule__label">Fecha</div>
-              <div class="evt-schedule__val" id="evtDate">—</div>
+              <div class="evt-schedule__val" id="evtDate">Martes, 2 de junio de 2026</div>
             </div>
           </div>
           <div class="evt-schedule__row">
             <span class="evt-schedule__icon">🕐</span>
             <div>
               <div class="evt-schedule__label">Hora</div>
-              <div class="evt-schedule__val" id="evtTime">—</div>
+              <div class="evt-schedule__val" id="evtTime">23:00 h (hora peninsular España)</div>
             </div>
           </div>
           <div class="evt-schedule__row">
             <span class="evt-schedule__icon">📺</span>
             <div>
               <div class="evt-schedule__label">Dónde verlo</div>
-              <div class="evt-schedule__val" id="evtWhere">—</div>
+              <div class="evt-schedule__val" id="evtWhere">YouTube · Twitch · PlayStation.com</div>
             </div>
           </div>
           <div class="evt-schedule__row">
             <span class="evt-schedule__icon">⏱</span>
             <div>
               <div class="evt-schedule__label">Duración estimada</div>
-              <div class="evt-schedule__val" id="evtDuration">—</div>
+              <div class="evt-schedule__val" id="evtDuration">Más de 60 minutos</div>
             </div>
           </div>
         </div>
@@ -124,8 +127,8 @@
         </div>
 
         <!-- Botón enlace -->
-        <a href="#" class="btn btn-primary evt-featured__link" id="evtLink" target="_blank" style="display:none">
-          🔴 Ver en directo
+        <a href="https://www.youtube.com/@PlayStation" class="btn btn-primary evt-featured__link" id="evtLink" target="_blank" style="display:inline-flex;gap:0.45rem;align-items:center;background:linear-gradient(135deg,#0070f3,#0050cc);border-color:#0070f3">
+          🔴 Ver en directo — YouTube PlayStation
         </a>
       </div>
     </div>
@@ -357,5 +360,48 @@
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260522n"            defer></script>
 <script src="eventos.js?v=20260522n"         defer></script>
+<script>
+(function () {
+  /* ── Cuenta atrás State of Play — 2 Jun 2026 23:00 h España ── */
+  var TARGET = new Date('2026-06-02T23:00:00+02:00').getTime(); // CEST (UTC+2)
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function tickEvt() {
+    var now  = Date.now();
+    var diff = TARGET - now;
+
+    var badge = document.getElementById('evtBadge');
+
+    if (diff <= 0) {
+      /* Evento en curso o pasado */
+      document.getElementById('evtCdDays').textContent  = '00';
+      document.getElementById('evtCdHours').textContent = '00';
+      document.getElementById('evtCdMins').textContent  = '00';
+      document.getElementById('evtCdSecs').textContent  = '00';
+      if (badge) { badge.textContent = '🔴 EN DIRECTO'; badge.classList.add('evt-badge--live'); }
+      return;
+    }
+
+    var days  = Math.floor(diff / 86400000);
+    var hours = Math.floor((diff % 86400000) / 3600000);
+    var mins  = Math.floor((diff % 3600000)  / 60000);
+    var secs  = Math.floor((diff % 60000)    / 1000);
+
+    document.getElementById('evtCdDays').textContent  = pad(days);
+    document.getElementById('evtCdHours').textContent = pad(hours);
+    document.getElementById('evtCdMins').textContent  = pad(mins);
+    document.getElementById('evtCdSecs').textContent  = pad(secs);
+
+    /* Badge dinámica: si falta menos de 24h → HORAS */
+    if (badge && !badge.classList.contains('evt-badge--live')) {
+      badge.textContent = diff < 86400000 ? '¡HOY!' : 'PRÓXIMAMENTE';
+    }
+  }
+
+  tickEvt();
+  setInterval(tickEvt, 1000);
+})();
+</script>
 </body>
 </html>
