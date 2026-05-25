@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — Menú Principal</title>
-  <link rel="stylesheet" href="styles.css?v=20260525n">
+  <link rel="stylesheet" href="styles.css?v=20260525q">
 </head>
 <body>
 
@@ -89,25 +89,33 @@
         <div class="sp-footer"><span class="sp-cta">Ver todos los Eventos →</span></div>
       </a>
 
-      <!-- ── Panel 3: GTA VI ── -->
-      <a href="biblioteca.html" id="gtaPanel" class="spotlight-panel spotlight-panel--gta" style="--sp-accent:#fb923c;--sp-glow:rgba(251,146,60,0.18)">
-        <div class="sp-bg" id="gtaImgWrap">
+      <!-- ── Panel 3: Juego Más Esperado (configurable) ── -->
+      <a href="biblioteca.html" id="antPanel" class="spotlight-panel" style="--sp-accent:#fb923c;--sp-glow:rgba(251,146,60,0.18)">
+        <div class="sp-bg" id="antImgWrap">
           <div class="sp-bg__ph sp-bg__ph--gta"></div>
           <div class="sp-bg__overlay"></div>
         </div>
         <div class="sp-label">⭐ Juego Más Esperado</div>
-        <div class="sp-gta-title">GTA <span>VI</span></div>
-        <div class="sp-date">Rockstar Games · 19 Nov 2026</div>
-        <div class="sp-countdown">
-          <div class="sp-cd-unit"><span class="sp-cd-val" id="gtaDays">--</span><span class="sp-cd-lbl">días</span></div>
+        <div class="sp-title" id="antTitle" style="font-family:'Orbitron',sans-serif;font-size:clamp(1rem,2.5vw,1.45rem);font-weight:900;-webkit-line-clamp:2">Cargando...</div>
+        <div class="sp-date" id="antDate"></div>
+        <div class="sp-countdown" id="antCountdown">
+          <div class="sp-cd-unit"><span class="sp-cd-val" id="antDays">--</span><span class="sp-cd-lbl">días</span></div>
           <span class="sp-cd-sep">:</span>
-          <div class="sp-cd-unit"><span class="sp-cd-val" id="gtaHours">--</span><span class="sp-cd-lbl">horas</span></div>
+          <div class="sp-cd-unit"><span class="sp-cd-val" id="antHours">--</span><span class="sp-cd-lbl">horas</span></div>
           <span class="sp-cd-sep">:</span>
-          <div class="sp-cd-unit"><span class="sp-cd-val" id="gtaMins">--</span><span class="sp-cd-lbl">min</span></div>
+          <div class="sp-cd-unit"><span class="sp-cd-val" id="antMins">--</span><span class="sp-cd-lbl">min</span></div>
           <span class="sp-cd-sep">:</span>
-          <div class="sp-cd-unit"><span class="sp-cd-val" id="gtaSecs">--</span><span class="sp-cd-lbl">seg</span></div>
+          <div class="sp-cd-unit"><span class="sp-cd-val" id="antSecs">--</span><span class="sp-cd-lbl">seg</span></div>
         </div>
-        <div class="sp-footer"><span class="sp-cta">Ver ficha en Biblioteca →</span></div>
+        <div class="sp-footer" style="display:flex;align-items:center;justify-content:space-between">
+          <span class="sp-cta">Ver ficha en Biblioteca →</span>
+          <button id="btnPickGame"
+            onclick="event.preventDefault();event.stopPropagation();window.openPickGameModal()"
+            style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:0.18rem 0.55rem;font-size:0.62rem;color:rgba(232,232,248,0.55);cursor:pointer;line-height:1.5;transition:all 0.15s;white-space:nowrap"
+            onmouseover="this.style.background='rgba(251,146,60,0.18)';this.style.borderColor='rgba(251,146,60,0.4)';this.style.color='#fb923c'"
+            onmouseout="this.style.background='rgba(255,255,255,0.07)';this.style.borderColor='rgba(255,255,255,0.12)';this.style.color='rgba(232,232,248,0.55)'"
+            title="Cambiar juego más esperado">✏️ Cambiar</button>
+        </div>
       </a>
 
     </div>
@@ -241,17 +249,14 @@
       color: var(--sp-accent, #4facfe); letter-spacing: 0.05em;
     }
 
-    /* GTA VI — título especial */
-    .sp-gta-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: clamp(1.4rem, 3.5vw, 2rem);
-      font-weight: 900; line-height: 1; color: #fff; letter-spacing: 0.06em;
+    /* Pick-game modal item */
+    .pg-item {
+      display:flex; align-items:center; gap:0.75rem;
+      padding:0.55rem 0.75rem;
+      border-radius:8px; border:1px solid rgba(255,255,255,0.07);
+      cursor:pointer; transition:background 0.15s, border-color 0.15s;
     }
-    .sp-gta-title span {
-      background: linear-gradient(135deg, #fb923c, #f59e0b);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+    .pg-item:hover { background:rgba(251,146,60,0.1); border-color:rgba(251,146,60,0.3); }
   </style>
 
 
@@ -290,6 +295,20 @@
   </footer>
 </div>
 
+<!-- ══ MODAL: Elegir Juego Más Esperado ═══════════════════════ -->
+<div id="pickGameOverlay" style="display:none;position:fixed;inset:0;background:rgba(7,7,15,0.88);z-index:10000;align-items:center;justify-content:center;padding:1.5rem">
+  <div style="width:100%;max-width:520px;max-height:82vh;background:#13131f;border-radius:16px;border:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.7)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0">
+      <div>
+        <h2 style="font-family:'Orbitron',sans-serif;font-size:0.95rem;font-weight:700;color:#e8e8f8;margin:0;letter-spacing:0.05em">⭐ Juego Más Esperado</h2>
+        <p style="font-size:0.68rem;color:rgba(232,232,248,0.38);margin:0.2rem 0 0">Juegos sin lanzar o con fecha futura · ordenados por fecha</p>
+      </div>
+      <button id="btnClosePickGame" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(232,232,248,0.55);font-size:0.9rem;width:30px;height:30px;cursor:pointer;line-height:1;flex-shrink:0">✕</button>
+    </div>
+    <div id="pickGameList" style="overflow-y:auto;padding:0.85rem;display:flex;flex-direction:column;gap:0.4rem"></div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260519n" defer></script>
@@ -308,7 +327,6 @@
     var img = new window.Image();
     img.onload = function () {
       img.className = 'sp-img';
-      /* Insertar antes del overlay para que quede bajo él */
       var overlay = wrap.querySelector('.sp-bg__overlay');
       if (overlay) wrap.insertBefore(img, overlay);
       else wrap.appendChild(img);
@@ -316,31 +334,121 @@
     img.src = url;
   }
 
-  /* ── GTA VI countdown ─────────────────────────────────────── */
-  var GTA_DATE = new Date('2026-11-19T00:01:00+01:00').getTime();
-
-  function tickGTA() {
-    var diff = GTA_DATE - Date.now();
-    var d = document.getElementById('gtaDays');
-    if (!d) return;
-    if (diff <= 0) {
-      var cd = d.closest('.sp-countdown');
-      if (cd) cd.innerHTML = '<span style="font-family:Orbitron,sans-serif;font-size:0.88rem;font-weight:900;color:#fb923c">¡YA DISPONIBLE!</span>';
-      return;
-    }
-    d.textContent = pad(Math.floor(diff / 86400000));
-    document.getElementById('gtaHours').textContent = pad(Math.floor((diff % 86400000) / 3600000));
-    document.getElementById('gtaMins').textContent  = pad(Math.floor((diff % 3600000)  / 60000));
-    document.getElementById('gtaSecs').textContent  = pad(Math.floor((diff % 60000)    / 1000));
-  }
-  tickGTA();
-  setInterval(tickGTA, 1000);
-
   /* ── Esperar a Firestore ───────────────────────────────────── */
   function waitForDb(cb) {
     if (window.GT && window.GT.db) return cb(window.GT.db);
     setTimeout(function () { waitForDb(cb); }, 100);
   }
+
+  /* ── Panel 3: Juego Más Esperado (dinámico) ────────────────── */
+  var antInterval = null;
+  var MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  function renderAntPanel(game) {
+    var titleEl = document.getElementById('antTitle');
+    var dateEl  = document.getElementById('antDate');
+    var cdEl    = document.getElementById('antCountdown');
+    var panel   = document.getElementById('antPanel');
+
+    if (!game) {
+      if (titleEl) titleEl.textContent = 'Sin juego seleccionado';
+      if (dateEl)  dateEl.textContent  = 'Pulsa ✏️ Cambiar para elegir';
+      if (cdEl)    cdEl.style.display  = 'none';
+      return;
+    }
+
+    /* Imagen de portada */
+    if (game.portadaUrl) setImg('antImgWrap', game.portadaUrl);
+    if (titleEl) titleEl.textContent = game.titulo;
+    if (panel)   panel.href = 'biblioteca.html?open=' + game.id;
+
+    if (game.fechaLanzamiento && !game.fechaLanzamiento.includes('xx')) {
+      var target = new Date(game.fechaLanzamiento + 'T00:01:00+01:00').getTime();
+      var p      = game.fechaLanzamiento.split('-');
+      var dStr   = parseInt(p[2], 10) + ' ' + (MONTHS[parseInt(p[1], 10) - 1] || '') + ' ' + p[0];
+      if (dateEl) dateEl.textContent = (game.desarrollador ? game.desarrollador + ' · ' : '') + dStr;
+      if (cdEl)   cdEl.style.display = '';
+
+      if (antInterval) clearInterval(antInterval);
+      function tickAnt() {
+        var diff = target - Date.now();
+        var dEl  = document.getElementById('antDays');
+        if (!dEl) { clearInterval(antInterval); return; }
+        if (diff <= 0) {
+          if (cdEl) cdEl.innerHTML = '<span style="font-family:Orbitron,sans-serif;font-size:0.88rem;font-weight:900;color:#fb923c">¡YA DISPONIBLE!</span>';
+          clearInterval(antInterval); return;
+        }
+        dEl.textContent = pad(Math.floor(diff / 86400000));
+        document.getElementById('antHours').textContent = pad(Math.floor((diff % 86400000) / 3600000));
+        document.getElementById('antMins').textContent  = pad(Math.floor((diff % 3600000)  / 60000));
+        document.getElementById('antSecs').textContent  = pad(Math.floor((diff % 60000)    / 1000));
+      }
+      tickAnt();
+      antInterval = setInterval(tickAnt, 1000);
+    } else {
+      if (dateEl) dateEl.textContent = (game.desarrollador || '') + (game.desarrollador ? ' · ' : '') + 'Sin fecha confirmada';
+      if (cdEl)   cdEl.style.display = 'none';
+    }
+  }
+
+  /* ── Modal: Elegir Juego Más Esperado ──────────────────────── */
+  window.openPickGameModal = function () {
+    var overlay = document.getElementById('pickGameOverlay');
+    var list    = document.getElementById('pickGameList');
+    if (!overlay || !list) return;
+
+    var today = new Date().toISOString().slice(0, 10);
+    var games = window.GT.Biblioteca.getAll().filter(function (g) {
+      if (!g.fechaLanzamiento || g.fechaLanzamiento.includes('xx')) return true;
+      return g.fechaLanzamiento > today;
+    }).sort(function (a, b) {
+      if (a.fechaLanzamiento && b.fechaLanzamiento) return a.fechaLanzamiento.localeCompare(b.fechaLanzamiento);
+      if (a.fechaLanzamiento) return -1;
+      if (b.fechaLanzamiento) return 1;
+      return (a.titulo || '').localeCompare(b.titulo || '', 'es');
+    });
+
+    list.innerHTML = games.map(function (g) {
+      var dateStr = (g.fechaLanzamiento && !g.fechaLanzamiento.includes('xx'))
+        ? (function () {
+            var p = g.fechaLanzamiento.split('-');
+            return parseInt(p[2], 10) + ' ' + (MONTHS[parseInt(p[1], 10) - 1] || '') + ' ' + p[0];
+          })()
+        : 'Sin fecha';
+      var cover = g.portadaUrl
+        ? '<img src="' + g.portadaUrl + '" style="width:36px;height:50px;object-fit:cover;border-radius:4px;flex-shrink:0;object-position:center top">'
+        : '<div style="width:36px;height:50px;background:rgba(255,255,255,0.06);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem">🎮</div>';
+      return '<div class="pg-item" onclick="window.selectAntGame(\'' + g.id + '\')">' +
+        cover +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-family:Orbitron,sans-serif;font-size:0.78rem;font-weight:700;color:#e8e8f8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (g.titulo || '') + '</div>' +
+          '<div style="font-size:0.67rem;color:rgba(251,146,60,0.9);margin-top:0.15rem">' + dateStr + '</div>' +
+          (g.desarrollador ? '<div style="font-size:0.63rem;color:rgba(232,232,248,0.38);margin-top:0.08rem">' + g.desarrollador + '</div>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    overlay.style.display = 'flex';
+  };
+
+  window.selectAntGame = function (id) {
+    var game = window.GT.Biblioteca.getAll().find(function (g) { return g.id === id; });
+    if (!game) return;
+    window.GT.db.collection('settings').doc('featuredGame').set({
+      juegoId:          game.id,
+      titulo:           game.titulo           || '',
+      portadaUrl:       game.portadaUrl       || '',
+      fechaLanzamiento: game.fechaLanzamiento || '',
+      desarrollador:    game.desarrollador    || ''
+    }).then(function () {
+      document.getElementById('pickGameOverlay').style.display = 'none';
+      /* Limpiar imagen anterior antes de re-renderizar */
+      var wrap = document.getElementById('antImgWrap');
+      if (wrap) { var old = wrap.querySelector('.sp-img'); if (old) old.remove(); }
+      renderAntPanel(game);
+      if (window.GT && window.GT.Toast) window.GT.Toast.show('¡Juego más esperado actualizado! ✓');
+    }).catch(function (err) { console.error('selectAntGame:', err); });
+  };
 
   waitForDb(function (db) {
 
@@ -358,10 +466,8 @@
       if (nameEl) nameEl.textContent = next.nombre;
       if (dateEl) dateEl.textContent = next.fechaLabel || '';
 
-      /* Imagen del evento */
       if (next.img) setImg('nextEvtImgWrap', next.img);
 
-      /* Acento del evento */
       if (next.accentColor && panel) {
         var hex = next.accentColor.replace('#', '');
         var r = parseInt(hex.substring(0,2), 16);
@@ -394,20 +500,27 @@
       if (el) el.textContent = 'State of Play';
     });
 
-    /* ── 2. GTA VI — portada desde Biblioteca ─────────────── */
-    /* Usar onDataReady para que la caché ya esté poblada      */
+    /* ── 2. Juego Más Esperado — desde settings/featuredGame ── */
     window.GT.onDataReady(function () {
-      var games = window.GT.Biblioteca.getAll();
-      var gta = games.find(function (g) {
-        var t = (g.titulo || '').toLowerCase();
-        /* Búsqueda amplia: cualquier variante de GTA / Grand Theft Auto */
-        return t.indexOf('grand theft') !== -1 || t.indexOf('gta') !== -1;
+      db.collection('settings').doc('featuredGame').get().then(function (doc) {
+        var game = null;
+        if (doc.exists && doc.data().juegoId) {
+          game = window.GT.Biblioteca.getById(doc.data().juegoId);
+        }
+        if (!game) {
+          /* Fallback: GTA VI si existe, o el próximo juego con fecha */
+          var all    = window.GT.Biblioteca.getAll();
+          var today  = new Date().toISOString().slice(0, 10);
+          var gta    = all.find(function (g) { return (g.titulo||'').toLowerCase().indexOf('grand theft') !== -1; });
+          var upcoming = all.filter(function (g) {
+            return g.fechaLanzamiento && !g.fechaLanzamiento.includes('xx') && g.fechaLanzamiento > today;
+          }).sort(function (a,b) { return a.fechaLanzamiento.localeCompare(b.fechaLanzamiento); });
+          game = gta || upcoming[0] || null;
+        }
+        renderAntPanel(game);
+      }).catch(function () {
+        renderAntPanel(null);
       });
-      if (!gta) return;
-      if (gta.portadaUrl) setImg('gtaImgWrap', gta.portadaUrl);
-      /* Enlazar directamente a la ficha: biblioteca.html?open=<id> */
-      var panel = document.getElementById('gtaPanel');
-      if (panel) panel.href = 'biblioteca.html?open=' + gta.id;
     });
 
     /* ── 3. Noticia Destacada ─────────────────────────────── */
@@ -427,9 +540,8 @@
         if (news.pubDate) {
           try { dateStr = new Date(news.pubDate).toLocaleDateString('es-ES', { day:'numeric', month:'short' }); } catch(e) {}
         }
-        subEl.textContent = (news.source || 'Eurogamer España') + (dateStr ? ' · ' + dateStr : '');
+        subEl.textContent = (news.source || '') + (dateStr ? ' · ' + dateStr : '');
       }
-      /* Abrir noticia directamente en nueva pestaña */
       if (panel && news.url) {
         panel.href   = news.url;
         panel.target = '_blank';
@@ -438,6 +550,15 @@
     }).catch(function () {});
 
   });
+
+  /* ── Cerrar modal con ✕ o clic fuera ──────────────────────── */
+  document.addEventListener('DOMContentLoaded', function () {
+    var overlay = document.getElementById('pickGameOverlay');
+    var closeBtn = document.getElementById('btnClosePickGame');
+    if (closeBtn) closeBtn.addEventListener('click', function () { overlay.style.display = 'none'; });
+    if (overlay)  overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.style.display = 'none'; });
+  });
+
 })();
 </script>
 </body>
