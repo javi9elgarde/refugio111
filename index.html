@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — Menú Principal</title>
-  <link rel="stylesheet" href="styles.css?v=20260525q">
+  <link rel="stylesheet" href="styles.css?v=20260525r">
 </head>
 <body>
 
@@ -63,9 +63,10 @@
           <div class="sp-bg__overlay"></div>
         </div>
         <div class="sp-label">📰 Noticia Destacada</div>
-        <div class="sp-title" id="newsPanelTitle">Últimas Noticias Gaming</div>
-        <div class="sp-sub" id="newsPanelSub">Las últimas novedades del mundillo, análisis y anuncios del sector.</div>
-        <div class="sp-footer"><span class="sp-cta">Ver Noticias →</span></div>
+        <div class="sp-bottom">
+          <div class="sp-title" id="newsPanelTitle">Últimas Noticias Gaming</div>
+          <div class="sp-meta" id="newsPanelSub">Pulsa para ver todas las noticias</div>
+        </div>
       </a>
 
       <!-- ── Panel 2: Próximo Evento ── -->
@@ -75,18 +76,19 @@
           <div class="sp-bg__overlay"></div>
         </div>
         <div class="sp-label">🎮 Próximo Evento</div>
-        <div class="sp-title" id="nextEvtName">Cargando...</div>
-        <div class="sp-date" id="nextEvtDate"></div>
-        <div class="sp-countdown" id="nextEvtCountdown">
-          <div class="sp-cd-unit"><span class="sp-cd-val" id="scdDays">--</span><span class="sp-cd-lbl">días</span></div>
-          <span class="sp-cd-sep">:</span>
-          <div class="sp-cd-unit"><span class="sp-cd-val" id="scdHours">--</span><span class="sp-cd-lbl">horas</span></div>
-          <span class="sp-cd-sep">:</span>
-          <div class="sp-cd-unit"><span class="sp-cd-val" id="scdMins">--</span><span class="sp-cd-lbl">min</span></div>
-          <span class="sp-cd-sep">:</span>
-          <div class="sp-cd-unit"><span class="sp-cd-val" id="scdSecs">--</span><span class="sp-cd-lbl">seg</span></div>
+        <div class="sp-bottom">
+          <div class="sp-title" id="nextEvtName">Cargando...</div>
+          <div class="sp-date" id="nextEvtDate"></div>
+          <div class="sp-countdown sp-countdown--footer sp-countdown--centered">
+            <div class="sp-cd-unit"><span class="sp-cd-val" id="scdDays">--</span><span class="sp-cd-lbl">días</span></div>
+            <span class="sp-cd-sep">:</span>
+            <div class="sp-cd-unit"><span class="sp-cd-val" id="scdHours">--</span><span class="sp-cd-lbl">horas</span></div>
+            <span class="sp-cd-sep">:</span>
+            <div class="sp-cd-unit"><span class="sp-cd-val" id="scdMins">--</span><span class="sp-cd-lbl">min</span></div>
+            <span class="sp-cd-sep">:</span>
+            <div class="sp-cd-unit"><span class="sp-cd-val" id="scdSecs">--</span><span class="sp-cd-lbl">seg</span></div>
+          </div>
         </div>
-        <div class="sp-footer"><span class="sp-cta">Ver todos los Eventos →</span></div>
       </a>
 
       <!-- ── Panel 3: Juego Más Esperado (configurable) ── -->
@@ -96,25 +98,21 @@
           <div class="sp-bg__overlay"></div>
         </div>
         <div class="sp-label">⭐ Juego Más Esperado</div>
-        <div class="sp-title" id="antTitle" style="font-family:'Orbitron',sans-serif;font-size:clamp(1rem,2.5vw,1.45rem);font-weight:900;-webkit-line-clamp:2">Cargando...</div>
-        <div class="sp-date" id="antDate"></div>
-        <div class="sp-countdown" id="antCountdown">
-          <div class="sp-cd-unit"><span class="sp-cd-val" id="antDays">--</span><span class="sp-cd-lbl">días</span></div>
-          <span class="sp-cd-sep">:</span>
-          <div class="sp-cd-unit"><span class="sp-cd-val" id="antHours">--</span><span class="sp-cd-lbl">horas</span></div>
-          <span class="sp-cd-sep">:</span>
-          <div class="sp-cd-unit"><span class="sp-cd-val" id="antMins">--</span><span class="sp-cd-lbl">min</span></div>
-          <span class="sp-cd-sep">:</span>
-          <div class="sp-cd-unit"><span class="sp-cd-val" id="antSecs">--</span><span class="sp-cd-lbl">seg</span></div>
-        </div>
-        <div class="sp-footer" style="display:flex;align-items:center;justify-content:space-between">
-          <span class="sp-cta">Ver ficha en Biblioteca →</span>
-          <button id="btnPickGame"
-            onclick="event.preventDefault();event.stopPropagation();window.openPickGameModal()"
-            style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:0.18rem 0.55rem;font-size:0.62rem;color:rgba(232,232,248,0.55);cursor:pointer;line-height:1.5;transition:all 0.15s;white-space:nowrap"
-            onmouseover="this.style.background='rgba(251,146,60,0.18)';this.style.borderColor='rgba(251,146,60,0.4)';this.style.color='#fb923c'"
-            onmouseout="this.style.background='rgba(255,255,255,0.07)';this.style.borderColor='rgba(255,255,255,0.12)';this.style.color='rgba(232,232,248,0.55)'"
-            title="Cambiar juego más esperado">✏️ Cambiar</button>
+        <button id="btnPickGame" class="sp-pick-btn"
+          onclick="event.preventDefault();event.stopPropagation();window.openPickGameModal()"
+          title="Cambiar juego más esperado">✏️</button>
+        <div class="sp-bottom">
+          <div class="sp-title" id="antTitle" style="font-family:'Orbitron',sans-serif;font-size:clamp(1rem,2.5vw,1.45rem);font-weight:900;-webkit-line-clamp:2">Cargando...</div>
+          <div class="sp-date" id="antDate"></div>
+          <div class="sp-countdown sp-countdown--footer sp-countdown--centered" id="antCountdown">
+            <div class="sp-cd-unit"><span class="sp-cd-val" id="antDays">--</span><span class="sp-cd-lbl">días</span></div>
+            <span class="sp-cd-sep">:</span>
+            <div class="sp-cd-unit"><span class="sp-cd-val" id="antHours">--</span><span class="sp-cd-lbl">horas</span></div>
+            <span class="sp-cd-sep">:</span>
+            <div class="sp-cd-unit"><span class="sp-cd-val" id="antMins">--</span><span class="sp-cd-lbl">min</span></div>
+            <span class="sp-cd-sep">:</span>
+            <div class="sp-cd-unit"><span class="sp-cd-val" id="antSecs">--</span><span class="sp-cd-lbl">seg</span></div>
+          </div>
         </div>
       </a>
 
@@ -122,7 +120,7 @@
   </section>
 
   <style>
-    /* ══ SPOTLIGHT PANELS — imagen de fondo compacta ══ */
+    /* ══ SPOTLIGHT PANELS ══════════════════════════════════════ */
     .hero__spotlight {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -133,14 +131,14 @@
     @media (max-width: 900px) { .hero__spotlight { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; } }
     @media (max-width: 600px) { .hero__spotlight { padding: 0 1rem; gap: 0.75rem; } }
 
-    /* Panel — mismo tamaño compacto de antes, imagen como fondo */
+    /* Panel: contenido al fondo, imagen libre al centro/top */
     .spotlight-panel {
       position: relative; overflow: hidden;
       border: 1px solid rgba(255,255,255,0.09);
       border-radius: var(--radius, 12px);
-      padding: 1.1rem 1.25rem 1rem;
+      padding: 0.75rem 0.9rem 0.8rem;
       text-decoration: none; color: inherit;
-      display: flex; flex-direction: column; gap: 0.5rem;
+      display: flex; flex-direction: column; justify-content: flex-end;
       min-height: 175px;
       transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
       cursor: pointer;
@@ -150,106 +148,113 @@
       border-color: var(--sp-accent, #4facfe);
       box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 28px var(--sp-glow, rgba(79,172,254,0.15));
     }
-    /* Línea de acento superior */
     .spotlight-panel::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0;
       height: 2.5px; z-index: 3;
       background: linear-gradient(90deg, var(--sp-accent, #4facfe), transparent 70%);
     }
 
-    /* ── Fondo imagen (posición absoluta, detrás del contenido) ── */
-    .sp-bg {
-      position: absolute; inset: 0; z-index: 0;
-      overflow: hidden;
-    }
-    /* Imagen real cuando cargue */
+    /* ── Fondo imagen ── */
+    .sp-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
     .sp-bg .sp-img {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      object-fit: cover; display: block;
-      transition: transform 0.45s ease;
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; display: block; transition: transform 0.45s ease;
     }
     .spotlight-panel:hover .sp-bg .sp-img { transform: scale(1.08); }
+    .sp-bg__ph { position: absolute; inset: 0; }
+    .sp-bg__ph--news { background: linear-gradient(135deg, #071528 0%, #0b1c3a 60%, #050e1c 100%); }
+    .sp-bg__ph--evt  { background: linear-gradient(135deg, #141000 0%, #221900 60%, #0e0d00 100%); }
+    .sp-bg__ph--gta  { background: linear-gradient(135deg, #1a0800 0%, #2c1200 60%, #110400 100%); }
 
-    /* Placeholders de color cuando no hay imagen */
-    .sp-bg__ph {
-      position: absolute; inset: 0;
-    }
-    .sp-bg__ph--news {
-      background: linear-gradient(135deg, #071528 0%, #0b1c3a 60%, #050e1c 100%);
-    }
-    .sp-bg__ph--evt {
-      background: linear-gradient(135deg, #141000 0%, #221900 60%, #0e0d00 100%);
-    }
-    .sp-bg__ph--gta {
-      background: linear-gradient(135deg, #1a0800 0%, #2c1200 60%, #110400 100%);
-    }
-    /* Degradado oscuro encima de la imagen para que el texto sea legible */
+    /* Overlay: muy oscuro al pie, casi transparente arriba → imagen visible */
     .sp-bg__overlay {
       position: absolute; inset: 0;
       background: linear-gradient(
-        160deg,
-        rgba(7,7,15,0.72) 0%,
-        rgba(7,7,15,0.55) 40%,
-        rgba(7,7,15,0.80) 100%
+        to top,
+        rgba(7,7,15,0.95) 0%,
+        rgba(7,7,15,0.70) 35%,
+        rgba(7,7,15,0.20) 65%,
+        rgba(7,7,15,0.05) 100%
       );
     }
 
-    /* Todo el contenido textual va encima (z-index > 0) */
-    .spotlight-panel > *:not(.sp-bg) { position: relative; z-index: 1; }
-
-    /* ── Textos ── */
+    /* ── Etiqueta categoría — esquina superior derecha ── */
     .sp-label {
-      font-size: 0.6rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.13em;
+      position: absolute; top: 0.55rem; right: 0.65rem; z-index: 2;
+      font-size: 0.5rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
       color: var(--sp-accent, #4facfe);
+      background: rgba(7,7,15,0.62);
+      padding: 0.18rem 0.48rem; border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── Botón cambiar juego — esquina superior izquierda ── */
+    .sp-pick-btn {
+      position: absolute; top: 0.5rem; left: 0.5rem; z-index: 3;
+      background: rgba(7,7,15,0.55);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 5px; padding: 0.15rem 0.45rem;
+      font-size: 0.62rem; color: rgba(232,232,248,0.5);
+      cursor: pointer; transition: all 0.15s; line-height: 1.4;
+    }
+    .sp-pick-btn:hover {
+      background: rgba(251,146,60,0.2);
+      border-color: rgba(251,146,60,0.4);
+      color: #fb923c;
+    }
+
+    /* ── Contenedor inferior (todo el texto) ── */
+    .sp-bottom {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; gap: 0.28rem;
     }
     .sp-title {
       font-family: 'Orbitron', sans-serif;
-      font-size: clamp(0.85rem, 1.8vw, 1.1rem);
-      font-weight: 700; color: var(--txt, #e8e8f8);
-      line-height: 1.2;
+      font-size: clamp(0.82rem, 1.7vw, 1rem);
+      font-weight: 700; color: #fff; line-height: 1.25;
       overflow: hidden; display: -webkit-box;
       -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    }
-    .sp-sub {
-      font-size: 0.71rem; color: rgba(232,232,248,0.55);
-      line-height: 1.5; flex: 1;
-      overflow: hidden; display: -webkit-box;
-      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      text-shadow: 0 1px 12px rgba(0,0,0,0.95);
     }
     .sp-date {
-      font-size: 0.67rem; font-weight: 600;
+      font-size: 0.64rem; font-weight: 600;
       color: var(--sp-accent, #4facfe); opacity: 0.9;
     }
+    /* Meta fila inferior (fuente · fecha) — panel noticias */
+    .sp-meta {
+      font-size: 0.62rem; color: rgba(232,232,248,0.52);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      padding-top: 0.32rem;
+      border-top: 1px solid rgba(255,255,255,0.09);
+    }
 
-    /* Countdown */
-    .sp-countdown { display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
+    /* ── Countdown ── */
+    .sp-countdown {
+      display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap;
+    }
+    .sp-countdown--footer {
+      padding-top: 0.32rem;
+      border-top: 1px solid rgba(255,255,255,0.09);
+    }
+    .sp-countdown--centered { justify-content: center; }
     .sp-cd-unit {
       display: flex; flex-direction: column; align-items: center;
-      background: rgba(7,7,15,0.55);
+      background: rgba(7,7,15,0.6);
       border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 6px; padding: 0.28rem 0.42rem; min-width: 36px;
+      border-radius: 6px; padding: 0.24rem 0.38rem; min-width: 33px;
     }
     .sp-cd-val {
       font-family: 'Orbitron', sans-serif;
-      font-size: 0.98rem; font-weight: 700; line-height: 1;
+      font-size: 0.94rem; font-weight: 700; line-height: 1;
       color: var(--sp-accent, #4facfe);
       text-shadow: 0 0 10px var(--sp-glow, rgba(79,172,254,0.5));
     }
-    .sp-cd-lbl { font-size: 0.45rem; color: rgba(232,232,248,.4); margin-top: 0.1rem; }
-    .sp-cd-sep  { font-size: 0.8rem; color: rgba(255,255,255,0.2); font-weight: 700; margin-bottom: 0.45rem; }
+    .sp-cd-lbl { font-size: 0.42rem; color: rgba(232,232,248,.4); margin-top: 0.08rem; }
+    .sp-cd-sep { font-size: 0.75rem; color: rgba(255,255,255,0.2); font-weight: 700; margin-bottom: 0.38rem; }
 
-    .sp-footer {
-      margin-top: auto; padding-top: 0.5rem;
-      border-top: 1px solid rgba(255,255,255,0.08);
-    }
-    .sp-cta {
-      font-size: 0.65rem; font-weight: 700;
-      color: var(--sp-accent, #4facfe); letter-spacing: 0.05em;
-    }
-
-    /* Pick-game modal item */
+    /* ── Pick-game modal item ── */
     .pg-item {
       display:flex; align-items:center; gap:0.75rem;
       padding:0.55rem 0.75rem;
@@ -318,6 +323,14 @@
 <script>
 (function () {
   function pad(n) { return String(n).padStart(2, '0'); }
+
+  /* Decodifica entidades HTML (&#34; &quot; etc.) usando el DOM */
+  function decodeEntities(str) {
+    if (!str) return '';
+    var el = document.createElement('textarea');
+    el.innerHTML = str;
+    return el.value;
+  }
 
   /* ── Helper: poner imagen de fondo en un panel ─────────────── */
   function setImg(wrapId, url) {
@@ -532,7 +545,7 @@
       var subEl   = document.getElementById('newsPanelSub');
       var panel   = document.getElementById('newsPanel');
       if (titleEl && news.title) {
-        titleEl.textContent = news.title;
+        titleEl.textContent = decodeEntities(news.title);
         titleEl.style.webkitLineClamp = '2';
       }
       if (subEl) {
