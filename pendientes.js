@@ -1,6 +1,6 @@
 /* ============================================================
    GAMETRACKER — Jugadores / Perfiles Page
-   Version: 20260518e
+   Version: 20260525c
    ============================================================ */
 (function () {
   'use strict';
@@ -109,7 +109,7 @@
     var si = _favModal.slotIdx;
     if (pk === null || si === null) return;
     var favs = (_favs[pk] || []).slice();
-    while (favs.length < 10) favs.push(null);
+    while (favs.length < 12) favs.push(null);
     favs[si] = gameId;
     _favs[pk] = favs;
     saveFavoritos(pk);
@@ -119,7 +119,7 @@
 
   function removeFav(playerKey, slotIdx) {
     var favs = (_favs[playerKey] || []).slice();
-    while (favs.length < 10) favs.push(null);
+    while (favs.length < 12) favs.push(null);
     favs[slotIdx] = null;
     _favs[playerKey] = favs;
     saveFavoritos(playerKey);
@@ -274,6 +274,7 @@
         badge: '🎮 REY DEL MARATÓN', desc: 'Más horas en un único juego',
         bg: 'linear-gradient(160deg,#050d1f,#0b1c38)',
         visual: gR && gR.portadaUrl ? { type: 'cover', src: gR.portadaUrl, pos: gR.portadaPos || 'center top' } : { type: 'icon', icon: '🎮' },
+        gameId: topR.juegoId,
         detail: gR ? gR.titulo : '—', value: topR.horas + 'h'
       });
     }
@@ -337,6 +338,50 @@
         value: yearsActive + (yearsActive !== 1 ? ' años' : ' año')
       });
     }
+
+    /* ── La Nota Más Baja: puntuación individual más baja ─── */
+    var conNotaMin = entries.filter(function(r){ return r.nota !== null && r.nota !== '' && r.nota !== undefined; })
+                            .sort(function(a,b){ return parseFloat(a.nota) - parseFloat(b.nota); });
+    if (conNotaMin.length) {
+      var minEntry = conNotaMin[0];
+      var minGame  = Biblioteca.getById(minEntry.juegoId);
+      var minNota  = parseFloat(minEntry.nota).toFixed(1).replace('.', ',');
+      all.push({
+        id: 'nota_baja', emoji: '💀', shortName: 'Nota Más Baja',
+        badge: '💀 LA NOTA MÁS BAJA', desc: 'La puntuación más baja que has puesto',
+        bg: 'linear-gradient(160deg,#1a0505,#2e0808)',
+        visual: minGame && minGame.portadaUrl
+          ? { type: 'cover', src: minGame.portadaUrl, pos: minGame.portadaPos || 'center top' }
+          : { type: 'bigtext', text: minNota, sub: '/ 10' },
+        gameId: minGame ? minEntry.juegoId : null,
+        detail: (minGame ? minGame.titulo : '—') + ' — ' + minNota + ' / 10',
+        value: minNota + ' / 10'
+      });
+    }
+
+    /* ── El Retro: juego más antiguo que ha jugado ────────── */
+    var retroList = entries.map(function(r) {
+      var g = Biblioteca.getById(r.juegoId);
+      if (!g || !g.fechaLanzamiento) return null;
+      var yr = parseInt((g.fechaLanzamiento + '').substring(0, 4));
+      if (!yr || isNaN(yr)) return null;
+      return { juegoId: r.juegoId, game: g, year: yr };
+    }).filter(Boolean).sort(function(a, b) { return a.year - b.year; });
+    if (retroList.length) {
+      var retro = retroList[0];
+      all.push({
+        id: 'retro', emoji: '🕹️', shortName: 'El Retro',
+        badge: '🕹️ EL RETRO', desc: 'El juego más antiguo que has jugado',
+        bg: 'linear-gradient(160deg,#12080a,#251018)',
+        visual: retro.game.portadaUrl
+          ? { type: 'cover', src: retro.game.portadaUrl, pos: retro.game.portadaPos || 'center top' }
+          : { type: 'bigtext', text: retro.year + '', sub: 'año' },
+        gameId: retro.juegoId,
+        detail: retro.game.titulo + ' (' + retro.year + ')',
+        value: retro.year + ''
+      });
+    }
+
     return all;
   }
 
@@ -420,7 +465,10 @@
       } else {
         bannerInner = '<div class="logro-banner__icon">' + (v.icon || '') + '</div>';
       }
-      return '<div class="logro-card logro-card--profile">' +
+      var cardClick = l.gameId
+        ? ' onclick="window.GT.GameDetailModal.open(\'' + l.gameId.replace(/'/g, "\\'") + '\')" style="cursor:pointer" title="Ver ficha del juego"'
+        : '';
+      return '<div class="logro-card logro-card--profile"' + cardClick + '>' +
         '<div class="logro-banner" style="background:' + l.bg + '">' +
           bannerInner +
         '</div>' +
@@ -459,8 +507,10 @@
               'loading="lazy" onerror="this.style.display=\'none\'">'
           : '<div class="pp-fav-card__ph">' + Utils.escapeHtml((g ? g.titulo : '?').charAt(0)) + '</div>';
 
+        var safeGId = gameId.replace(/'/g, "\\'");
         favsHtml +=
-          '<div class="pp-fav-card pp-fav-card--filled">' +
+          '<div class="pp-fav-card pp-fav-card--filled" style="cursor:pointer" title="Ver ficha: ' + Utils.escapeHtml(g ? g.titulo : '') + '" ' +
+            'onclick="window.GT.GameDetailModal.open(\'' + safeGId + '\')">' +
             '<div class="pp-fav-card__img-wrap">' +
               imgHtml +
               '<div class="pp-fav-card__overlay">' +
