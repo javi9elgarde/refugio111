@@ -52,6 +52,15 @@
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  /* Decodifica TODAS las entidades HTML (&#34; &quot; &amp; etc.)
+     usando el propio parser del DOM — no hay regex que las cubra todas */
+  function decodeEntities(str) {
+    if (!str) return '';
+    var el = document.createElement('textarea');
+    el.innerHTML = str;
+    return el.value;
+  }
+
   function formatDate(str) {
     if (!str) return '';
     try {
@@ -95,9 +104,8 @@
           } catch (e) {}
         }
 
-        /* Limpiar entidades HTML del título */
-        title = title.replace(/&amp;/g,'&').replace(/&quot;/g,'"')
-                     .replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+        /* Decodificar TODAS las entidades HTML del título (&#34; &quot; etc.) */
+        title = decodeEntities(title);
 
         onSuccess({ title: title, image: image });
       })
@@ -164,7 +172,7 @@
       '<div class="news-card__body">' +
         (date ? '<div class="news-card__date">' + escHtml(date) + '</div>' : '') +
         '<a href="' + escHtml(n.url) + '" target="_blank" rel="noopener noreferrer" class="news-card__title-link">' +
-          '<h3 class="news-card__title">' + escHtml(n.titulo) + '</h3>' +
+          '<h3 class="news-card__title">' + escHtml(decodeEntities(n.titulo)) + '</h3>' +
         '</a>' +
         '<div class="news-card__footer">' +
           '<a href="' + escHtml(n.url) + '" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Leer →</a>' +
@@ -242,7 +250,7 @@
           : '') +
         '<div class="news-featured__body">' +
           '<div class="news-featured__label">⭐ Noticia Destacada en Inicio</div>' +
-          '<h2 class="news-featured__title">' + escHtml(data.title) + '</h2>' +
+          '<h2 class="news-featured__title">' + escHtml(decodeEntities(data.title)) + '</h2>' +
           (data.source
             ? '<div class="news-featured__meta">' + escHtml(data.source) + (data.pubDate ? ' · ' + formatDate(data.pubDate) : '') + '</div>'
             : '') +
