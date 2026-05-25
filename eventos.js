@@ -1,6 +1,6 @@
 /* ============================================================
    EVENTOS — Bingo Interactivo de Conferencias Gaming
-   Version: 20260525i
+   Version: 20260525j
    ============================================================ */
 (function () {
   'use strict';
@@ -143,13 +143,19 @@
   var _cdInterval    = null;
   var _seeded        = false;
   var _editingEvtId  = null;
+  var _prevWasFull   = false;
 
-  /* Líneas ganadoras */
+  /* Líneas ganadoras — grid 4×5, solo horizontales y verticales
+     Celdas:  0  1  2  3
+              4  5  6  7
+              8  9 10 11
+             12 13 14 15
+             16 17 18 19  */
   var LINES = [
-    [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],
-    [0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],
-    [0,6,12,18,24],[4,8,12,16,20]
+    [0,1,2,3],[4,5,6,7],[8,9,10,11],[12,13,14,15],[16,17,18,19], /* 5 horizontales */
+    [0,4,8,12,16],[1,5,9,13,17],[2,6,10,14,18],[3,7,11,15,19]    /* 4 verticales   */
   ];
+  var TOTAL_CELLS = 20;
 
   /* ── HELPERS DE COLOR ───────────────────────────────────────── */
   function hexToRgba(hex, alpha) {
@@ -494,6 +500,7 @@
         _cards = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
         renderBingoSection();
         renderHistorico();
+        renderRanking();
       });
   }
 
@@ -525,8 +532,9 @@
   }
 
   function setActiveCard(cardId) {
-    _activeCardId = cardId;
-    _prevWinCount = 0;
+    _activeCardId  = cardId;
+    _prevWinCount  = 0;
+    _prevWasFull   = false;
     renderTabs(getCardsForEvent(_currentEvtIdx));
     if (_unsubCard) _unsubCard();
     _unsubCard = db.collection('bingo_cards').doc(cardId)
@@ -565,7 +573,7 @@
     var winSet   = new Set();
     winLines.forEach(function (line) { line.forEach(function (i) { winSet.add(i); }); });
 
-    var letters    = ['B','I','N','G','O'];
+    var letters    = ['B','I','N','G'];
     var headerHtml = letters.map(function (l) {
       return '<div class="bingo-letter bingo-letter--' + l.toLowerCase() + '">' + l + '</div>';
     }).join('');
@@ -595,10 +603,13 @@
       return '<div class="' + cls + '"' + click + '>' + inner + '</div>';
     }).join('');
 
-    var marked    = cells.filter(function (c) { return c.marcada && !c.libre; }).length;
-    var total     = cells.filter(function (c) { return !c.libre; }).length;
-    var prevWins  = _prevWinCount;
-    _prevWinCount = winLines.length;
+    var marked      = cells.filter(function (c) { return c.marcada && !c.libre; }).length;
+    var total       = cells.filter(function (c) { return !c.libre; }).length;
+    var prevWins    = _prevWinCount;
+    _prevWinCount   = winLines.length;
+    var isFullBingo = (total > 0 && marked === total);
+    var prevFull    = _prevWasFull;
+    _prevWasFull    = isFullBingo;
 
     document.getElementById('bingoBoardWrap').innerHTML =
       '<div class="bingo-evento-title">' +
@@ -611,7 +622,12 @@
       '</div>';
 
     renderStats(winLines, marked, total);
-    if (winLines.length > prevWins && winLines.length > 0) showBingoCelebration(winLines.length);
+
+    if (isFullBingo && !prevFull) {
+      showBingoCelebration();              /* 🎉 BINGO!! — todo completo */
+    } else if (winLines.length > prevWins) {
+      showLineaCelebration(winLines.length); /* ✅ LINEA!! */
+    }
   }
 
   function getWinLines(cells) {
@@ -636,19 +652,98 @@
 
   /* ── STATS ──────────────────────────────────────────────────── */
   function renderStats(winLines, marked, total) {
-    var pct = total > 0 ? Math.round(marked / total * 100) : 0;
-    var n   = winLines.length;
+    var pct   = total > 0 ? Math.round(marked / total * 100) : 0;
+    var n     = winLines.length;
+    var score = calcScore(marked, n, marked === total && total > 0);
     document.getElementById('bingoStats').innerHTML =
       '<div class="bingo-stats">' +
-        '<div class="bingo-stat"><span class="bingo-stat__val">' + marked + '<span style="font-size:0.9rem;opacity:.55">/' + total + '</span></span><span class="bingo-stat__lbl">Marcadas</span></div>' +
-        '<div class="bingo-stat"><span class="bingo-stat__val">' + pct + '<span style="font-size:0.9rem;opacity:.55">%</span></span><span class="bingo-stat__lbl">Completado</span></div>' +
-        '<div class="bingo-stat"><span class="bingo-stat__val' + (n > 0 ? ' bingo-stat__val--win' : '') + '">' + n + '</span><span class="bingo-stat__lbl">BINGO' + (n !== 1 ? 's' : '') + '</span></div>' +
+        '<div class="bingo-stat"><span class="bingo-stat__val">' + marked + '<span style="font-size:0.9rem;opacity:.55">/' + total + '</span></span><span class="bingo-stat__lbl">Casillas</span></div>' +
+        '<div class="bingo-stat"><span class="bingo-stat__val' + (n > 0 ? ' bingo-stat__val--win' : '') + '">' + n + '</span><span class="bingo-stat__lbl">Líneas</span></div>' +
+        '<div class="bingo-stat"><span class="bingo-stat__val" style="color:#f5c842;text-shadow:0 0 18px rgba(245,200,66,0.5)">' + score + '</span><span class="bingo-stat__lbl">Puntos</span></div>' +
       '</div>';
   }
 
-  /* ── CELEBRACIÓN ────────────────────────────────────────────── */
-  function showBingoCelebration(count) {
-    var letters  = '¡BINGO!'.split('');
+  /* ── PUNTUACIÓN ─────────────────────────────────────────────── */
+  function calcScore(marked, lines, isFull) {
+    return marked * 1 + lines * 3 + (isFull ? 20 : 0);
+  }
+
+  function calcCardScore(card) {
+    var cells   = card.cells || [];
+    var marked  = cells.filter(function (c) { return c.marcada && !c.libre; }).length;
+    var total   = cells.filter(function (c) { return !c.libre; }).length;
+    var lines   = getWinLines(cells).length;
+    var isFull  = total > 0 && marked === total;
+    return { score: calcScore(marked, lines, isFull), marked: marked, total: total, lines: lines, isFull: isFull };
+  }
+
+  /* ── RANKING GLOBAL ─────────────────────────────────────────── */
+  function renderRanking() {
+    var el = document.getElementById('bingoRanking');
+    if (!el) return;
+
+    if (_cards.length === 0) {
+      el.innerHTML = '<div class="empty-state" style="padding:2rem 0"><div class="empty-state__icon">🏆</div><div class="empty-state__title">Aún no hay bingos</div></div>';
+      return;
+    }
+
+    var ranked = _cards.map(function (card) {
+      var res = calcCardScore(card);
+      var ev  = _events.find(function (e) { return e.id === card.eventoId; });
+      return Object.assign({ id: card.id, titulo: card.titulo, eventoNombre: ev ? ev.nombre : '—' }, res);
+    }).sort(function (a, b) { return b.score - a.score; });
+
+    var medals = ['🥇','🥈','🥉'];
+    var posCls = ['--1','--2','--3'];
+    var itemCls= ['--gold','--silver','--bronze'];
+
+    el.innerHTML = ranked.map(function (r, i) {
+      var pos    = i < 3 ? medals[i] : (i + 1);
+      var pCls   = 'bingo-rank-pos bingo-rank-pos' + (i < 3 ? posCls[i] : '--n');
+      var iCls   = 'bingo-rank-item' + (i < 3 ? ' bingo-rank-item' + itemCls[i] : '');
+      var pct    = r.total > 0 ? Math.round(r.marked / r.total * 100) : 0;
+
+      var badges = '<span class="bingo-rank-badge">📦 ' + r.marked + '/' + r.total + '</span>';
+      if (r.lines > 0)  badges += '<span class="bingo-rank-badge bingo-rank-badge--line">🟢 ' + r.lines + ' línea' + (r.lines !== 1 ? 's' : '') + '</span>';
+      if (r.isFull)     badges += '<span class="bingo-rank-badge bingo-rank-badge--full">⭐ BINGO 100%</span>';
+
+      return '<div class="' + iCls + '">' +
+        '<div class="' + pCls + '">' + pos + '</div>' +
+        '<div class="bingo-rank-info">' +
+          '<div class="bingo-rank-title">' + escHtml(r.titulo) + '</div>' +
+          '<div class="bingo-rank-event">' + escHtml(r.eventoNombre) + '</div>' +
+          '<div class="bingo-rank-detail">' + badges + '</div>' +
+          '<div class="bingo-rank-bar"><div class="bingo-rank-bar__fill" style="width:' + pct + '%"></div></div>' +
+        '</div>' +
+        '<div class="bingo-rank-score">' + r.score + '<span>pts</span></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  /* ── CELEBRACIÓN LINEA!! (toast) ───────────────────────────── */
+  function showLineaCelebration(lineCount) {
+    var existing = document.getElementById('bingoLineaToast');
+    if (existing) existing.parentNode.removeChild(existing);
+
+    var toast = document.createElement('div');
+    toast.id  = 'bingoLineaToast';
+    toast.className = 'bingo-linea-toast';
+    toast.innerHTML =
+      '<span class="bingo-linea-toast__text">✅ LÍNEA!!</span>' +
+      '<span class="bingo-linea-toast__count">' + lineCount + ' línea' + (lineCount !== 1 ? 's' : '') + ' completada' + (lineCount !== 1 ? 's' : '') + '</span>';
+    document.body.appendChild(toast);
+    requestAnimationFrame(function () { toast.classList.add('bingo-linea-toast--show'); });
+    playLineaSound();
+
+    setTimeout(function () {
+      toast.classList.remove('bingo-linea-toast--show');
+      setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+    }, 2500);
+  }
+
+  /* ── CELEBRACIÓN BINGO!! (pantalla completa) ─────────────────── */
+  function showBingoCelebration() {
+    var letters  = '¡BINGO!!'.split('');
     var wordHtml = letters.map(function (l, i) { return '<span style="--bi:' + i + '">' + l + '</span>'; }).join('');
     var overlay  = document.createElement('div');
     overlay.id   = 'bingoCelebOverlay';
@@ -656,7 +751,7 @@
       '<canvas id="bingoCelebCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>' +
       '<div class="bingo-win-banner">' +
         '<div class="bingo-win__word">' + wordHtml + '</div>' +
-        '<div class="bingo-win__sub">' + (count > 1 ? count + ' líneas completadas 🔥' : '¡Línea completada! 🎉') + '</div>' +
+        '<div class="bingo-win__sub">¡¡Bingo completo!! 20/20 casillas 🔥</div>' +
         '<div class="bingo-win__hint">Toca para cerrar</div>' +
       '</div>';
     overlay.style.cssText = 'position:fixed;inset:0;z-index:8000;display:flex;align-items:center;justify-content:center;background:rgba(7,7,15,0.65);backdrop-filter:blur(3px);cursor:pointer;opacity:0;transition:opacity .4s';
@@ -716,6 +811,20 @@
     } catch(e){}
   }
 
+  function playLineaSound() {
+    try {
+      var ctx = new (window.AudioContext||window.webkitAudioContext)();
+      [{f:659,t:0,d:.12},{f:880,t:.1,d:.2}].forEach(function(n){
+        var o=ctx.createOscillator(),g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.value=n.f;
+        g.gain.setValueAtTime(0,ctx.currentTime+n.t);
+        g.gain.linearRampToValueAtTime(.18,ctx.currentTime+n.t+.02);
+        g.gain.linearRampToValueAtTime(0,ctx.currentTime+n.t+n.d);
+        o.start(ctx.currentTime+n.t);o.stop(ctx.currentTime+n.t+n.d+.05);
+      });
+    } catch(e){}
+  }
+
   /* ── MODAL CREAR / EDITAR BINGO ─────────────────────────────── */
   function openNewCardModal() {
     _editingCardId = null;
@@ -745,16 +854,14 @@
   function buildModalGrid(existingCells) {
     var container = document.getElementById('bingoModalGrid');
     container.innerHTML = '';
-    for (var i = 0; i < 25; i++) {
-      var cell    = existingCells ? existingCells[i] : null;
-      var isLibre = cell ? !!cell.libre : (i === 12);
-      var inp = document.createElement('input');
+    for (var i = 0; i < TOTAL_CELLS; i++) {
+      var cell = existingCells ? existingCells[i] : null;
+      var inp  = document.createElement('input');
       inp.type = 'text'; inp.maxLength = 60;
-      inp.className = 'bingo-modal-input' + (isLibre ? ' bingo-modal-input--free' : '');
+      inp.className   = 'bingo-modal-input';
       inp.dataset.idx = i;
-      inp.value    = isLibre ? '' : (cell ? (cell.texto || '') : '');
-      inp.disabled = isLibre;
-      inp.placeholder = isLibre ? '★ LIBRE' : 'Casilla ' + (i + 1);
+      inp.value       = cell ? (cell.texto || '') : '';
+      inp.placeholder = 'Casilla ' + (i + 1);
       container.appendChild(inp);
     }
   }
@@ -764,8 +871,7 @@
     if (!nombre) { document.getElementById('bingoModalName').focus(); return; }
     var inputs = document.querySelectorAll('#bingoModalGrid .bingo-modal-input');
     var cells  = Array.from(inputs).map(function (inp) {
-      var libre = inp.classList.contains('bingo-modal-input--free');
-      return { texto: libre ? 'LIBRE' : inp.value.trim(), marcada: libre, libre: libre, marcadoPor: null, marcadaAt: null };
+      return { texto: inp.value.trim(), marcada: false, libre: false, marcadoPor: null, marcadaAt: null };
     });
     if (_editingCardId) {
       db.collection('bingo_cards').doc(_editingCardId).update({ titulo: nombre, cells: cells }).then(closeCardModal);

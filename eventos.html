@@ -300,6 +300,19 @@
     <div id="bingoStats" style="margin-top:1.25rem"></div>
   </div>
 
+  <!-- ══ CLASIFICACIÓN GLOBAL DE BINGOS ══ -->
+  <div class="page-header" style="margin-top:2rem">
+    <div class="page-header__inner">
+      <div>
+        <h2 class="page-header__title">🏆 Clasificación de Bingos</h2>
+        <p class="page-header__sub">Ranking global · todos los eventos · 1 pt/casilla · 3 pts/línea · +20 pts bingo 100%</p>
+      </div>
+    </div>
+  </div>
+  <div class="section" style="padding-top:0.5rem">
+    <div id="bingoRanking" class="bingo-ranking"></div>
+  </div>
+
   <!-- ══ HISTÓRICO DE EVENTOS ══ -->
   <div id="evtHistorico" style="display:none">
     <div class="page-header" style="margin-top:2rem">
@@ -416,8 +429,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">
-          Predicciones (5×5)
-          <span style="color:var(--txt3);font-weight:400;font-size:0.75rem;margin-left:0.5rem">— la casilla central es LIBRE</span>
+          Predicciones (4×5 · 20 casillas)
         </label>
         <div id="bingoModalGrid"></div>
       </div>
@@ -434,6 +446,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260522n"            defer></script>
-<script src="eventos.js?v=20260525i"         defer></script>
+<script src="eventos.js?v=20260525j"         defer></script>
 </body>
 </html>
