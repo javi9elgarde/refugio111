@@ -526,7 +526,7 @@
     var url  = URL.createObjectURL(blob);
     var a    = document.createElement('a');
     a.href   = url;
-    a.download = 'gametracker-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.download = 'refugio111-backup-' + new Date().toISOString().slice(0, 10) + '.json';
     a.click();
     URL.revokeObjectURL(url);
     Toast.show('Datos exportados ✓');
