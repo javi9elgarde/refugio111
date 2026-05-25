@@ -489,7 +489,6 @@ window.GT.activePlayer = window.GT.getActivePlayer();
 window.GT.Nav = (function () {
   var PLAYER_COLORS   = { David: 'var(--player-david)', Javi: 'var(--player-javi)', Mery: 'var(--player-mery)' };
   var PLAYER_INITIALS = { David: 'D', Javi: 'J', Mery: 'M' };
-  var PLAYER_ICONS    = { David: 'icondavidneutral.png', Javi: 'iconjavineutral.png', Mery: 'iconmeryneutral.png' };
 
   function init() {
     try {
@@ -526,10 +525,8 @@ window.GT.Nav = (function () {
         indicator.title = 'Jugando como ' + ap + ' · Pulsa para cambiar';
         indicator.className = 'nav__player-pill';
         indicator.innerHTML =
-          '<div class="nav__player-av">' +
-            (PLAYER_ICONS[ap]
-              ? '<img src="' + PLAYER_ICONS[ap] + '" alt="' + ap + '">'
-              : (PLAYER_INITIALS[ap] || ap[0])) +
+          '<div class="nav__player-av" style="background:' + (PLAYER_COLORS[ap] || '#666') + '">' +
+            (PLAYER_INITIALS[ap] || ap[0]) +
           '</div>' +
           '<span class="nav__player-name">' + ap + '</span>';
         var nav = document.querySelector('.nav');

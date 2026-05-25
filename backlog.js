@@ -10,9 +10,9 @@
   var Toast      = window.GT.Toast;
 
   var PLAYERS = [
-    { key: 'David', name: 'David Garde',   initial: 'D', img: 'icondavidneutral.png', color: 'var(--player-david)', hex: '#3b82f6' },
-    { key: 'Javi',  name: 'Javier Garde',  initial: 'J', img: 'iconjavineutral.png',  color: 'var(--player-javi)',  hex: '#9b1742' },
-    { key: 'Mery',  name: 'Mariam Moreno', initial: 'M', img: 'iconmeryneutral.png',  color: 'var(--player-mery)',  hex: '#9b59ff' }
+    { key: 'David', name: 'David Garde',   initial: 'D', color: 'var(--player-david)', hex: '#3b82f6' },
+    { key: 'Javi',  name: 'Javier Garde',  initial: 'J', color: 'var(--player-javi)',  hex: '#9b1742' },
+    { key: 'Mery',  name: 'Mariam Moreno', initial: 'M', color: 'var(--player-mery)',  hex: '#9b59ff' }
   ];
 
   var state = { player: 'David' };
@@ -104,10 +104,8 @@
       bar.style.display = 'flex';
       bar.style.setProperty('--pc', color);
       bar.innerHTML =
-        '<div class="blg-player-bar__av" style="box-shadow:0 2px 20px -4px ' + hex + '">' +
-          (playerData.img
-            ? '<img src="' + playerData.img + '" alt="' + playerData.name + '">'
-            : playerData.initial) +
+        '<div class="blg-player-bar__av" style="background:' + hex + ';box-shadow:0 2px 20px -4px ' + hex + '">' +
+          playerData.initial +
         '</div>' +
         '<div>' +
           '<div class="blg-player-bar__name">' + Utils.escapeHtml(playerData.name) + '</div>' +
