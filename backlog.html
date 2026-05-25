@@ -30,8 +30,10 @@
       font-weight: 900; font-size: 1.1rem;
       color: #fff;
       flex-shrink: 0;
+      overflow: hidden;
       box-shadow: 0 2px 16px rgba(0,0,0,0.4);
     }
+    .blg-player-bar__av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     .blg-player-bar__name {
       font-family: 'Rajdhani', sans-serif;
       font-weight: 700; font-size: 1.2rem;
@@ -208,21 +210,21 @@
       <label class="reg-pcard reg-pcard--david">
         <input type="radio" name="blgPlayer" value="David">
         <div class="reg-pcard__inner">
-          <div class="reg-pcard__avatar">D</div>
+          <img src="icondavidneutral.png" class="reg-pcard__avatar" alt="David">
           <div class="reg-pcard__name">David</div>
         </div>
       </label>
       <label class="reg-pcard reg-pcard--javi">
         <input type="radio" name="blgPlayer" value="Javi">
         <div class="reg-pcard__inner">
-          <div class="reg-pcard__avatar">J</div>
+          <img src="iconjavineutral.png" class="reg-pcard__avatar" alt="Javi">
           <div class="reg-pcard__name">Javi</div>
         </div>
       </label>
       <label class="reg-pcard reg-pcard--mery">
         <input type="radio" name="blgPlayer" value="Mery">
         <div class="reg-pcard__inner">
-          <div class="reg-pcard__avatar">M</div>
+          <img src="iconmeryneutral.png" class="reg-pcard__avatar" alt="Mery">
           <div class="reg-pcard__name">Mery</div>
         </div>
       </label>
