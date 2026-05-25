@@ -17,37 +17,262 @@
 <style>@keyframes dotPulse{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}</style>
 
 <nav class="nav">
-  <a href="hub.html" class="nav__link nav__link--hub nav__hub">🏠 Hub</a>
   <div class="nav__links nav__links--left">
+    <a href="hub.html"          class="nav__link">Hub</a>
+    <a href="halloffame.html"   class="nav__link">G.O.T.Y</a>
     <a href="biblioteca.html"   class="nav__link">Biblioteca</a>
     <a href="registro.html"     class="nav__link">Registro</a>
-    <a href="halloffame.html"   class="nav__link nav__link--hof">🏆 Hall of Fame</a>
+    <a href="backlog.html"      class="nav__link">Pendientes</a>
   </div>
   <a href="index.html" class="nav__logo">
     <img src="logo.png" alt="Refugio 111" class="nav__logo-img">
   </a>
   <div class="nav__links nav__links--right">
-    <a href="estadisticas.html" class="nav__link">Estadísticas</a>
+    <a href="eventos.html"      class="nav__link nav__link--active">Eventos</a>
+    <a href="noticias.html"     class="nav__link">Noticias</a>
     <a href="pendientes.html"   class="nav__link">Jugadores</a>
-    <a href="backlog.html"      class="nav__link">Pendientes</a>
-    <a href="eventos.html"      class="nav__link nav__link--eventos">🎰 Eventos</a>
+    <a href="estadisticas.html" class="nav__link">Estadísticas</a>
   </div>
   <button class="nav__hamburger" id="navHamburger" aria-label="Menú">☰</button>
 </nav>
 <div class="nav__mobile" id="navMobile">
-  <a href="hub.html"          class="nav__link nav__link--hub">🏠 Hub</a>
+  <a href="hub.html"          class="nav__link">Hub</a>
   <a href="index.html"        class="nav__link">Inicio</a>
+  <a href="halloffame.html"   class="nav__link">G.O.T.Y</a>
   <a href="biblioteca.html"   class="nav__link">Biblioteca</a>
   <a href="registro.html"     class="nav__link">Registro</a>
-  <a href="halloffame.html"   class="nav__link nav__link--hof">🏆 Hall of Fame</a>
-  <a href="estadisticas.html" class="nav__link">Estadísticas</a>
-  <a href="pendientes.html"   class="nav__link">Jugadores</a>
   <a href="backlog.html"      class="nav__link">Pendientes</a>
-  <a href="eventos.html"      class="nav__link">🎰 Eventos</a>
+  <a href="eventos.html"      class="nav__link">Eventos</a>
+  <a href="noticias.html"     class="nav__link">Noticias</a>
+  <a href="pendientes.html"   class="nav__link">Jugadores</a>
+  <a href="estadisticas.html" class="nav__link">Estadísticas</a>
 </div>
 
 <div class="page">
-  <div class="page-header">
+
+  <!-- ══ EVENTO DESTACADO ══ -->
+  <div class="section evt-featured-section">
+    <div class="evt-featured" id="evtFeaturedCard">
+
+      <!-- Imagen 16:9 del evento -->
+      <div class="evt-featured__visual">
+        <div class="evt-featured__img-wrap" id="evtImgWrap">
+          <!-- Si hay imagen: <img src="..." class="evt-featured__img"> -->
+          <!-- Placeholder por defecto -->
+          <div class="evt-featured__placeholder" id="evtPlaceholder">
+            <span class="evt-featured__placeholder-icon">🎮</span>
+            <span class="evt-featured__placeholder-lbl">Imagen del evento</span>
+          </div>
+        </div>
+        <!-- Badge estado -->
+        <div class="evt-badge" id="evtBadge">PRÓXIMAMENTE</div>
+      </div>
+
+      <!-- Info lateral -->
+      <div class="evt-featured__info">
+        <!-- Cabecera -->
+        <div class="evt-featured__header">
+          <div class="evt-featured__tag" id="evtTag">Gaming Event</div>
+          <h2 class="evt-featured__name" id="evtName">— Próximo Evento —</h2>
+          <p class="evt-featured__desc" id="evtDesc">Los detalles del evento aparecerán aquí.</p>
+        </div>
+
+        <!-- Horario / detalles -->
+        <div class="evt-schedule" id="evtSchedule">
+          <div class="evt-schedule__row">
+            <span class="evt-schedule__icon">📅</span>
+            <div>
+              <div class="evt-schedule__label">Fecha</div>
+              <div class="evt-schedule__val" id="evtDate">—</div>
+            </div>
+          </div>
+          <div class="evt-schedule__row">
+            <span class="evt-schedule__icon">🕐</span>
+            <div>
+              <div class="evt-schedule__label">Hora</div>
+              <div class="evt-schedule__val" id="evtTime">—</div>
+            </div>
+          </div>
+          <div class="evt-schedule__row">
+            <span class="evt-schedule__icon">📺</span>
+            <div>
+              <div class="evt-schedule__label">Dónde verlo</div>
+              <div class="evt-schedule__val" id="evtWhere">—</div>
+            </div>
+          </div>
+          <div class="evt-schedule__row">
+            <span class="evt-schedule__icon">⏱</span>
+            <div>
+              <div class="evt-schedule__label">Duración estimada</div>
+              <div class="evt-schedule__val" id="evtDuration">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cuenta atrás -->
+        <div class="evt-countdown" id="evtCountdown">
+          <div class="evt-countdown__label">Cuenta atrás</div>
+          <div class="evt-countdown__timer">
+            <div class="evt-cd-unit"><span class="evt-cd-val" id="evtCdDays">--</span><span class="evt-cd-lbl">días</span></div>
+            <span class="evt-cd-sep">:</span>
+            <div class="evt-cd-unit"><span class="evt-cd-val" id="evtCdHours">--</span><span class="evt-cd-lbl">horas</span></div>
+            <span class="evt-cd-sep">:</span>
+            <div class="evt-cd-unit"><span class="evt-cd-val" id="evtCdMins">--</span><span class="evt-cd-lbl">min</span></div>
+            <span class="evt-cd-sep">:</span>
+            <div class="evt-cd-unit"><span class="evt-cd-val" id="evtCdSecs">--</span><span class="evt-cd-lbl">seg</span></div>
+          </div>
+        </div>
+
+        <!-- Botón enlace -->
+        <a href="#" class="btn btn-primary evt-featured__link" id="evtLink" target="_blank" style="display:none">
+          🔴 Ver en directo
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* ══ EVENTO DESTACADO ══ */
+    .evt-featured-section { padding-bottom: 0.5rem; }
+
+    .evt-featured {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 1.5rem;
+      background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    @media (max-width: 860px) {
+      .evt-featured { grid-template-columns: 1fr; }
+    }
+
+    /* Visual 16:9 */
+    .evt-featured__visual {
+      position: relative;
+    }
+    .evt-featured__img-wrap {
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: var(--bg3);
+      height: 100%;
+    }
+    .evt-featured__img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    .evt-featured:hover .evt-featured__img { transform: scale(1.03); }
+
+    .evt-featured__placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.75rem;
+      background: linear-gradient(135deg, rgba(79,172,254,0.05) 0%, rgba(120,80,220,0.08) 100%);
+      min-height: 200px;
+    }
+    .evt-featured__placeholder-icon { font-size: 3rem; opacity: 0.4; }
+    .evt-featured__placeholder-lbl  { font-size: 0.75rem; color: var(--txt3); letter-spacing: 0.08em; }
+
+    /* Badge */
+    .evt-badge {
+      position: absolute;
+      top: 0.75rem; left: 0.75rem;
+      background: rgba(79,172,254,0.18);
+      border: 1px solid rgba(79,172,254,0.4);
+      color: #4facfe;
+      font-size: 0.62rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0.22rem 0.6rem;
+      border-radius: 4px;
+      backdrop-filter: blur(6px);
+    }
+    .evt-badge--live {
+      background: rgba(239,68,68,0.2);
+      border-color: rgba(239,68,68,0.5);
+      color: #ef4444;
+      animation: evtBadgePulse 1.4s ease-in-out infinite;
+    }
+    @keyframes evtBadgePulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.55; }
+    }
+
+    /* Info panel */
+    .evt-featured__info {
+      display: flex; flex-direction: column;
+      gap: 1.1rem;
+      padding: 1.5rem 1.5rem 1.5rem 0;
+    }
+    @media (max-width: 860px) {
+      .evt-featured__info { padding: 0 1.25rem 1.25rem; }
+    }
+
+    .evt-featured__tag {
+      font-size: 0.67rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 0.2rem;
+    }
+    .evt-featured__name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      font-weight: 700; line-height: 1.2;
+      color: var(--txt);
+    }
+    .evt-featured__desc {
+      font-size: 0.82rem; color: var(--txt3);
+      line-height: 1.55; margin-top: 0.35rem;
+    }
+
+    /* Schedule rows */
+    .evt-schedule { display: flex; flex-direction: column; gap: 0.6rem; }
+    .evt-schedule__row {
+      display: flex; align-items: flex-start; gap: 0.65rem;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.55rem 0.7rem;
+    }
+    .evt-schedule__icon { font-size: 1rem; line-height: 1.4; flex-shrink: 0; }
+    .evt-schedule__label { font-size: 0.62rem; color: var(--txt3); text-transform: uppercase; letter-spacing: 0.07em; }
+    .evt-schedule__val   { font-size: 0.85rem; font-weight: 600; color: var(--txt); margin-top: 0.1rem; }
+
+    /* Countdown */
+    .evt-countdown { }
+    .evt-countdown__label {
+      font-size: 0.65rem; color: var(--txt3);
+      text-transform: uppercase; letter-spacing: 0.09em;
+      margin-bottom: 0.55rem;
+    }
+    .evt-countdown__timer {
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .evt-cd-unit {
+      display: flex; flex-direction: column; align-items: center;
+      background: rgba(79,172,254,0.07);
+      border: 1px solid rgba(79,172,254,0.2);
+      border-radius: 6px;
+      padding: 0.45rem 0.6rem;
+      min-width: 48px;
+    }
+    .evt-cd-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem; font-weight: 700;
+      color: #4facfe;
+      line-height: 1;
+      text-shadow: 0 0 12px rgba(79,172,254,0.5);
+    }
+    .evt-cd-lbl { font-size: 0.55rem; color: var(--txt3); margin-top: 0.18rem; }
+    .evt-cd-sep { font-size: 1.1rem; color: rgba(79,172,254,0.4); font-weight: 700; margin-bottom: 0.6rem; }
+
+    .evt-featured__link { align-self: flex-start; }
+  </style>
+
+  <!-- ══ BINGO DE EVENTOS ══ -->
+  <div class="page-header" style="margin-top:2rem">
     <div class="page-header__inner">
       <div>
         <h1 class="page-header__title">🎰 Bingo de Eventos</h1>
