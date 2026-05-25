@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — Menú Principal</title>
-  <link rel="stylesheet" href="styles.css?v=20260525m">
+  <link rel="stylesheet" href="styles.css?v=20260525n">
 </head>
 <body>
 
@@ -395,20 +395,20 @@
     });
 
     /* ── 2. GTA VI — portada desde Biblioteca ─────────────── */
-    db.collection('games').get().then(function (snap) {
-      var games = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+    /* Usar onDataReady para que la caché ya esté poblada      */
+    window.GT.onDataReady(function () {
+      var games = window.GT.Biblioteca.getAll();
       var gta = games.find(function (g) {
         var t = (g.titulo || '').toLowerCase();
-        return t.indexOf('gta vi') !== -1 ||
-               t.indexOf('grand theft auto vi') !== -1 ||
-               t.indexOf('grand theft auto 6') !== -1;
+        /* Búsqueda amplia: cualquier variante de GTA / Grand Theft Auto */
+        return t.indexOf('grand theft') !== -1 || t.indexOf('gta') !== -1;
       });
       if (!gta) return;
       if (gta.portadaUrl) setImg('gtaImgWrap', gta.portadaUrl);
-      /* Enlazar directamente a la ficha del juego */
+      /* Enlazar directamente a la ficha: biblioteca.html?open=<id> */
       var panel = document.getElementById('gtaPanel');
       if (panel) panel.href = 'biblioteca.html?open=' + gta.id;
-    }).catch(function () {});
+    });
 
     /* ── 3. Noticia Destacada ─────────────────────────────── */
     db.collection('settings').doc('featuredNews').get().then(function (doc) {
