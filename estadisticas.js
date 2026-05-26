@@ -51,40 +51,73 @@
     });
   }
 
-  /* ── GENRE CHART ─────────────────────────────────────────── */
+  /* ── GENRE CHART (donut) ─────────────────────────────────── */
   function renderGenreChart(year, player) {
-    var data = Registro.getGenreStats(year, player).slice(0, 10);
-    var ctx  = document.getElementById('chartGenres').getContext('2d');
+    var data  = Registro.getGenreStats(year, player).slice(0, 10);
+    var boxEl = document.getElementById('chartGenres');
+    if (!boxEl) return;
+    var ctx  = boxEl.getContext('2d');
     if (charts.genres) { charts.genres.destroy(); charts.genres = null; }
     if (!data.length) return;
 
-    var COLORS = ['rgba(79,172,254,0.75)','rgba(155,89,255,0.75)','rgba(34,197,94,0.75)',
-                  'rgba(236,72,153,0.75)','rgba(245,158,11,0.75)','rgba(6,182,212,0.75)',
-                  'rgba(249,115,22,0.75)','rgba(132,204,22,0.75)','rgba(239,68,68,0.75)','rgba(168,85,247,0.75)'];
+    var COLORS = ['#4facfe','#9b59ff','#22c55e','#ec4899','#f59e0b',
+                  '#06b6d4','#f97316','#84cc16','#ef4444','#a855f7'];
+
+    var total = data.reduce(function(s,d){ return s + d.count; }, 0);
+
+    // Render custom legend alongside canvas
+    var wrapId = 'chartGenresWrap';
+    var wrap = document.getElementById(wrapId);
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = wrapId;
+      wrap.className = 'chart-donut-wrap';
+      boxEl.parentNode.insertBefore(wrap, boxEl);
+      wrap.appendChild(boxEl);
+      var legendDiv = document.createElement('div');
+      legendDiv.id = 'chartGenresLegend';
+      legendDiv.className = 'chart-donut-legend';
+      wrap.appendChild(legendDiv);
+    }
+    var legendEl = document.getElementById('chartGenresLegend');
+    if (legendEl) {
+      legendEl.innerHTML = data.map(function(d, i) {
+        var pct = total > 0 ? Math.round(d.count / total * 100) : 0;
+        return '<div class="chart-legend-item">' +
+          '<div class="chart-legend-dot" style="background:' + COLORS[i % COLORS.length] + '"></div>' +
+          '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">' + d.genero + '</span>' +
+          '<span class="chart-legend-pct">' + pct + '%</span>' +
+        '</div>';
+      }).join('');
+    }
+
+    boxEl.style.maxHeight = '220px';
+    boxEl.style.maxWidth  = '220px';
 
     charts.genres = new Chart(ctx, {
-      type: 'bar',
+      type: 'doughnut',
       data: {
         labels: data.map(function(d){ return d.genero; }),
         datasets: [{
-          label: 'Partidas',
           data: data.map(function(d){ return d.count; }),
           backgroundColor: data.map(function(_, i){ return COLORS[i % COLORS.length]; }),
-          borderRadius: 6,
-          borderSkipped: false
+          borderColor: 'rgba(7,7,15,0.7)',
+          borderWidth: 2,
+          hoverOffset: 8
         }]
       },
       options: {
-        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: true,
+        cutout: '58%',
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: function(c){ return ' ' + c.raw + ' partida' + (c.raw !== 1 ? 's' : ''); } } }
-        },
-        scales: {
-          x: { ticks: { color: 'rgba(232,232,248,0.5)', font: CHART_FONT }, grid: { color: 'rgba(255,255,255,0.05)' } },
-          y: { ticks: { color: 'rgba(232,232,248,0.8)', font: CHART_FONT }, grid: { display: false } }
+          tooltip: { callbacks: {
+            label: function(c){
+              var pct = total > 0 ? Math.round(c.raw / total * 100) : 0;
+              return ' ' + c.label + ': ' + c.raw + ' (' + pct + '%)';
+            }
+          }}
         }
       }
     });

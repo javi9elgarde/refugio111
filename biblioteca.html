@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — Biblioteca</title>
-  <link rel="stylesheet" href="styles.css?v=20260525s">
+  <link rel="stylesheet" href="styles.css?v=20260527a">
 </head>
 <body>
 
@@ -164,7 +164,18 @@
         </div>
         <div class="form-group">
           <label class="form-label">Fecha de Lanzamiento</label>
-          <input type="date" class="form-input" id="fFecha">
+          <div class="date-selects-row">
+            <select class="form-select" id="fFechaDia"><option value="">DD</option></select>
+            <select class="form-select" id="fFechaMes">
+              <option value="">Mes</option>
+              <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+              <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+              <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+              <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+            <select class="form-select" id="fFechaAno"><option value="">Año</option></select>
+          </div>
+          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Día, mes y año de lanzamiento (opcional)</small>
         </div>
         <div class="form-group">
           <label class="form-label">Duración (horas)</label>
@@ -191,6 +202,32 @@
             <span class="ea-toggle__label">⚡ Acceso anticipado</span>
           </label>
           <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Se mostrará una etiqueta ⚡ EA en la tarjeta y ficha</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Saga / Franquicia</label>
+          <input type="text" class="form-input" id="fSaga" placeholder="Ej: Resident Evil, Final Fantasy..." autocomplete="off" list="sagaSuggestions">
+          <datalist id="sagaSuggestions"></datalist>
+          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Agrupa juegos de la misma saga o serie</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nivel de Hype 🔥</label>
+          <div class="hype-selector" id="fHypeSelector" data-val="0">
+            <button type="button" class="hype-btn" data-hype="1">🔥</button>
+            <button type="button" class="hype-btn" data-hype="2">🔥</button>
+            <button type="button" class="hype-btn" data-hype="3">🔥</button>
+            <button type="button" class="hype-btn" data-hype="4">🔥</button>
+            <button type="button" class="hype-btn" data-hype="5">🔥</button>
+          </div>
+          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Qué hype genera este juego (0 = sin hype, 5 = máximo)</small>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Próximamente</label>
+          <label class="ea-toggle">
+            <input type="checkbox" id="fProximamente">
+            <span class="ea-toggle__track"><span class="ea-toggle__thumb"></span></span>
+            <span class="ea-toggle__label">📅 Marcar como Próximamente</span>
+          </label>
+          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Muestra la etiqueta aunque no tenga fecha de lanzamiento</small>
         </div>
         <div class="form-group" style="grid-column:1/-1">
           <label class="form-label">Géneros</label>
@@ -253,8 +290,9 @@
 <!-- MODAL GAME DETAIL -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal" style="max-width:780px">
-    <div class="modal__header">
-      <h2 class="modal__title" id="detailTitle">—</h2>
+    <div class="modal__header" style="flex-wrap:wrap;gap:0.5rem">
+      <h2 class="modal__title" id="detailTitle" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</h2>
+      <button class="detail-flip-tab" id="detailFlipTab" title="Ver galería y trailer">🎬 Galería</button>
       <button class="modal__close" id="detailClose">✕</button>
     </div>
     <div class="modal__body" id="detailBody"></div>
@@ -269,6 +307,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260522n"            defer></script>
-<script src="biblioteca.js?v=20260522n"      defer></script>
+<script src="biblioteca.js?v=20260527a"      defer></script>
 </body>
 </html>

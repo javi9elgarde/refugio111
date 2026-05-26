@@ -17,12 +17,93 @@
   var PLATFORMS = ['PC','PS5','PS4','PS3','Xbox Series X','Xbox One','Xbox 360',
     'Nintendo Switch 2','Nintendo Switch','PS2'];
 
-  var state = { search:'', genero:'', plataforma:'', año:'', jugador:'All', editId: null, detailId: null };
+  var state = { search:'', genero:'', plataforma:'', año:'', jugador:'All', editId: null, detailId: null, detailFace: 'front' };
   var selectedGeneros    = [];
   var selectedPlataformas = [];
   var coverPreview = null;
   var _alphaObserver = null;
   var _activeAlpha   = '';
+
+  /* ── DATE HELPERS ───────────────────────────────────────── */
+  function populateDateSelects() {
+    var dSel = document.getElementById('fFechaDia');
+    var ySel = document.getElementById('fFechaAno');
+    if (!dSel || !ySel) return;
+    var days = '<option value="">DD</option>';
+    for (var d = 1; d <= 31; d++) days += '<option value="' + String(d).padStart(2,'0') + '">' + d + '</option>';
+    dSel.innerHTML = days;
+    var currentYear = new Date().getFullYear();
+    var years = '<option value="">Año</option>';
+    for (var y = currentYear + 3; y >= 1970; y--) years += '<option value="' + y + '">' + y + '</option>';
+    ySel.innerHTML = years;
+  }
+
+  // Parse "YYYY-MM-DD" or "YYYY-MM" or "YYYY" to set the selects
+  function setDateSelects(isoDate) {
+    var d = document.getElementById('fFechaDia');
+    var m = document.getElementById('fFechaMes');
+    var y = document.getElementById('fFechaAno');
+    if (!isoDate) { if(d) d.value=''; if(m) m.value=''; if(y) y.value=''; return; }
+    var parts = String(isoDate).split('-');
+    if (y) y.value = parts[0] || '';
+    if (m) m.value = parts[1] ? parts[1].padStart(2,'0') : '';
+    if (d) d.value = parts[2] ? parts[2].padStart(2,'0') : '';
+  }
+
+  // Build "YYYY-MM-DD" from the three selects (returns '' if no year)
+  function getDateFromSelects() {
+    var d = document.getElementById('fFechaDia');
+    var m = document.getElementById('fFechaMes');
+    var y = document.getElementById('fFechaAno');
+    var yv = y ? y.value : '';
+    var mv = m ? m.value : '';
+    var dv = d ? d.value : '';
+    if (!yv) return '';
+    if (!mv) return yv;
+    if (!dv) return yv + '-' + mv;
+    return yv + '-' + mv + '-' + dv;
+  }
+
+  /* ── HYPE SELECTOR ──────────────────────────────────────── */
+  function initHypeSelector() {
+    var sel = document.getElementById('fHypeSelector');
+    if (!sel) return;
+    sel.querySelectorAll('.hype-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var val = parseInt(this.dataset.hype);
+        var cur = parseInt(sel.dataset.val) || 0;
+        // click same level → deselect (set to 0)
+        var newVal = (val === cur) ? 0 : val;
+        setHypeSelector(newVal);
+      });
+    });
+  }
+
+  function setHypeSelector(val) {
+    var sel = document.getElementById('fHypeSelector');
+    if (!sel) return;
+    sel.dataset.val = val;
+    sel.querySelectorAll('.hype-btn').forEach(function(btn) {
+      var bv = parseInt(btn.dataset.hype);
+      btn.classList.toggle('active', bv <= val);
+    });
+  }
+
+  function getHypeValue() {
+    var sel = document.getElementById('fHypeSelector');
+    return sel ? parseInt(sel.dataset.val) || 0 : 0;
+  }
+
+  /* ── SAGA SUGGESTIONS ───────────────────────────────────── */
+  function populateSagaSuggestions() {
+    var seen = {}, sagas = [];
+    Biblioteca.getAll().forEach(function(g) {
+      if (g.saga && !seen[g.saga]) { seen[g.saga] = true; sagas.push(g.saga); }
+    });
+    sagas.sort(function(a,b){ return a.localeCompare(b,'es'); });
+    var dl = document.getElementById('sagaSuggestions');
+    if (dl) dl.innerHTML = sagas.map(function(s){ return '<option value="' + Utils.escapeHtml(s) + '">'; }).join('');
+  }
 
   var ALL_ALPHA = ['#','A','B','C','D','E','F','G','H','I','J','K','L','M',
                    'N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
@@ -105,21 +186,37 @@
     var hasDur = game.duracion !== null && game.duracion !== undefined && game.duracion !== '' && parseFloat(game.duracion) > 0;
     var isFuture = game.fechaLanzamiento && game.fechaLanzamiento > today;
     var isReleasedNoDur = !hasDur && game.fechaLanzamiento && game.fechaLanzamiento <= today;
+    var showProx = (!hasDur && isFuture) || game.proximamente;
+    var noDateProx = game.proximamente && !game.fechaLanzamiento;
 
     var durStr = hasDur ? '⏱ ' + Utils.formatDuracion(game.duracion, true) : '';
-    var proxRibbon = (!hasDur && isFuture) ? '<div class="game-card__prox">PRÓXIMAMENTE</div>' : '';
-    var eaBadge    = game.earlyAccess ? '<div class="game-card__ea">⚡ EARLY ACCESS</div>' : '';
+    var proxClass = 'game-card__prox' + (noDateProx ? ' game-card__prox--nofecha' : '');
+    var proxRibbon = showProx ? '<div class="' + proxClass + '">PRÓXIMAMENTE</div>' : '';
+    var eaBadge    = game.earlyAccess ? '<div class="game-card__ea' + (showProx ? ' game-card__ea--above' : '') + '">⚡ EARLY ACCESS</div>' : '';
+
+    // Hype fires (on cover top-right)
+    var hypeHtml = '';
+    if (game.hype && parseInt(game.hype) > 0) {
+      var h = parseInt(game.hype);
+      var fires = '';
+      for (var fi = 1; fi <= 5; fi++) fires += '<span class="' + (fi <= h ? '' : 'dim') + '">🔥</span>';
+      hypeHtml = '<div class="game-card__hype">' + fires + '</div>';
+    }
+
     var metaLeft = hasDur
       ? (durStr ? '<span class="game-card__dur">' + durStr + '</span>' : '<span></span>')
       : (isReleasedNoDur
           ? '<span class="game-card__dur game-card__dur--missing">⏱ ~0h</span>'
           : (game.fechaLanzamiento
               ? '<span class="game-card__prox-date">📅 ' + fmtDate(game.fechaLanzamiento) + '</span>'
-              : '<span class="game-card__no-date">Sin fecha</span>'));
+              : '<span class="game-card__no-date">' + (game.proximamente ? 'Próximamente' : 'Sin fecha') + '</span>'));
+
+    // Saga label in body
+    var sagaHtml = game.saga ? '<div class="game-card__saga">◈ ' + Utils.escapeHtml(game.saga) + '</div>' : '';
 
     return '<div class="game-card' + (isReleasedNoDur ? ' game-card--nodur' : '') + '" data-id="' + game.id + '">' +
       '<div class="game-card__cover">' +
-        coverContent + pendDots + proxRibbon + eaBadge +
+        coverContent + pendDots + proxRibbon + eaBadge + hypeHtml +
         '<div class="game-card__overlay">' +
           '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();window.GT_Bib.openDetail(\'' + game.id + '\')">👁 Ver</button>' +
           '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();window.GT_Bib.openEdit(\'' + game.id + '\')">✏️ Editar</button>' +
@@ -127,6 +224,7 @@
       '</div>' +
       '<div class="game-card__body">' +
         '<div class="game-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
+        sagaHtml +
         (game.desarrollador ? '<div class="game-card__dev">' + Utils.escapeHtml(game.desarrollador) + '</div>' : '') +
         '<div class="game-card__meta">' +
           metaLeft +
@@ -642,15 +740,20 @@
     document.getElementById('fTitulo').value = '';
     document.getElementById('fPortada').value = '';
     document.getElementById('fDesarrollador').value = '';
-    document.getElementById('fFecha').value = '';
+    setDateSelects('');
     document.getElementById('fDuracion').value = '';
     document.getElementById('fPendDavid').checked = false;
     document.getElementById('fPendJavi').checked  = false;
     document.getElementById('fPendMery').checked  = false;
     document.getElementById('fTipoLanzamiento').value = '';
+    document.getElementById('fEarlyAccess').checked = false;
+    document.getElementById('fProximamente').checked = false;
+    document.getElementById('fSaga').value = '';
+    setHypeSelector(0);
     document.getElementById('btnDelete').style.display = 'none';
     if (coverPreview) coverPreview.update('', '');
     populateDevSuggestions();
+    populateSagaSuggestions();
     renderGeneroChips();
     renderPlataformaChips();
     document.getElementById('gameModal').classList.add('open');
@@ -669,7 +772,7 @@
     document.getElementById('fPortada').value = game.portadaUrl || '';
     document.getElementById('fDesarrollador').value = game.desarrollador || '';
     if (coverPreview) coverPreview.update(game.portadaUrl || '', game.portadaPos || '');
-    document.getElementById('fFecha').value = game.fechaLanzamiento || '';
+    setDateSelects(game.fechaLanzamiento || '');
     document.getElementById('fDuracion').value = game.duracion || '';
     var pPor = game.pendientePor || (game.pendiente ? [] : []);
     document.getElementById('fPendDavid').checked = pPor.includes('David');
@@ -677,8 +780,12 @@
     document.getElementById('fPendMery').checked  = pPor.includes('Mery');
     document.getElementById('fTipoLanzamiento').value = game.tipoLanzamiento || '';
     document.getElementById('fEarlyAccess').checked   = !!game.earlyAccess;
+    document.getElementById('fProximamente').checked  = !!game.proximamente;
+    document.getElementById('fSaga').value = game.saga || '';
+    setHypeSelector(parseInt(game.hype) || 0);
     document.getElementById('btnDelete').style.display = 'inline-flex';
     populateDevSuggestions();
+    populateSagaSuggestions();
     renderGeneroChips();
     renderPlataformaChips();
     document.getElementById('gameModal').classList.add('open');
@@ -810,10 +917,185 @@
     document.getElementById('detailBody').innerHTML = html;
     document.getElementById('detailModal').classList.add('open');
     document.getElementById('detailEdit').onclick = function () { openEdit(id); };
+    // Hype in detail modal
+    var hypeVal = parseInt(game.hype) || 0;
+    if (hypeVal > 0) {
+      var fires = '';
+      for (var hfi = 1; hfi <= 5; hfi++) fires += '<span class="hype-fire' + (hfi > hypeVal ? ' dim' : '') + '">🔥</span>';
+      var hypeDiv = document.createElement('div');
+      hypeDiv.className = 'detail-hype';
+      hypeDiv.innerHTML = '<span class="detail-hype__label">Hype</span>' + fires;
+      var infoEl = document.getElementById('detailBody').querySelector('.detail-info');
+      if (infoEl) infoEl.insertBefore(hypeDiv, infoEl.firstChild);
+    }
+    // Saga in detail modal
+    if (game.saga) {
+      var sagaSpan = document.createElement('span');
+      sagaSpan.className = 'badge badge-saga';
+      sagaSpan.textContent = '◈ ' + game.saga;
+      var infoEl2 = document.getElementById('detailBody').querySelector('.detail-badges-row');
+      if (infoEl2) infoEl2.insertBefore(sagaSpan, infoEl2.firstChild);
+    }
+    // Show/reset flip tab
+    state.detailFace = 'front';
+    var tab = document.getElementById('detailFlipTab');
+    if (tab) {
+      tab.textContent = '🎬 Galería';
+      tab.classList.remove('active');
+    }
   }
 
   function closeDetail() {
     document.getElementById('detailModal').classList.remove('open');
+    state.detailFace = 'front';
+  }
+
+  /* ── GALLERY / TRAILER (back face) ─────────────────────── */
+  function ytEmbedUrl(url) {
+    if (!url) return '';
+    var m;
+    m = url.match(/youtu\.be\/([^?&#/]+)/);
+    if (m) return 'https://www.youtube.com/embed/' + m[1];
+    m = url.match(/[?&]v=([^?&#]+)/);
+    if (m) return 'https://www.youtube.com/embed/' + m[1];
+    m = url.match(/youtube\.com\/embed\/([^?&#/]+)/);
+    if (m) return 'https://www.youtube.com/embed/' + m[1];
+    return '';
+  }
+
+  function openDetailBack(id) {
+    var game = Biblioteca.getById(id);
+    if (!game) return;
+    var galeria = game.galeria || [];
+    var trailer = game.trailer || '';
+    var galFilter = 'All';
+
+    function renderGallery() {
+      var filtered = galFilter === 'All' ? galeria : galeria.filter(function(img){ return img.jugador === galFilter; });
+      var grid = document.getElementById('detailGalleryGrid');
+      if (!grid) return;
+      if (!filtered.length) {
+        grid.innerHTML = '<div class="gal-empty"><span class="gal-empty__icon">🖼️</span><span>Sin imágenes' + (galFilter !== 'All' ? ' de ' + galFilter : '') + '. Añade la URL de una imagen abajo.</span></div>';
+        return;
+      }
+      grid.innerHTML = filtered.map(function(img, idx) {
+        var realIdx = galeria.indexOf(img);
+        var pColor = img.jugador === 'David' ? 'var(--player-david)' : img.jugador === 'Javi' ? 'var(--player-javi)' : img.jugador === 'Mery' ? 'var(--player-mery)' : '#888';
+        return '<div class="gal-item">' +
+          '<img src="' + Utils.escapeHtml(img.url) + '" loading="lazy" alt="" onerror="this.parentElement.style.display=\'none\'">' +
+          '<button class="gal-item__del" onclick="window.GT_Bib.removeGalleryImg(' + realIdx + ')" title="Eliminar">✕</button>' +
+          (img.jugador ? '<span class="gal-item__player" style="color:' + pColor + '">' + Utils.escapeHtml(img.jugador) + '</span>' : '') +
+        '</div>';
+      }).join('');
+    }
+
+    var embedUrl = ytEmbedUrl(trailer);
+    var trailerHtml = embedUrl
+      ? '<div class="detail-trailer-embed"><iframe src="' + embedUrl + '?rel=0" allowfullscreen loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe></div>'
+      : '<div class="detail-trailer-empty" id="detailTrailerEmpty"><span class="detail-trailer-empty__icon">▶️</span><span class="detail-trailer-empty__text">Sin trailer</span><span class="detail-trailer-empty__add">+ Añadir enlace de YouTube</span></div>';
+
+    var html =
+      '<div class="detail-gallery-header">' +
+        '<span class="detail-gallery-title">🖼️ Galería de imágenes</span>' +
+        '<div class="detail-gallery-filter" id="detailGalFilter">' +
+          ['All','David','Javi','Mery'].map(function(p) {
+            return '<button class="gal-filter-btn' + (p === 'All' ? ' active' : '') + '" data-gplayer="' + p + '">' + (p === 'All' ? 'Todos' : p) + '</button>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+      '<div class="detail-gallery-grid" id="detailGalleryGrid"></div>' +
+
+      '<div class="gal-add-row">' +
+        '<input type="url" class="form-input" id="galUrlInput" placeholder="URL de imagen (https://...)..." style="flex:2">' +
+        '<select class="form-select form-select--sm" id="galPlayerInput" style="max-width:100px">' +
+          '<option value="">Jugador</option>' +
+          '<option value="David">David</option>' +
+          '<option value="Javi">Javi</option>' +
+          '<option value="Mery">Mery</option>' +
+        '</select>' +
+        '<button class="btn btn-primary btn-sm" id="galAddBtn">+ Añadir</button>' +
+      '</div>' +
+
+      '<div class="detail-trailer-section">' +
+        '<div class="detail-trailer-title">' +
+          '▶️ Trailer / Vídeo' +
+          '<button class="btn btn-ghost btn-sm" id="detailTrailerEditBtn" style="font-size:0.78rem">✏️ Editar</button>' +
+        '</div>' +
+        trailerHtml +
+      '</div>';
+
+    document.getElementById('detailBody').innerHTML = html;
+    renderGallery();
+
+    // Filter buttons
+    document.querySelectorAll('#detailGalFilter .gal-filter-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#detailGalFilter .gal-filter-btn').forEach(function(b){ b.classList.remove('active'); });
+        this.classList.add('active');
+        galFilter = this.dataset.gplayer;
+        renderGallery();
+      });
+    });
+
+    // Add image
+    document.getElementById('galAddBtn').addEventListener('click', function() {
+      var url    = (document.getElementById('galUrlInput').value || '').trim();
+      var player = document.getElementById('galPlayerInput').value;
+      if (!url) { Toast.show('Introduce una URL de imagen', 'error'); return; }
+      var newGaleria = galeria.slice();
+      newGaleria.push({ url: url, jugador: player });
+      Biblioteca.update(id, { galeria: newGaleria });
+      galeria = newGaleria;
+      document.getElementById('galUrlInput').value = '';
+      renderGallery();
+      Toast.show('Imagen añadida ✓');
+    });
+
+    // Trailer edit
+    document.getElementById('detailTrailerEditBtn').addEventListener('click', function() { openTrailerModal(id, trailer); });
+    var trailerEmptyEl = document.getElementById('detailTrailerEmpty');
+    if (trailerEmptyEl) trailerEmptyEl.addEventListener('click', function() { openTrailerModal(id, trailer); });
+  }
+
+  function openTrailerModal(gameId, currentUrl) {
+    var existing = document.getElementById('trailerModal');
+    if (existing) existing.remove();
+    var modal = document.createElement('div');
+    modal.id = 'trailerModal';
+    modal.className = 'modal-overlay open';
+    modal.innerHTML =
+      '<div class="modal" style="max-width:480px">' +
+        '<div class="modal__header">' +
+          '<h2 class="modal__title">▶️ Trailer del juego</h2>' +
+          '<button class="modal__close" id="tModalClose">✕</button>' +
+        '</div>' +
+        '<div class="modal__body">' +
+          '<div class="form-group">' +
+            '<label class="form-label">URL de YouTube</label>' +
+            '<input type="text" class="form-input" id="tModalUrl" value="' + Utils.escapeHtml(currentUrl || '') + '" placeholder="https://www.youtube.com/watch?v=...">' +
+          '</div>' +
+        '</div>' +
+        '<div class="modal__footer">' +
+          (currentUrl ? '<button class="btn btn-danger btn-sm" id="tModalDel" style="margin-right:auto">Eliminar</button>' : '') +
+          '<button class="btn btn-secondary" id="tModalCancel">Cancelar</button>' +
+          '<button class="btn btn-primary" id="tModalSave">Guardar</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+    function close() { modal.remove(); }
+    document.getElementById('tModalClose').addEventListener('click', close);
+    document.getElementById('tModalCancel').addEventListener('click', close);
+    modal.addEventListener('click', function(e){ if(e.target===modal) close(); });
+    var delBtn = document.getElementById('tModalDel');
+    if (delBtn) delBtn.addEventListener('click', function() {
+      Biblioteca.update(gameId, { trailer: '' });
+      close(); openDetailBack(gameId); Toast.show('Trailer eliminado');
+    });
+    document.getElementById('tModalSave').addEventListener('click', function() {
+      var url = document.getElementById('tModalUrl').value.trim();
+      Biblioteca.update(gameId, { trailer: url });
+      close(); openDetailBack(gameId); Toast.show('Trailer guardado ✓');
+    });
   }
 
   /* ── SAVE ───────────────────────────────────────────────── */
@@ -826,7 +1108,7 @@
       portadaUrl:       document.getElementById('fPortada').value.trim(),
       portadaPos:       document.getElementById('fPortadaPos').value.trim() || null,
       desarrollador:    document.getElementById('fDesarrollador').value.trim(),
-      fechaLanzamiento: document.getElementById('fFecha').value.trim(),
+      fechaLanzamiento: getDateFromSelects(),
       duracion:         parseFloat(document.getElementById('fDuracion').value) || null,
       pendientePor:     ['David','Javi','Mery'].filter(function(p){
                           return document.getElementById('fPend'+p).checked;
@@ -836,6 +1118,9 @@
                         document.getElementById('fPendMery').checked,
       tipoLanzamiento:  document.getElementById('fTipoLanzamiento').value,
       earlyAccess:      !!document.getElementById('fEarlyAccess').checked,
+      proximamente:     !!document.getElementById('fProximamente').checked,
+      saga:             document.getElementById('fSaga').value.trim(),
+      hype:             getHypeValue(),
       generos:          selectedGeneros.slice(),
       plataformas:      selectedPlataformas.slice()
     };
@@ -850,7 +1135,7 @@
 
     closeModal();
     renderGrid();
-    renderFilterChips();
+    renderFilterDropdowns();
   }
 
   function deleteGame() {
@@ -862,7 +1147,7 @@
     Toast.show('Juego eliminado');
     closeModal();
     renderGrid();
-    renderFilterChips();
+    renderFilterDropdowns();
   }
 
   /* ── INIT ───────────────────────────────────────────────── */
@@ -870,6 +1155,8 @@
     var _ny = document.getElementById('navYear'); if (_ny) _ny.textContent = new Date().getFullYear();
 
     safe(initAlphaBar, 'initAlphaBar');
+    safe(populateDateSelects, 'populateDateSelects');
+    safe(initHypeSelector, 'initHypeSelector');
     coverPreview = initCoverPreview();
 
     // Search
@@ -914,6 +1201,34 @@
     document.getElementById('btnSave').addEventListener('click', saveGame);
     document.getElementById('btnDelete').addEventListener('click', deleteGame);
     document.getElementById('detailClose').addEventListener('click', closeDetail);
+
+    // Flip tab: toggle front/back of detail modal
+    var flipTab = document.getElementById('detailFlipTab');
+    if (flipTab) {
+      flipTab.addEventListener('click', function() {
+        var body = document.getElementById('detailBody');
+        if (!body) return;
+        var goingToBack = state.detailFace === 'front';
+        // Flip-out animation
+        body.classList.add('detail-flip-out');
+        setTimeout(function() {
+          body.classList.remove('detail-flip-out');
+          if (goingToBack) {
+            state.detailFace = 'back';
+            flipTab.textContent = '📋 Info';
+            flipTab.classList.add('active');
+            openDetailBack(state.detailId);
+          } else {
+            state.detailFace = 'front';
+            flipTab.textContent = '🎬 Galería';
+            flipTab.classList.remove('active');
+            openDetail(state.detailId);
+          }
+          body.classList.add('detail-flip-in');
+          setTimeout(function(){ body.classList.remove('detail-flip-in'); }, 250);
+        }, 190);
+      });
+    }
 
     // Close on backdrop
     document.getElementById('gameModal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
@@ -965,7 +1280,22 @@
   }
 
   // Expose for inline onclick
-  window.GT_Bib = { openDetail: openDetail, openEdit: openEdit, pickRawgCover: pickRawgCover, goToGame: goToGame };
+  window.GT_Bib = {
+    openDetail: openDetail,
+    openEdit: openEdit,
+    pickRawgCover: pickRawgCover,
+    goToGame: goToGame,
+    removeGalleryImg: function(idx) {
+      var id = state.detailId;
+      if (!id) return;
+      var game = Biblioteca.getById(id);
+      if (!game) return;
+      var newGaleria = (game.galeria || []).filter(function(_, i){ return i !== idx; });
+      Biblioteca.update(id, { galeria: newGaleria });
+      openDetailBack(id);
+      Toast.show('Imagen eliminada');
+    }
+  };
 
   document.addEventListener('DOMContentLoaded', function () {
     window.GT.onDataReady(function () {
