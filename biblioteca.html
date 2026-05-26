@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — Biblioteca</title>
-  <link rel="stylesheet" href="styles.css?v=20260527b">
+  <link rel="stylesheet" href="styles.css?v=20260527c">
 </head>
 <body>
 
@@ -221,15 +221,6 @@
           <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Qué hype genera este juego (0 = sin hype, 5 = máximo)</small>
         </div>
         <div class="form-group" style="grid-column:1/-1">
-          <label class="form-label">Próximamente</label>
-          <label class="ea-toggle">
-            <input type="checkbox" id="fProximamente">
-            <span class="ea-toggle__track"><span class="ea-toggle__thumb"></span></span>
-            <span class="ea-toggle__label">📅 Marcar como Próximamente</span>
-          </label>
-          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Muestra la etiqueta aunque no tenga fecha de lanzamiento</small>
-        </div>
-        <div class="form-group" style="grid-column:1/-1">
           <label class="form-label">Géneros</label>
           <div class="chip-group" id="generoChips"></div>
           <input type="text" class="form-input" id="fGeneroCustom" placeholder="Añadir género personalizado (Enter)" style="margin-top:0.5rem">
@@ -290,9 +281,8 @@
 <!-- MODAL GAME DETAIL -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal" style="max-width:780px">
-    <div class="modal__header" style="flex-wrap:wrap;gap:0.5rem">
-      <h2 class="modal__title" id="detailTitle" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</h2>
-      <button class="detail-flip-tab" id="detailFlipTab" title="Ver galería y trailer">🎬 Galería</button>
+    <div class="modal__header">
+      <h2 class="modal__title" id="detailTitle">—</h2>
       <button class="modal__close" id="detailClose">✕</button>
     </div>
     <div class="modal__body" id="detailBody"></div>
@@ -300,6 +290,8 @@
       <button class="btn btn-secondary" id="detailEdit">✏️ Editar</button>
       <a href="registro.html" class="btn btn-primary">📋 Ver Registro</a>
     </div>
+    <!-- Botón flotante de voltear ficha (fuera de la cabecera para no descentrar el título) -->
+    <button class="detail-flip-float" id="detailFlipTab" title="Ver galería y trailer / Volver a info" aria-label="Voltear ficha">↺</button>
   </div>
 </div>
 
@@ -307,6 +299,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260522n"            defer></script>
-<script src="biblioteca.js?v=20260527b"      defer></script>
+<script src="biblioteca.js?v=20260527c"      defer></script>
 </body>
 </html>

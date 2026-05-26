@@ -186,22 +186,16 @@
     var hasDur = game.duracion !== null && game.duracion !== undefined && game.duracion !== '' && parseFloat(game.duracion) > 0;
     var isFuture = game.fechaLanzamiento && game.fechaLanzamiento > today;
     var isReleasedNoDur = !hasDur && game.fechaLanzamiento && game.fechaLanzamiento <= today;
-    var showProx = (!hasDur && isFuture) || game.proximamente;
-    var noDateProx = game.proximamente && !game.fechaLanzamiento;
+    // Próximamente automático: cualquier juego sin duración con fecha futura O sin fecha
+    var showProx = !hasDur && (isFuture || !game.fechaLanzamiento);
+    var noDateProx = !hasDur && !game.fechaLanzamiento;
 
     var durStr = hasDur ? '⏱ ' + Utils.formatDuracion(game.duracion, true) : '';
     var proxClass = 'game-card__prox' + (noDateProx ? ' game-card__prox--nofecha' : '');
     var proxRibbon = showProx ? '<div class="' + proxClass + '">PRÓXIMAMENTE</div>' : '';
     var eaBadge    = game.earlyAccess ? '<div class="game-card__ea' + (showProx ? ' game-card__ea--above' : '') + '">⚡ EARLY ACCESS</div>' : '';
 
-    // Hype fires (on cover top-right)
-    var hypeHtml = '';
-    if (game.hype && parseInt(game.hype) > 0) {
-      var h = parseInt(game.hype);
-      var fires = '';
-      for (var fi = 1; fi <= 5; fi++) fires += '<span class="' + (fi <= h ? '' : 'dim') + '">🔥</span>';
-      hypeHtml = '<div class="game-card__hype">' + fires + '</div>';
-    }
+    // Hype fires: solo en el modal de detalle, no en la grid de la biblioteca
 
     var metaLeft = hasDur
       ? (durStr ? '<span class="game-card__dur">' + durStr + '</span>' : '<span></span>')
@@ -209,14 +203,14 @@
           ? '<span class="game-card__dur game-card__dur--missing">⏱ ~0h</span>'
           : (game.fechaLanzamiento
               ? '<span class="game-card__prox-date">📅 ' + fmtDate(game.fechaLanzamiento) + '</span>'
-              : '<span class="game-card__no-date">' + (game.proximamente ? 'Próximamente' : 'Sin fecha') + '</span>'));
+              : '<span class="game-card__no-date">Sin fecha</span>'));
 
     // Saga label in body
     var sagaHtml = game.saga ? '<div class="game-card__saga">◈ ' + Utils.escapeHtml(game.saga) + '</div>' : '';
 
     return '<div class="game-card' + (isReleasedNoDur ? ' game-card--nodur' : '') + '" data-id="' + game.id + '">' +
       '<div class="game-card__cover">' +
-        coverContent + pendDots + proxRibbon + eaBadge + hypeHtml +
+        coverContent + pendDots + proxRibbon + eaBadge +
         '<div class="game-card__overlay">' +
           '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();window.GT_Bib.openDetail(\'' + game.id + '\')">👁 Ver</button>' +
           '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();window.GT_Bib.openEdit(\'' + game.id + '\')">✏️ Editar</button>' +
@@ -747,7 +741,6 @@
     document.getElementById('fPendMery').checked  = false;
     document.getElementById('fTipoLanzamiento').value = '';
     document.getElementById('fEarlyAccess').checked = false;
-    document.getElementById('fProximamente').checked = false;
     document.getElementById('fSaga').value = '';
     setHypeSelector(0);
     document.getElementById('btnDelete').style.display = 'none';
@@ -780,7 +773,6 @@
     document.getElementById('fPendMery').checked  = pPor.includes('Mery');
     document.getElementById('fTipoLanzamiento').value = game.tipoLanzamiento || '';
     document.getElementById('fEarlyAccess').checked   = !!game.earlyAccess;
-    document.getElementById('fProximamente').checked  = !!game.proximamente;
     document.getElementById('fSaga').value = game.saga || '';
     setHypeSelector(parseInt(game.hype) || 0);
     document.getElementById('btnDelete').style.display = 'inline-flex';
@@ -849,8 +841,8 @@
     var _today2  = new Date().toISOString().slice(0, 10);
     var _hasDur2 = game.duracion !== null && game.duracion !== undefined && game.duracion !== '' && parseFloat(game.duracion) > 0;
     var _isFut2  = game.fechaLanzamiento && game.fechaLanzamiento > _today2;
-    if (game.earlyAccess)       coverInner += '<div class="detail-cover__ea-band">⚡ EARLY ACCESS</div>';
-    if (!_hasDur2 && _isFut2)   coverInner += '<div class="detail-cover__prox-band">PRÓXIMAMENTE</div>';
+    if (game.earlyAccess)                              coverInner += '<div class="detail-cover__ea-band">⚡ EARLY ACCESS</div>';
+    if (!_hasDur2 && (_isFut2 || !game.fechaLanzamiento)) coverInner += '<div class="detail-cover__prox-band">PRÓXIMAMENTE</div>';
 
     var scGlow = notaMedia !== null ? sc.replace('hsl(', 'hsla(').replace(')', ',0.35)') : 'transparent';
 
@@ -917,9 +909,10 @@
     document.getElementById('detailBody').innerHTML = html;
     document.getElementById('detailModal').classList.add('open');
     document.getElementById('detailEdit').onclick = function () { openEdit(id); };
-    // Hype in detail modal
+    // Hype en el modal de detalle — solo para juegos no lanzados
+    var _isUnreleased = !_hasDur2 && (_isFut2 || !game.fechaLanzamiento);
     var hypeVal = parseInt(game.hype) || 0;
-    if (hypeVal > 0) {
+    if (hypeVal > 0 && _isUnreleased) {
       var fires = '';
       for (var hfi = 1; hfi <= 5; hfi++) fires += '<span class="hype-fire' + (hfi > hypeVal ? ' dim' : '') + '">🔥</span>';
       var hypeDiv = document.createElement('div');
@@ -936,13 +929,10 @@
       var infoEl2 = document.getElementById('detailBody').querySelector('.detail-badges-row');
       if (infoEl2) infoEl2.insertBefore(sagaSpan, infoEl2.firstChild);
     }
-    // Show/reset flip tab
+    // Resetear botón flotante de flip
     state.detailFace = 'front';
     var tab = document.getElementById('detailFlipTab');
-    if (tab) {
-      tab.textContent = '🎬 Galería';
-      tab.classList.remove('active');
-    }
+    if (tab) { tab.classList.remove('active'); }
   }
 
   function closeDetail() {
@@ -1131,7 +1121,6 @@
                         document.getElementById('fPendMery').checked,
       tipoLanzamiento:  document.getElementById('fTipoLanzamiento').value,
       earlyAccess:      !!document.getElementById('fEarlyAccess').checked,
-      proximamente:     !!document.getElementById('fProximamente').checked,
       saga:             document.getElementById('fSaga').value.trim(),
       hype:             getHypeValue(),
       generos:          selectedGeneros.slice(),
@@ -1215,33 +1204,49 @@
     document.getElementById('btnDelete').addEventListener('click', deleteGame);
     document.getElementById('detailClose').addEventListener('click', closeDetail);
 
-    // Flip tab: toggle front/back of detail modal
+    // Botón flotante de flip: alterna cara frontal ↔ trasera
     var flipTab = document.getElementById('detailFlipTab');
-    if (flipTab) {
-      flipTab.addEventListener('click', function() {
-        var body = document.getElementById('detailBody');
-        if (!body) return;
-        var goingToBack = state.detailFace === 'front';
-        // Flip-out animation
-        body.classList.add('detail-flip-out');
-        setTimeout(function() {
-          body.classList.remove('detail-flip-out');
-          if (goingToBack) {
-            state.detailFace = 'back';
-            flipTab.textContent = '📋 Info';
-            flipTab.classList.add('active');
-            openDetailBack(state.detailId);
-          } else {
-            state.detailFace = 'front';
-            flipTab.textContent = '🎬 Galería';
-            flipTab.classList.remove('active');
-            openDetail(state.detailId);
-          }
-          body.classList.add('detail-flip-in');
-          setTimeout(function(){ body.classList.remove('detail-flip-in'); }, 250);
-        }, 190);
-      });
+
+    function doFlip() {
+      var body = document.getElementById('detailBody');
+      if (!body || !state.detailId) return;
+      var goingToBack = state.detailFace === 'front';
+      // Animación de giro en el botón
+      if (flipTab) {
+        flipTab.classList.add('spinning');
+        setTimeout(function() { flipTab.classList.remove('spinning'); }, 420);
+      }
+      // Flip-out del contenido
+      body.classList.add('detail-flip-out');
+      setTimeout(function() {
+        body.classList.remove('detail-flip-out');
+        if (goingToBack) {
+          state.detailFace = 'back';
+          if (flipTab) flipTab.classList.add('active');
+          openDetailBack(state.detailId);
+        } else {
+          state.detailFace = 'front';
+          if (flipTab) flipTab.classList.remove('active');
+          openDetail(state.detailId);
+        }
+        body.classList.add('detail-flip-in');
+        setTimeout(function(){ body.classList.remove('detail-flip-in'); }, 250);
+      }, 190);
     }
+
+    if (flipTab) flipTab.addEventListener('click', doFlip);
+
+    // Swipe horizontal en el cuerpo del modal para voltear (móvil)
+    var _swipeX0 = 0, _swipeY0 = 0;
+    document.getElementById('detailModal').addEventListener('touchstart', function(e) {
+      var t = e.touches[0]; _swipeX0 = t.clientX; _swipeY0 = t.clientY;
+    }, { passive: true });
+    document.getElementById('detailModal').addEventListener('touchend', function(e) {
+      var t = e.changedTouches[0];
+      var dx = t.clientX - _swipeX0;
+      var dy = t.clientY - _swipeY0;
+      if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.5) doFlip();
+    }, { passive: true });
 
     // Close on backdrop
     document.getElementById('gameModal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });

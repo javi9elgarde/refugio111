@@ -530,7 +530,57 @@ ul, ol { list-style: none; }
 }
 
 /* ── DETAIL MODAL REDISENO ───────────────────────────────── */
-#detailModal .modal { max-width: 700px; overflow: visible; }
+#detailModal .modal { max-width: 700px; overflow: visible; position: relative; }
+
+/* Botón flotante de flip — fuera de la cabecera, sobre el borde derecho del modal */
+.detail-flip-float {
+  position: absolute;
+  right: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg2);
+  border: 1px solid rgba(79,172,254,0.35);
+  color: var(--txt3);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04);
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  z-index: 20;
+}
+.detail-flip-float:hover { border-color: rgba(79,172,254,0.7); color: #4facfe; background: rgba(79,172,254,0.1); }
+.detail-flip-float.active { border-color: rgba(168,85,247,0.6); color: #a855f7; background: rgba(168,85,247,0.1); }
+.detail-flip-float.spinning { animation: flipFloatSpin 0.4s ease; }
+@keyframes flipFloatSpin {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to   { transform: translateY(-50%) rotate(360deg); }
+}
+@media (max-width: 860px) {
+  /* En pantallas pequeñas el botón se centra debajo del modal */
+  .detail-flip-float {
+    right: auto;
+    left: 50%;
+    top: auto;
+    bottom: -22px;
+    transform: translateX(-50%);
+  }
+  .detail-flip-float.spinning {
+    animation: flipFloatSpinBot 0.4s ease;
+  }
+  @keyframes flipFloatSpinBot {
+    from { transform: translateX(-50%) rotate(0deg); }
+    to   { transform: translateX(-50%) rotate(360deg); }
+  }
+  .detail-flip-float.active {
+    transform: translateX(-50%);
+  }
+}
 #detailModal .modal__header {
   position: relative;
   justify-content: center;
