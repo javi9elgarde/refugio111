@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Refugio 111 — Reparar Registro</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #07070f; color: #e8e8f8; padding: 2rem; max-width: 960px; margin: 0 auto; }
+    h1  { font-size: 1.4rem; color: #4facfe; margin-bottom: 0.35rem; }
+    .sub { color: #6b7280; font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .info-box { background: rgba(79,172,254,.07); border: 1px solid rgba(79,172,254,.25); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.87rem; color: #93c5fd; line-height: 1.65; }
+    .btn { padding: 0.6rem 1.4rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.88rem; font-weight: 700; transition: opacity .15s; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary  { background: #4facfe; color: #07070f; }
+    .btn-success  { background: #27ae60; color: #fff; }
+    .btn-secondary{ background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); color: #e8e8f8; }
+    #status { margin: 1rem 0; font-size: 0.83rem; color: #9ca3af; }
+
+    /* Broken entry card */
+    .broken-card {
+      background: #0e0e1a;
+      border: 1px solid rgba(231,76,60,.25);
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .broken-card.fixed {
+      border-color: rgba(46,204,113,.3);
+      opacity: .65;
+    }
+    .broken-card__head {
+      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+      padding: 0.7rem 1rem;
+      background: rgba(231,76,60,.06);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .broken-card.fixed .broken-card__head { background: rgba(46,204,113,.05); }
+    .badge-player { font-size: 0.7rem; font-weight: 700; border-radius: 5px; padding: 0.15rem 0.5rem; }
+    .badge-david  { background: rgba(59,130,246,.25); color: #93c5fd; }
+    .badge-javi   { background: rgba(155,23,66,.35);  color: #fca5a5; }
+    .badge-mery   { background: rgba(155,89,255,.25); color: #d8b4fe; }
+    .meta-chips   { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .meta-chip    { font-size: 0.72rem; background: rgba(255,255,255,.07); border-radius: 4px; padding: 0.1rem 0.45rem; color: #d1d5db; }
+    .meta-chip.nota { color: #4ade80; }
+    .entry-id     { font-family: monospace; font-size: 0.65rem; color: #374151; margin-left: auto; }
+    .broken-card__body {
+      padding: 0.75rem 1rem;
+      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+    }
+    .broken-card__body label { font-size: 0.78rem; color: #9ca3af; margin-right: 0.3rem; }
+    .game-select {
+      flex: 1; min-width: 200px;
+      background: #0e0e1a; border: 1px solid rgba(255,255,255,.12);
+      color: #e8e8f8; border-radius: 6px; padding: 0.4rem 0.6rem;
+      font-size: 0.82rem;
+    }
+    .game-select:focus { outline: none; border-color: #4facfe; }
+    .fix-btn {
+      padding: 0.4rem 1rem; border: none; border-radius: 6px;
+      background: #4facfe; color: #07070f; font-weight: 700; font-size: 0.8rem;
+      cursor: pointer; transition: opacity .15s; flex-shrink: 0;
+    }
+    .fix-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .fixed-label { font-size: 0.78rem; color: #4ade80; font-weight: 600; }
+
+    #log { margin-top: 1rem; font-family: monospace; font-size: 0.78rem; background: #07070f; border: 1px solid rgba(255,255,255,.07); border-radius: 8px; padding: 1rem; max-height: 200px; overflow-y: auto; line-height: 1.8; display: none; }
+    .ok   { color: #2ecc71; }
+    .err  { color: #e74c3c; }
+    .info { color: #4facfe; }
+    .done-box { background: rgba(46,204,113,.08); border: 1px solid rgba(46,204,113,.35); border-radius: 10px; padding: 1rem 1.25rem; margin-top: 1rem; display: none; font-size: 0.88rem; }
+  </style>
+</head>
+<body>
+
+<h1>🔧 Reparar Registro — Juegos eliminados</h1>
+<p class="sub">Re-vincula entradas del Registro que apuntaban a juegos duplicados ya borrados.</p>
+
+<div class="info-box">
+  ℹ️ Las entradas que muestran <strong>"(Juego eliminado)"</strong> tienen un <code>juegoId</code> que ya no existe en la Biblioteca
+  porque era un duplicado borrado por el limpiador.<br>
+  Para cada entrada, selecciona el juego correcto en el desplegable y pulsa <strong>Reparar</strong>.
+  El Registro se actualizará en Firestore al instante.
+</div>
+
+<button class="btn btn-primary" id="btnScan">🔍 Cargar entradas rotas</button>
+<div id="status"></div>
+<div id="brokenList"></div>
+<div id="log"></div>
+<div class="done-box" id="doneBox">
+  ✅ <strong>Todas las entradas reparadas.</strong><br>
+  <a href="registro.html" style="color:#4facfe">← Volver al Registro</a>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+  var firebaseConfig = {
+    apiKey:            "AIzaSyDMytLn2U7MN-YPiW6X9Jdq5SsT6lIfvWo",
+    authDomain:        "proyectodmj-f3707.firebaseapp.com",
+    projectId:         "proyectodmj-f3707",
+    storageBucket:     "proyectodmj-f3707.firebasestorage.app",
+    messagingSenderId: "717604978468",
+    appId:             "1:717604978468:web:3f52353e384a59d670bdb1"
+  };
+  firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore();
+
+  var libGames  = []; // [{id, titulo}] sorted A-Z
+  var logEl     = document.getElementById('log');
+
+  function log(msg, cls) {
+    logEl.style.display = 'block';
+    var line = document.createElement('div');
+    line.className = cls || '';
+    line.textContent = msg;
+    logEl.appendChild(line);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  var MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  function playerBadge(p) {
+    var cls = p === 'David' ? 'badge-david' : p === 'Javi' ? 'badge-javi' : 'badge-mery';
+    return '<span class="badge-player ' + cls + '">' + p + '</span>';
+  }
+
+  function buildSelectHtml(selectId) {
+    var opts = '<option value="">— Selecciona el juego correcto —</option>' +
+      libGames.map(function(g){
+        return '<option value="' + g.id + '">' + g.titulo + '</option>';
+      }).join('');
+    return '<select class="game-select" id="sel-' + selectId + '">' + opts + '</select>';
+  }
+
+  document.getElementById('btnScan').addEventListener('click', function(){
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = '⏳ Cargando...';
+    document.getElementById('status').textContent = '';
+    document.getElementById('brokenList').innerHTML = '';
+
+    // Load biblioteca + registro in parallel
+    Promise.all([
+      db.collection('biblioteca').get(),
+      db.collection('registro').get()
+    ]).then(function(results){
+      var libSnap = results[0];
+      var regSnap = results[1];
+
+      // Build library map
+      var libMap = {};
+      libSnap.forEach(function(doc){ libMap[doc.id] = true; });
+      libGames = [];
+      libSnap.forEach(function(doc){
+        var d = doc.data();
+        if (d.titulo) libGames.push({ id: doc.id, titulo: d.titulo });
+      });
+      libGames.sort(function(a,b){ return a.titulo.localeCompare(b.titulo, 'es'); });
+
+      // Find broken registro entries
+      var broken = [];
+      regSnap.forEach(function(doc){
+        var d = doc.data();
+        if (d.juegoId && !libMap[d.juegoId]) {
+          broken.push({ id: doc.id, data: d });
+        }
+      });
+
+      btn.disabled = false;
+      btn.textContent = '🔄 Re-escanear';
+
+      if (!broken.length) {
+        document.getElementById('status').innerHTML =
+          '✅ <strong style="color:#4ade80">No hay entradas rotas.</strong> El Registro está correcto.';
+        return;
+      }
+
+      document.getElementById('status').innerHTML =
+        '⚠️ Se encontraron <strong>' + broken.length + ' entrada(s) con juego eliminado</strong>. ' +
+        'Selecciona el juego correcto para cada una:';
+
+      var html = broken.map(function(entry){
+        var d   = entry.data;
+        var mes = d.mes ? MONTHS[(d.mes - 1)] || d.mes : '—';
+        var chips = [
+          mes + (d.año ? ' ' + d.año : ''),
+          d.estado || '—',
+          d.nota !== undefined && d.nota !== null ? '★ ' + d.nota : null,
+          d.horas ? d.horas + 'h' : null,
+          d.plataformaJugada || null
+        ].filter(Boolean).map(function(c, i){
+          var extraCls = (i === 2) ? ' nota' : '';
+          return '<span class="meta-chip' + extraCls + '">' + c + '</span>';
+        }).join('');
+
+        return '<div class="broken-card" id="card-' + entry.id + '">' +
+          '<div class="broken-card__head">' +
+            playerBadge(d.jugador || '?') +
+            '<div class="meta-chips">' + chips + '</div>' +
+            '<span class="entry-id">' + entry.id + '</span>' +
+          '</div>' +
+          '<div class="broken-card__body">' +
+            '<label>Juego:</label>' +
+            buildSelectHtml(entry.id) +
+            '<button class="fix-btn" onclick="window.repairEntry(\'' + entry.id + '\')">Reparar</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      document.getElementById('brokenList').innerHTML = html;
+    }).catch(function(err){
+      document.getElementById('status').textContent = '❌ Error: ' + err.message;
+      btn.disabled = false;
+      btn.textContent = '🔍 Cargar entradas rotas';
+    });
+  });
+
+  var fixedCount = 0;
+  var totalBroken = 0;
+
+  window.repairEntry = function(entryId) {
+    var sel = document.getElementById('sel-' + entryId);
+    if (!sel || !sel.value) { alert('Selecciona un juego primero'); return; }
+    var newJuegoId = sel.value;
+    var btn = sel.nextElementSibling;
+    btn.disabled = true;
+    btn.textContent = '⏳';
+
+    db.collection('registro').doc(entryId).update({ juegoId: newJuegoId })
+      .then(function(){
+        var card = document.getElementById('card-' + entryId);
+        if (card) {
+          card.classList.add('fixed');
+          var body = card.querySelector('.broken-card__body');
+          if (body) {
+            var gameName = sel.options[sel.selectedIndex].text;
+            body.innerHTML = '<span class="fixed-label">✓ Reparado → ' + gameName + '</span>';
+          }
+        }
+        log('✓ Entrada ' + entryId + ' → ' + newJuegoId, 'ok');
+
+        // Check if all fixed
+        fixedCount++;
+        var remaining = document.querySelectorAll('.broken-card:not(.fixed)').length;
+        if (remaining === 0) {
+          document.getElementById('doneBox').style.display = 'block';
+          document.getElementById('status').textContent = '✅ Todas las entradas reparadas.';
+        }
+      })
+      .catch(function(err){
+        log('❌ Error en ' + entryId + ': ' + err.message, 'err');
+        btn.disabled = false;
+        btn.textContent = 'Reparar';
+      });
+  };
+})();
+</script>
+</body>
+</html>
