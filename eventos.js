@@ -259,12 +259,19 @@
   }
 
   function seedEvents() {
-    var batch = db.batch();
-    DEFAULT_EVENTS.forEach(function (ev) {
-      var ref = db.collection('events').doc(ev.id);
-      batch.set(ref, ev);
+    /* Comprobamos si ya se hizo el seed en Firestore para no
+       sobreescribir ediciones previas (imágenes, etc.) */
+    db.collection('settings').doc('eventsSeed').get().then(function (doc) {
+      if (doc.exists) return; /* Ya se hizo seed en alguna sesión previa */
+      var batch = db.batch();
+      DEFAULT_EVENTS.forEach(function (ev) {
+        var ref = db.collection('events').doc(ev.id);
+        /* merge:true: no sobreescribe campos ya guardados (ej. img editadas) */
+        batch.set(ref, ev, { merge: true });
+      });
+      batch.set(db.collection('settings').doc('eventsSeed'), { done: true });
+      batch.commit();
     });
-    batch.commit();
   }
 
   /* ── CARRUSEL ───────────────────────────────────────────────── */
