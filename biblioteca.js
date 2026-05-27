@@ -241,13 +241,19 @@
               ? '<span class="game-card__prox-date">📅 ' + fmtDate(game.fechaLanzamiento) + '</span>'
               : '<span class="game-card__no-date">Sin fecha</span>'));
 
-    // Etiqueta de saga en dorado
-    var sagaHtml = game.saga ? '<div class="game-card__saga">◈ ' + Utils.escapeHtml(game.saga) + '</div>' : '';
+    // Saga: texto oculto que aparece en el hover de la portada
+    var sagaHtml = '';
 
     return '<div class="game-card' + (isReleasedNoDur ? ' game-card--nodur' : '') + '" data-id="' + game.id + '">' +
       '<div class="game-card__cover">' +
         coverContent + pendDots + proxRibbon + eaBadge +
         '<div class="game-card__overlay"></div>' +
+        (game.saga
+          ? '<div class="game-card__saga-overlay">' +
+              '<span class="game-card__saga-hover-label">SAGA</span>' +
+              '<span class="game-card__saga-hover-name">' + Utils.escapeHtml(game.saga.toUpperCase()) + '</span>' +
+            '</div>'
+          : '') +
       '</div>' +
       '<div class="game-card__body">' +
         '<div class="game-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
