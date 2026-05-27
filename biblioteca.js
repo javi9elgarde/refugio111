@@ -241,19 +241,13 @@
               ? '<span class="game-card__prox-date">📅 ' + fmtDate(game.fechaLanzamiento) + '</span>'
               : '<span class="game-card__no-date">Sin fecha</span>'));
 
-    // Saga: si tiene logo en el overlay no se muestra el texto, si no tiene logo sí se muestra
-    var sagaHtml = (game.saga && !getSagaLogo(game.saga)) ? '<div class="game-card__saga">◈ ' + Utils.escapeHtml(game.saga) + '</div>' : '';
+    // Etiqueta de saga en dorado
+    var sagaHtml = game.saga ? '<div class="game-card__saga">◈ ' + Utils.escapeHtml(game.saga) + '</div>' : '';
 
     return '<div class="game-card' + (isReleasedNoDur ? ' game-card--nodur' : '') + '" data-id="' + game.id + '">' +
       '<div class="game-card__cover">' +
         coverContent + pendDots + proxRibbon + eaBadge +
         '<div class="game-card__overlay"></div>' +
-        (getSagaLogo(game.saga)
-          ? '<div class="game-card__saga-overlay">' +
-              '<img src="' + getSagaLogo(game.saga) + '" class="game-card__saga-logo" alt="" onerror="this.style.display=\'none\'">' +
-              '<span class="game-card__saga-name-ovr">SAGA ' + Utils.escapeHtml((game.saga || '').toUpperCase()) + '</span>' +
-            '</div>'
-          : '') +
       '</div>' +
       '<div class="game-card__body">' +
         '<div class="game-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
