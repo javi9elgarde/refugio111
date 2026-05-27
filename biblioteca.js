@@ -17,11 +17,21 @@
   var PLATFORMS = ['PC','PS5','PS4','PS3','Xbox Series X','Xbox One','Xbox 360',
     'Nintendo Switch 2','Nintendo Switch','PS2'];
 
-  // Logos de sagas: clave = nombre de la saga (case-sensitive), valor = archivo de imagen
-  var SAGA_LOGOS = {
-    "Assassin's Creed": 'Assassins-Creed-Logo.png'
-    // Añadir más sagas aquí con su logo
+  // Logos de sagas — clave normalizada (sin distinción mayúsculas ni tipo de apóstrofe)
+  var SAGA_LOGOS_RAW = {
+    "assassin's creed": 'Assassins-Creed-Logo.png'
+    // Añadir más sagas: "the last of us": 'TLoU-Logo.png', etc.
   };
+
+  // Normaliza un nombre de saga para comparación (minúsculas + apóstrofes uniformes)
+  function normSaga(s) {
+    return (s || '').toLowerCase().replace(/[‘’ʼ`´]/g, "'").trim();
+  }
+
+  function getSagaLogo(saga) {
+    if (!saga) return '';
+    return SAGA_LOGOS_RAW[normSaga(saga)] || '';
+  }
 
   var state = { search:'', genero:'', plataforma:'', año:'', jugador:'All', editId: null, detailId: null, detailFace: 'front' };
   var selectedGeneros    = [];
@@ -228,9 +238,9 @@
       '<div class="game-card__cover">' +
         coverContent + pendDots + proxRibbon + eaBadge +
         '<div class="game-card__overlay"></div>' +
-        (SAGA_LOGOS[game.saga]
+        (getSagaLogo(game.saga)
           ? '<div class="game-card__saga-overlay">' +
-              '<img src="' + Utils.escapeHtml(SAGA_LOGOS[game.saga]) + '" class="game-card__saga-logo" alt="' + Utils.escapeHtml(game.saga) + ' logo">' +
+              '<img src="' + getSagaLogo(game.saga) + '" class="game-card__saga-logo" alt="" onerror="this.style.display=\'none\'">' +
               '<span class="game-card__saga-name-ovr">SAGA ' + Utils.escapeHtml((game.saga || '').toUpperCase()) + '</span>' +
             '</div>'
           : '') +
