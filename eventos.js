@@ -217,6 +217,15 @@
     document.querySelectorAll('input[name="bingoPlayer"]').forEach(function (r) {
       r.addEventListener('change', function () { _player = this.value; });
     });
+
+    /* Top 5 */
+    document.getElementById('btnEditTop5').addEventListener('click', openTop5Modal);
+    document.getElementById('evtTop5Close').addEventListener('click', closeTop5Modal);
+    document.getElementById('evtTop5Cancel').addEventListener('click', closeTop5Modal);
+    document.getElementById('evtTop5Save').addEventListener('click', saveTop5);
+    document.getElementById('evtTop5ModalOverlay').addEventListener('click', function(e) {
+      if (e.target === this) closeTop5Modal();
+    });
   }
 
   function waitForDb(cb) {
@@ -246,6 +255,7 @@
         renderFeaturedEvent(_currentEvtIdx);
         renderCarouselDots();
         updateCarouselNav();
+        renderTop5(_currentEvtIdx);
 
         /* Cargar bingos solo una vez que tengamos los eventos */
         if (!db._bingoLoaded) {
@@ -283,6 +293,7 @@
     renderCarouselDots();
     updateCarouselNav();
     renderBingoSection();
+    renderTop5(idx);
   }
 
   function renderFeaturedEvent(idx) {
@@ -915,6 +926,180 @@
     });
   }
 
+  /* ── TOP 5 DEL EVENTO ──────────────────────────────────────── */
+  var TOP5_MEDALS = ['#ffd700','#c0c0c0','#cd7f32','rgba(255,255,255,0.42)','rgba(255,255,255,0.32)'];
+  var TOP5_LABELS = ['🥇 Mejor del evento','🥈 Segundo favorito','🥉 Tercer favorito','4º puesto','5º puesto'];
+
+  function getLibGames() {
+    if (window.GT && window.GT._cache && Array.isArray(window.GT._cache.biblioteca)) {
+      return window.GT._cache.biblioteca.slice();
+    }
+    return [];
+  }
+
+  function renderTop5(evtIdx) {
+    var section = document.getElementById('evtTop5Section');
+    if (!section) return;
+    var ev = _events[evtIdx];
+    if (!ev) { section.style.display = 'none'; return; }
+
+    /* Esperar a que la biblioteca esté cargada */
+    if (!window.GT || !window.GT._cache || !Array.isArray(window.GT._cache.biblioteca)) {
+      setTimeout(function() { renderTop5(evtIdx); }, 200);
+      return;
+    }
+
+    section.style.display = '';
+    var sub = document.getElementById('evtTop5Sub');
+    if (sub) sub.textContent = ev.nombre + (ev.fechaLabel ? ' · ' + ev.fechaLabel : '');
+
+    var top5Ids = (ev.top5 || []).slice(0, 5);
+    while (top5Ids.length < 5) top5Ids.push(null);
+
+    var games   = getLibGames();
+    var gameMap = {};
+    games.forEach(function(g) { gameMap[g.id] = g; });
+
+    var accent = ev.accentColor || '#4facfe';
+    var html = '';
+    for (var i = 0; i < 5; i++) {
+      var gid  = top5Ids[i] || null;
+      var game = gid ? (gameMap[gid] || null) : null;
+      html += renderTop5Card(i, game, accent);
+    }
+    var grid = document.getElementById('evtTop5Grid');
+    if (grid) grid.innerHTML = html;
+  }
+
+  function renderTop5Card(rank, game, accent) {
+    var medal = TOP5_MEDALS[rank] || 'rgba(255,255,255,0.3)';
+    var isFirst = rank === 0;
+    var cardCls = 'evt-top5-card' + (isFirst ? ' evt-top5-card--rank1' : '');
+
+    if (!game) {
+      return '<div class="' + cardCls + ' evt-top5-card--empty">' +
+        '<div class="evt-top5-card__cover">' +
+          '<div class="evt-top5-card__empty-ph">' +
+            '<span class="evt-top5-empty-num">' + (rank + 1) + '</span>' +
+            '<span class="evt-top5-empty-plus">+</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="evt-top5-card__meta evt-top5-card__meta--empty">Sin juego</div>' +
+      '</div>';
+    }
+
+    var portada = game.portada || '';
+    var titulo  = game.titulo  || '';
+
+    return '<div class="' + cardCls + '">' +
+      '<div class="evt-top5-card__cover">' +
+        (portada
+          ? '<img class="evt-top5-card__img" src="' + escHtml(portada) + '" alt="' + escHtml(titulo) + '" loading="lazy" onerror="this.style.display=\'none\'">'
+          : '<div class="evt-top5-card__noimg"><span>🎮</span></div>') +
+        '<div class="evt-top5-rank-badge" style="background:' + medal + '">' + (rank + 1) + '</div>' +
+      '</div>' +
+      '<div class="evt-top5-card__meta">' + escHtml(titulo) + '</div>' +
+    '</div>';
+  }
+
+  function openTop5Modal() {
+    var ev = _events[_currentEvtIdx];
+    if (!ev) return;
+    var titleEl = document.getElementById('evtTop5ModalTitle');
+    if (titleEl) titleEl.textContent = '⭐ Top 5 · ' + ev.nombre;
+    var top5Ids = (ev.top5 || []).slice(0, 5);
+    while (top5Ids.length < 5) top5Ids.push('');
+    buildTop5ModalSlots(top5Ids);
+    document.getElementById('evtTop5ModalOverlay').classList.add('open');
+  }
+
+  function buildTop5ModalSlots(top5Ids) {
+    var games = getLibGames().slice().sort(function(a, b) {
+      return (a.titulo || '').localeCompare(b.titulo || '', 'es', { sensitivity: 'base' });
+    });
+    var container = document.getElementById('evtTop5SlotsList');
+    if (!container) return;
+
+    var html = '';
+    for (var i = 0; i < 5; i++) {
+      var medal     = TOP5_MEDALS[i];
+      var label     = TOP5_LABELS[i];
+      var currentId = top5Ids[i] || '';
+
+      var optHtml = '<option value="">— Sin seleccionar —</option>';
+      var curName = '';
+      games.forEach(function(g) {
+        optHtml += '<option value="' + escHtml(g.id) + '"' + (g.id === currentId ? ' selected' : '') + '>'
+          + escHtml(g.titulo || g.id) + '</option>';
+        if (g.id === currentId) curName = g.titulo || '';
+      });
+
+      html += '<div class="evt-top5-slot">' +
+        '<div class="evt-top5-slot__badge" style="background:' + medal + '">' + (i + 1) + '</div>' +
+        '<div class="evt-top5-slot__fields">' +
+          '<div class="evt-top5-slot__label">' + escHtml(label) + '</div>' +
+          '<input type="text" class="form-input" id="top5Search' + i + '" placeholder="Buscar juego..." value="' + escHtml(curName) + '" autocomplete="off" style="font-size:0.82rem;padding:0.4rem 0.65rem;margin-bottom:0.35rem">' +
+          '<select class="form-select" id="top5Select' + i + '" style="font-size:0.82rem">' + optHtml + '</select>' +
+        '</div>' +
+      '</div>';
+    }
+    container.innerHTML = html;
+
+    /* Conectar búsqueda y selects */
+    for (var j = 0; j < 5; j++) {
+      (function(idx) {
+        var searchEl = document.getElementById('top5Search' + idx);
+        var selectEl = document.getElementById('top5Select' + idx);
+        if (!searchEl || !selectEl) return;
+
+        searchEl.addEventListener('input', function() {
+          var q = this.value.toLowerCase().trim();
+          Array.from(selectEl.options).forEach(function(opt) {
+            if (!opt.value) return;
+            opt.hidden = q !== '' && opt.textContent.toLowerCase().indexOf(q) === -1;
+          });
+          var visible = Array.from(selectEl.options).filter(function(o) { return o.value && !o.hidden; });
+          if (visible.length === 1) visible[0].selected = true;
+        });
+
+        selectEl.addEventListener('change', function() {
+          var opt = this.options[this.selectedIndex];
+          searchEl.value = (opt && opt.value) ? opt.textContent : '';
+          /* Mostrar todos de nuevo */
+          Array.from(selectEl.options).forEach(function(o) { o.hidden = false; });
+        });
+      })(j);
+    }
+  }
+
+  function closeTop5Modal() {
+    document.getElementById('evtTop5ModalOverlay').classList.remove('open');
+  }
+
+  function saveTop5() {
+    var ev = _events[_currentEvtIdx];
+    if (!ev || !db) return;
+    var ids = [];
+    for (var i = 0; i < 5; i++) {
+      var sel = document.getElementById('top5Select' + i);
+      ids.push((sel && sel.value) ? sel.value : null);
+    }
+    var btn = document.getElementById('evtTop5Save');
+    btn.disabled = true; btn.textContent = '💾 Guardando...';
+    db.collection('events').doc(ev.id).update({ top5: ids })
+      .then(function() {
+        btn.disabled = false; btn.textContent = '💾 Guardar';
+        _events[_currentEvtIdx].top5 = ids;
+        closeTop5Modal();
+        renderTop5(_currentEvtIdx);
+        if (window.GT && window.GT.Toast) window.GT.Toast.show('Top 5 guardado ✓');
+      })
+      .catch(function() {
+        btn.disabled = false; btn.textContent = '💾 Guardar';
+        if (window.GT && window.GT.Toast) window.GT.Toast.show('Error al guardar', 'error');
+      });
+  }
+
   /* ── HELPERS ────────────────────────────────────────────────── */
   function escHtml(s) {
     if (s == null) return '';
@@ -935,7 +1120,9 @@
     resetMarks       : resetMarks,
     openEditEventModal : openEditEventModal,
     closeEditEventModal: closeEditEventModal,
-    saveEditEventModal : saveEditEventModal
+    saveEditEventModal : saveEditEventModal,
+    openTop5Modal    : openTop5Modal,
+    closeTop5Modal   : closeTop5Modal
   };
 
   if (document.readyState === 'loading') {
