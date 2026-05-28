@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — G.O.T.Y</title>
-  <link rel="stylesheet" href="styles.css?v=20260528a">
+  <link rel="stylesheet" href="styles.css?v=20260529a">
 </head>
 <body>
 
@@ -56,20 +56,31 @@
     <div class="hof-page-hero__glow"></div>
     <div class="hof-hero-beams"></div>
     <div class="hof-page-hero__inner">
-      <!-- Corona flotante con brillo cian -->
+      <!-- Corona flotante centrada arriba -->
       <div class="hof-corona-aura">
         <img src="corona.png" class="hof-corona-img" alt="Corona Refugio 111">
       </div>
-      <!-- Trofeo GOTY centrado -->
-      <div class="hof-trophy-zone">
-        <div class="hof-trophy-aura"></div>
-        <img src="GOTY.png" class="hof-goty-trophy" alt="Trofeo G.O.T.Y. Refugio 111">
-      </div>
-      <h1 class="hof-page-hero__title">G.O.T.Y</h1>
-      <p class="hof-page-hero__sub">Los mejores juegos del Refugio 111</p>
-      <div class="hof-page-hero__year-wrap">
-        <label style="font-size:0.78rem;color:rgba(245,200,66,0.6);letter-spacing:0.06em">AÑO</label>
-        <select class="form-select hof-year-select" id="rankingYear" style="width:100px"></select>
+      <!-- Fila 3 columnas: trofeo | título | trofeo espejado -->
+      <div class="hof-hero-row">
+        <!-- Trofeo izquierdo (normal) -->
+        <div class="hof-trophy-side">
+          <div class="hof-trophy-aura"></div>
+          <img src="GOTY.png" class="hof-goty-trophy" alt="">
+        </div>
+        <!-- Centro: título, subtítulo, año -->
+        <div class="hof-hero-center">
+          <h1 class="hof-page-hero__title">G.O.T.Y</h1>
+          <p class="hof-page-hero__sub">Los mejores juegos del Refugio 111</p>
+          <div class="hof-page-hero__year-wrap">
+            <label style="font-size:0.78rem;color:rgba(245,200,66,0.6);letter-spacing:0.06em">AÑO</label>
+            <select class="form-select hof-year-select" id="rankingYear" style="width:100px"></select>
+          </div>
+        </div>
+        <!-- Trofeo derecho (espejado) -->
+        <div class="hof-trophy-side hof-trophy-side--right">
+          <div class="hof-trophy-aura"></div>
+          <img src="GOTY.png" class="hof-goty-trophy hof-goty-trophy--mirror" alt="">
+        </div>
       </div>
     </div>
   </div>
@@ -116,12 +127,14 @@
   overflow: hidden;
 }
 
-/* Deep radial glow — two layers: top halo + center glow */
+/* Deep radial glow — top halo + center + two amber trophy zones */
 .hof-page-hero__glow {
   position: absolute; inset: 0; pointer-events: none;
   background:
     radial-gradient(ellipse 80% 55% at 50% 0%,   rgba(245,200,66,0.18) 0%, transparent 65%),
-    radial-gradient(ellipse 55% 75% at 50% 48%,  rgba(245,200,66,0.10) 0%, transparent 68%);
+    radial-gradient(ellipse 55% 75% at 50% 48%,  rgba(245,200,66,0.10) 0%, transparent 68%),
+    radial-gradient(ellipse 26% 52% at 13% 62%,  rgba(200,147,10,0.22) 0%, transparent 72%),
+    radial-gradient(ellipse 26% 52% at 87% 62%,  rgba(200,147,10,0.22) 0%, transparent 72%);
 }
 
 /* ── SWEEPING GOLDEN BEAMS ── */
@@ -155,7 +168,7 @@
 /* ── INNER CONTENT ── */
 .hof-page-hero__inner {
   position: relative; z-index: 1;
-  max-width: 700px; margin: 0 auto;
+  max-width: 920px; margin: 0 auto;
 }
 
 /* ── CORONA FLOTANTE ── */
@@ -179,15 +192,34 @@
   }
 }
 
-/* ── TROPHY ZONE ── */
-.hof-trophy-zone {
-  position: relative; display: inline-block;
-  margin: 0.35rem auto 1rem;
+/* ── HERO ROW — 3-column layout ── */
+.hof-hero-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 0.2rem;
 }
+.hof-hero-center {
+  flex: 0 1 360px;
+  min-width: 0;
+  text-align: center;
+}
+.hof-trophy-side {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 180px;
+}
+/* Mirror the right-side trophy */
+.hof-trophy-side--right { transform: scaleX(-1); }
+
 /* Aura glow behind trophy */
 .hof-trophy-aura {
   position: absolute;
-  inset: -32px -40px;
+  inset: -28px -36px;
   border-radius: 50%;
   background: radial-gradient(ellipse 72% 68% at 50% 54%,
     rgba(245,200,66,0.28) 0%,
@@ -200,47 +232,23 @@
   0%,100% { opacity: 0.55; transform: scale(1); }
   50%     { opacity: 1;    transform: scale(1.12); }
 }
-/* Sparkle constellation around trophy */
-.hof-trophy-zone::after {
-  content: '';
-  position: absolute; top: 50%; left: 50%;
-  width: 4px; height: 4px; border-radius: 50%;
-  background: #f5c842;
-  box-shadow:
-    -58px -80px 0 1px rgba(245,200,66,0.9),
-     72px -58px 0 0   rgba(255,255,255,0.95),
-    -92px   8px 0 2px rgba(245,200,66,0.75),
-     90px  22px 0 0   rgba(255,248,140,0.85),
-    -44px  95px 0 1px rgba(245,200,66,0.65),
-     58px  88px 0 0   rgba(255,255,255,0.75),
-   -112px -18px 0 1px rgba(245,200,66,0.55),
-    108px -48px 0 0   rgba(255,248,140,0.65),
-      2px -102px 0 2px rgba(255,255,255,0.85),
-    -70px  -42px 0 0  rgba(255,248,140,0.6),
-     65px  -85px 0 1px rgba(245,200,66,0.7);
-  transform: translate(-50%, -50%);
-  animation: hofSparkles 3s ease-in-out infinite;
-  pointer-events: none; z-index: 5;
-}
-@keyframes hofSparkles {
-  0%,100% { opacity: 0.2;  transform: translate(-50%, -50%) scale(0.88) rotate(0deg); }
-  50%     { opacity: 1;    transform: translate(-50%, -50%) scale(1.14) rotate(8deg); }
-}
 
 /* El trofeo en sí */
 .hof-goty-trophy {
   position: relative; z-index: 1;
-  height: 224px; width: auto; display: block;
-  -webkit-mask-image: radial-gradient(ellipse 90% 94% at 50% 52%,
-    black 44%,
-    rgba(0,0,0,0.85) 60%,
-    rgba(0,0,0,0.45) 75%,
-    transparent 91%);
-  mask-image: radial-gradient(ellipse 90% 94% at 50% 52%,
-    black 44%,
-    rgba(0,0,0,0.85) 60%,
-    rgba(0,0,0,0.45) 75%,
-    transparent 91%);
+  height: 200px; width: auto; display: block;
+  -webkit-mask-image: radial-gradient(ellipse 66% 72% at 50% 50%,
+    black 30%,
+    rgba(0,0,0,0.92) 48%,
+    rgba(0,0,0,0.60) 63%,
+    rgba(0,0,0,0.18) 76%,
+    transparent 88%);
+  mask-image: radial-gradient(ellipse 66% 72% at 50% 50%,
+    black 30%,
+    rgba(0,0,0,0.92) 48%,
+    rgba(0,0,0,0.60) 63%,
+    rgba(0,0,0,0.18) 76%,
+    transparent 88%);
   animation: hofTrophyIn 1.1s cubic-bezier(0.22,1,0.36,1) both,
              hofTrophyGlow 2.5s ease-in-out 1.1s infinite;
 }
@@ -303,8 +311,19 @@
 .hof-year-select:focus { border-color: rgba(245,200,66,0.75) !important; }
 
 /* Mobile tweaks */
-@media (max-width: 640px) {
-  .hof-goty-trophy { height: 180px; }
+@media (max-width: 720px) {
+  .hof-hero-row    { gap: 0.6rem; }
+  .hof-trophy-side { width: 130px; }
+  .hof-goty-trophy { height: 150px; }
+  .hof-hero-center { flex: 0 1 240px; }
+}
+@media (max-width: 520px) {
+  .hof-hero-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .hof-trophy-side { display: none; }
+  .hof-hero-center { flex: unset; width: 100%; }
   .hof-corona-img  { width: 62px; }
   .hof-page-hero   { padding: 1.5rem 1rem 2rem; }
 }
