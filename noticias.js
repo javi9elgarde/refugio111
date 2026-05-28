@@ -11,9 +11,12 @@
   var _editingId   = null; /* id en edición (null = nueva)      */
   var _db          = null;
 
-  /* ── Proxy para extracción de OG ───────────────────────────
-     allorigins.win devuelve el HTML de cualquier URL pública  */
-  var OG_PROXY = 'https://api.allorigins.win/raw?url=';
+  /* ── Proxies para extracción de OG (se prueban en orden) ─── */
+  var OG_PROXIES = [
+    function(url) { return 'https://corsproxy.io/?' + encodeURIComponent(url); },
+    function(url) { return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url); },
+    function(url) { return 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url); }
+  ];
 
   /* ── Detección de fuente por dominio ─────────────────────── */
   var SOURCE_MAP = {
@@ -71,45 +74,73 @@
   }
 
   /* ── Extracción de metadatos OG ──────────────────────────── */
+  function parseOgFromHtml(html, originalUrl) {
+    var ogTitle = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']{1,300})/i)
+              || html.match(/<meta[^>]+content=["']([^"']{1,300})["'][^>]+property=["']og:title["']/i);
+    var ogImage = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)/i)
+              || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+    var titleTag = html.match(/<title[^>]*>([^<]{1,300})<\/title>/i);
+    var twImage  = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)/i)
+               || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i);
+
+    var title = (ogTitle && ogTitle[1].trim()) || (titleTag && titleTag[1].trim()) || '';
+    var image = (ogImage && ogImage[1].trim()) || (twImage  && twImage[1].trim())  || '';
+
+    /* Hacer URL de imagen absoluta */
+    if (image && image.indexOf('http') !== 0) {
+      try {
+        var base = new URL(originalUrl);
+        image = image.indexOf('//') === 0
+          ? base.protocol + image
+          : base.origin + (image.indexOf('/') === 0 ? '' : '/') + image;
+      } catch (e) {}
+    }
+
+    title = decodeEntities(title);
+    return { title: title, image: image };
+  }
+
   function fetchOgData(url, onSuccess, onError) {
-    var proxyUrl = OG_PROXY + encodeURIComponent(url);
-    fetch(proxyUrl, { signal: AbortSignal.timeout ? AbortSignal.timeout(12000) : undefined })
-      .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.text();
-      })
-      .then(function (html) {
-        /* og:title */
-        var ogTitle = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']{1,300})/i)
-                  || html.match(/<meta[^>]+content=["']([^"']{1,300})["'][^>]+property=["']og:title["']/i);
-        /* og:image */
-        var ogImage = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)/i)
-                  || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
-        /* <title> fallback */
-        var titleTag = html.match(/<title[^>]*>([^<]{1,300})<\/title>/i);
-        /* twitter:image fallback */
-        var twImage = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)/i)
-                   || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i);
+    var proxies = OG_PROXIES.slice(); /* copia para no mutar el array */
+    var timeout = 9000;
 
-        var title = (ogTitle  && ogTitle[1].trim())  || (titleTag && titleTag[1].trim()) || '';
-        var image = (ogImage  && ogImage[1].trim())  || (twImage  && twImage[1].trim())  || '';
+    function tryNext() {
+      if (!proxies.length) {
+        onError('Todos los proxies fallaron — rellena los campos a mano');
+        return;
+      }
+      var proxyFn  = proxies.shift();
+      var proxyUrl = proxyFn(url);
 
-        /* Hacer URL de imagen absoluta */
-        if (image && image.indexOf('http') !== 0) {
-          try {
-            var base = new URL(url);
-            image = image.indexOf('//') === 0
-              ? base.protocol + image
-              : base.origin + (image.indexOf('/') === 0 ? '' : '/') + image;
-          } catch (e) {}
-        }
+      var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      var timer = controller ? setTimeout(function() { controller.abort(); }, timeout) : null;
+      var signal = controller ? controller.signal : undefined;
 
-        /* Decodificar TODAS las entidades HTML del título (&#34; &quot; etc.) */
-        title = decodeEntities(title);
+      fetch(proxyUrl, { signal: signal })
+        .then(function(r) {
+          if (timer) clearTimeout(timer);
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.text();
+        })
+        .then(function(html) {
+          /* Ignorar respuestas vacías o demasiado cortas */
+          if (!html || html.length < 200) throw new Error('Respuesta vacía');
+          var data = parseOgFromHtml(html, url);
+          /* Si no hay absolutamente nada útil, probar el siguiente proxy */
+          if (!data.title && !data.image && proxies.length) {
+            tryNext();
+          } else {
+            onSuccess(data);
+          }
+        })
+        .catch(function(err) {
+          if (timer) clearTimeout(timer);
+          /* Probar siguiente proxy silenciosamente */
+          tryNext();
+        });
+    }
 
-        onSuccess({ title: title, image: image });
-      })
-      .catch(function (err) { onError(err.message || 'Error de red'); });
+    tryNext();
   }
 
   /* ── Render: grid de tarjetas ────────────────────────────── */
