@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Refugio 111 — Hall of Fame</title>
-  <link rel="stylesheet" href="styles.css?v=20260527k">
+  <title>Refugio 111 — G.O.T.Y</title>
+  <link rel="stylesheet" href="styles.css?v=20260528a">
 </head>
 <body>
 
 <div id="gtLoading" style="position:fixed;inset:0;background:#07070f;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:1rem">
   <div style="font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#f5c842,#fff,#f5c842);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.1em">REFUGIO 111</div>
   <div style="display:flex;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#f5c842;animation:dotPulse 1.2s ease-in-out infinite"></span><span style="width:8px;height:8px;border-radius:50%;background:#f5c842;animation:dotPulse 1.2s ease-in-out .2s infinite"></span><span style="width:8px;height:8px;border-radius:50%;background:#f5c842;animation:dotPulse 1.2s ease-in-out .4s infinite"></span></div>
-  <div style="font-size:.8rem;color:rgba(245,200,66,.5);letter-spacing:.05em">Cargando Hall of Fame...</div>
+  <div style="font-size:.8rem;color:rgba(245,200,66,.5);letter-spacing:.05em">Cargando G.O.T.Y...</div>
 </div>
 <style>@keyframes dotPulse{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}</style>
 
@@ -54,10 +54,19 @@
   <div class="hof-page-hero">
     <canvas id="hofParticles" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
     <div class="hof-page-hero__glow"></div>
+    <div class="hof-hero-beams"></div>
     <div class="hof-page-hero__inner">
-      <div class="hof-page-hero__crown">👑</div>
-      <h1 class="hof-page-hero__title">HALL OF FAME</h1>
-      <p class="hof-page-hero__sub">Los mejores juegos del Refugio 111 · clasificados por nota media</p>
+      <!-- Corona flotante con brillo cian -->
+      <div class="hof-corona-aura">
+        <img src="corona.png" class="hof-corona-img" alt="Corona Refugio 111">
+      </div>
+      <!-- Trofeo GOTY centrado -->
+      <div class="hof-trophy-zone">
+        <div class="hof-trophy-aura"></div>
+        <img src="GOTY.png" class="hof-goty-trophy" alt="Trofeo G.O.T.Y. Refugio 111">
+      </div>
+      <h1 class="hof-page-hero__title">G.O.T.Y</h1>
+      <p class="hof-page-hero__sub">Los mejores juegos del Refugio 111</p>
       <div class="hof-page-hero__year-wrap">
         <label style="font-size:0.78rem;color:rgba(245,200,66,0.6);letter-spacing:0.06em">AÑO</label>
         <select class="form-select hof-year-select" id="rankingYear" style="width:100px"></select>
@@ -94,74 +103,211 @@
 </div>
 
 <style>
-/* ── HOF PAGE HERO ── */
+/* ══ HOF PAGE HERO ══════════════════════════════════════════ */
 .hof-page-hero {
   position: relative;
-  background: linear-gradient(180deg, rgba(245,200,66,0.06) 0%, transparent 100%);
-  border-bottom: 1px solid rgba(245,200,66,0.2);
-  padding: 3rem 2rem 2.5rem;
+  background: linear-gradient(180deg,
+    rgba(22,13,2,0.95) 0%,
+    rgba(245,200,66,0.06) 45%,
+    transparent 100%);
+  border-bottom: 1px solid rgba(245,200,66,0.25);
+  padding: 2rem 2rem 2.5rem;
   text-align: center;
   overflow: hidden;
 }
+
+/* Deep radial glow — two layers: top halo + center glow */
 .hof-page-hero__glow {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 0%,   rgba(245,200,66,0.18) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 75% at 50% 48%,  rgba(245,200,66,0.10) 0%, transparent 68%);
+}
+
+/* ── SWEEPING GOLDEN BEAMS ── */
+.hof-hero-beams {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+}
+.hof-hero-beams::before,
+.hof-hero-beams::after {
+  content: '';
   position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(245,200,66,0.1) 0%, transparent 65%);
-  pointer-events: none;
+  top: 0; left: 50%;
+  width: 3px; height: 140%;
+  transform-origin: 50% 0%;
 }
+.hof-hero-beams::before {
+  background: linear-gradient(to bottom, transparent, rgba(245,200,66,0.14) 25%, rgba(245,200,66,0.05) 60%, transparent);
+  box-shadow: -1px 0 60px 30px rgba(245,200,66,0.04), 1px 0 60px 30px rgba(245,200,66,0.04);
+  animation: hofBeamSwing 9s ease-in-out infinite;
+}
+.hof-hero-beams::after {
+  background: linear-gradient(to bottom, transparent, rgba(245,200,66,0.09) 25%, rgba(245,200,66,0.03) 60%, transparent);
+  box-shadow: -1px 0 80px 50px rgba(245,200,66,0.025);
+  animation: hofBeamSwing 9s ease-in-out infinite reverse;
+  animation-delay: -4.5s;
+}
+@keyframes hofBeamSwing {
+  0%,100% { transform: rotate(-18deg); opacity: 0.5; }
+  50%     { transform: rotate(18deg);  opacity: 1;   }
+}
+
+/* ── INNER CONTENT ── */
 .hof-page-hero__inner {
-  position: relative;
-  z-index: 1;
-  max-width: 700px;
-  margin: 0 auto;
+  position: relative; z-index: 1;
+  max-width: 700px; margin: 0 auto;
 }
-.hof-page-hero__crown {
-  font-size: 3.5rem;
-  line-height: 1;
-  margin-bottom: 0.75rem;
-  filter: drop-shadow(0 0 20px rgba(245,200,66,0.7));
-  animation: hofCrownPulse 2.5s ease-in-out infinite;
+
+/* ── CORONA FLOTANTE ── */
+.hof-corona-aura { display: inline-block; margin-bottom: 0.2rem; }
+.hof-corona-img {
+  width: 80px; height: auto;
+  animation: hofCoronaFloat 3.4s ease-in-out infinite;
 }
-@keyframes hofCrownPulse {
-  0%,100% { filter: drop-shadow(0 0 20px rgba(245,200,66,0.5)); transform: scale(1); }
-  50%     { filter: drop-shadow(0 0 36px rgba(245,200,66,0.9)); transform: scale(1.06); }
+@keyframes hofCoronaFloat {
+  0%,100% {
+    transform: translateY(0) rotate(-3deg);
+    filter: drop-shadow(0 0 12px rgba(0,210,255,0.75))
+            drop-shadow(0 0 28px rgba(0,200,255,0.4))
+            drop-shadow(0 4px 12px rgba(0,0,0,0.85));
+  }
+  50% {
+    transform: translateY(-13px) rotate(3deg);
+    filter: drop-shadow(0 0 24px rgba(0,235,255,1))
+            drop-shadow(0 0 55px rgba(0,220,255,0.65))
+            drop-shadow(0 4px 12px rgba(0,0,0,0.85));
+  }
 }
+
+/* ── TROPHY ZONE ── */
+.hof-trophy-zone {
+  position: relative; display: inline-block;
+  margin: 0.35rem auto 1rem;
+}
+/* Aura glow behind trophy */
+.hof-trophy-aura {
+  position: absolute;
+  inset: -32px -40px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 72% 68% at 50% 54%,
+    rgba(245,200,66,0.28) 0%,
+    rgba(245,200,66,0.10) 48%,
+    transparent 70%);
+  animation: hofAuraPulse 2.5s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+@keyframes hofAuraPulse {
+  0%,100% { opacity: 0.55; transform: scale(1); }
+  50%     { opacity: 1;    transform: scale(1.12); }
+}
+/* Sparkle constellation around trophy */
+.hof-trophy-zone::after {
+  content: '';
+  position: absolute; top: 50%; left: 50%;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: #f5c842;
+  box-shadow:
+    -58px -80px 0 1px rgba(245,200,66,0.9),
+     72px -58px 0 0   rgba(255,255,255,0.95),
+    -92px   8px 0 2px rgba(245,200,66,0.75),
+     90px  22px 0 0   rgba(255,248,140,0.85),
+    -44px  95px 0 1px rgba(245,200,66,0.65),
+     58px  88px 0 0   rgba(255,255,255,0.75),
+   -112px -18px 0 1px rgba(245,200,66,0.55),
+    108px -48px 0 0   rgba(255,248,140,0.65),
+      2px -102px 0 2px rgba(255,255,255,0.85),
+    -70px  -42px 0 0  rgba(255,248,140,0.6),
+     65px  -85px 0 1px rgba(245,200,66,0.7);
+  transform: translate(-50%, -50%);
+  animation: hofSparkles 3s ease-in-out infinite;
+  pointer-events: none; z-index: 5;
+}
+@keyframes hofSparkles {
+  0%,100% { opacity: 0.2;  transform: translate(-50%, -50%) scale(0.88) rotate(0deg); }
+  50%     { opacity: 1;    transform: translate(-50%, -50%) scale(1.14) rotate(8deg); }
+}
+
+/* El trofeo en sí */
+.hof-goty-trophy {
+  position: relative; z-index: 1;
+  height: 224px; width: auto; display: block;
+  -webkit-mask-image: radial-gradient(ellipse 90% 94% at 50% 52%,
+    black 44%,
+    rgba(0,0,0,0.85) 60%,
+    rgba(0,0,0,0.45) 75%,
+    transparent 91%);
+  mask-image: radial-gradient(ellipse 90% 94% at 50% 52%,
+    black 44%,
+    rgba(0,0,0,0.85) 60%,
+    rgba(0,0,0,0.45) 75%,
+    transparent 91%);
+  animation: hofTrophyIn 1.1s cubic-bezier(0.22,1,0.36,1) both,
+             hofTrophyGlow 2.5s ease-in-out 1.1s infinite;
+}
+@keyframes hofTrophyIn {
+  from { opacity: 0; transform: scale(0.78) translateY(28px); filter: drop-shadow(0 0 0px rgba(245,200,66,0)); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+@keyframes hofTrophyGlow {
+  0%,100% {
+    filter: drop-shadow(0 0 18px rgba(245,200,66,0.70))
+            drop-shadow(0 0 48px rgba(245,200,66,0.38))
+            drop-shadow(0 6px 22px rgba(0,0,0,0.85));
+  }
+  50% {
+    filter: drop-shadow(0 0 32px rgba(255,215,0,0.98))
+            drop-shadow(0 0 75px rgba(245,200,66,0.65))
+            drop-shadow(0 6px 22px rgba(0,0,0,0.85));
+  }
+}
+
+/* ── TÍTULO G.O.T.Y ── */
 .hof-page-hero__title {
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(2.4rem, 6.5vw, 4.2rem);
   font-weight: 900;
-  letter-spacing: 0.12em;
-  background: linear-gradient(90deg, #b8860b 0%, #f5c842 30%, #fff 55%, #f5c842 80%, #b8860b 100%);
-  background-size: 200% auto;
+  letter-spacing: 0.18em;
+  background: linear-gradient(90deg,
+    #8b6400 0%,
+    #c8930a 12%,
+    #f5c842 28%,
+    #fff8c8 44%,
+    #f5c842 58%,
+    #e8b020 74%,
+    #c8930a 86%,
+    #8b6400 100%);
+  background-size: 220% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: hofTitleShimmer 4s linear infinite;
-  margin-bottom: 0.5rem;
+  animation: hofTitleShimmer 2.8s linear infinite;
+  margin-bottom: 0.45rem;
   line-height: 1.1;
 }
 @keyframes hofTitleShimmer {
-  0%   { background-position: 0% center; }
-  100% { background-position: 200% center; }
+  0%   { background-position: 0%   center; }
+  100% { background-position: 220% center; }
 }
+
 .hof-page-hero__sub {
-  font-size: 0.82rem;
-  color: rgba(245,200,66,0.55);
-  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  color: rgba(245,200,66,0.52);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.6rem;
 }
 .hof-page-hero__year-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
 }
-.hof-year-select {
-  border-color: rgba(245,200,66,0.3) !important;
-  color: #f5c842 !important;
+.hof-year-select { border-color: rgba(245,200,66,0.3) !important; color: #f5c842 !important; }
+.hof-year-select:focus { border-color: rgba(245,200,66,0.75) !important; }
+
+/* Mobile tweaks */
+@media (max-width: 640px) {
+  .hof-goty-trophy { height: 180px; }
+  .hof-corona-img  { width: 62px; }
+  .hof-page-hero   { padding: 1.5rem 1rem 2rem; }
 }
-.hof-year-select:focus { border-color: rgba(245,200,66,0.7) !important; }
 
 /* ── HOF VIDEOS SECTION ── */
 .hof-videos-section {
