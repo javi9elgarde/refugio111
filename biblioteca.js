@@ -33,7 +33,7 @@
     return SAGA_LOGOS_RAW[normSaga(saga)] || '';
   }
 
-  var state = { search:'', genero:'', plataforma:'', año:'', jugador:'All', editId: null, detailId: null, detailFace: 'front' };
+  var state = { search:'', genero:'', plataforma:'', año:'', jugador:'All', editId: null, detailId: null, detailFace: 'front', esperados: false };
   var selectedGeneros    = [];
   var selectedPlataformas = [];
   var coverPreview = null;
@@ -364,6 +364,75 @@
     var grid    = document.getElementById('gameGrid');
     var empty   = document.getElementById('emptyState');
     var countEl = document.getElementById('libCount');
+
+    /* ── MODO JUEGOS ESPERADOS ─────────────────────────────── */
+    if (state.esperados) {
+      var todayE = new Date().toISOString().slice(0, 10);
+      var esperadosList = Biblioteca.getAll().filter(function(g) {
+        var hasDur = g.duracion !== null && g.duracion !== undefined && g.duracion !== '' && parseFloat(g.duracion) > 0;
+        return !hasDur && (!g.fechaLanzamiento || g.fechaLanzamiento > todayE);
+      });
+      // Sort: hype desc, luego fecha asc (próximos primero, sin fecha al final)
+      esperadosList.sort(function(a, b) {
+        var ha = parseInt(a.hype) || 0;
+        var hb = parseInt(b.hype) || 0;
+        if (hb !== ha) return hb - ha;
+        var da = a.fechaLanzamiento || '9999-12-31';
+        var db = b.fechaLanzamiento || '9999-12-31';
+        return da.localeCompare(db);
+      });
+
+      countEl.textContent = esperadosList.length + ' juego' + (esperadosList.length !== 1 ? 's' : '') + ' esperados';
+
+      if (!esperadosList.length) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        updateAlphaAvailable([]);
+        renderNoduNotice();
+        return;
+      }
+      empty.classList.add('hidden');
+      updateAlphaAvailable([]); // Sin barra alfabética en este modo
+
+      // Agrupar por nivel de hype para dar contexto visual
+      var HYPE_LABELS = {
+        5: '🔥🔥🔥🔥🔥 Hype Máximo',
+        4: '🔥🔥🔥🔥 Muy Esperado',
+        3: '🔥🔥🔥 Esperado',
+        2: '🔥🔥 Algo de Hype',
+        1: '🔥 Poco Hype',
+        0: '— Sin Hype'
+      };
+      var hypeGroups = {}, hypeOrder = [];
+      esperadosList.forEach(function(g) {
+        var h = Math.min(5, Math.max(0, parseInt(g.hype) || 0));
+        if (!hypeGroups[h]) { hypeGroups[h] = []; hypeOrder.push(h); }
+        hypeGroups[h].push(g);
+      });
+      // hypeOrder es ya único porque solo añadimos si no existe
+      hypeOrder = hypeOrder.filter(function(h, i, arr) { return arr.indexOf(h) === i; });
+      hypeOrder.sort(function(a, b) { return b - a; }); // desc
+
+      var html = '';
+      hypeOrder.forEach(function(h) {
+        html += '<div class="bib-hype-header">' + HYPE_LABELS[h] + '</div>';
+        hypeGroups[h].forEach(function(g) { html += renderCard(g); });
+      });
+      grid.innerHTML = html;
+
+      requestAnimationFrame(function() {
+        grid.querySelectorAll('.game-card').forEach(function(card, i) {
+          card.style.animationDelay = Math.min(i * 0.025, 0.5) + 's';
+          card.classList.add('card-appear');
+        });
+      });
+      grid.querySelectorAll('.game-card').forEach(function(card) {
+        card.addEventListener('click', function() { window.GT_Bib.openDetail(this.dataset.id); });
+      });
+      renderNoduNotice();
+      return; // ← no continuar con el renderizado normal
+    }
+    /* ─────────────────────────────────────────────────────── */
 
     countEl.textContent = games.length + ' juego' + (games.length !== 1 ? 's' : '') + ' en la biblioteca';
 
@@ -1227,12 +1296,15 @@
     // Clear filters
     document.getElementById('clearFilters').addEventListener('click', function(){
       state.search = ''; state.genero = ''; state.plataforma = ''; state.año = ''; state.jugador = 'All';
+      state.esperados = false;
       document.getElementById('searchInput').value = '';
       document.getElementById('genreFilter').value = '';
       document.getElementById('platFilter').value = '';
       document.getElementById('yearFilter').value = '';
       var allRadio = document.querySelector('#bibPlayerCards input[value="All"]');
       if (allRadio) allRadio.checked = true;
+      var be = document.getElementById('btnEsperados');
+      if (be) be.classList.remove('active');
       renderGrid();
     });
 
@@ -1324,6 +1396,16 @@
         radio.addEventListener('change', function() {
           if (this.checked) { state.jugador = this.value; renderGrid(); }
         });
+      });
+    }
+
+    // Botón Juegos Esperados
+    var btnEsperados = document.getElementById('btnEsperados');
+    if (btnEsperados) {
+      btnEsperados.addEventListener('click', function() {
+        state.esperados = !state.esperados;
+        btnEsperados.classList.toggle('active', state.esperados);
+        renderGrid();
       });
     }
 
