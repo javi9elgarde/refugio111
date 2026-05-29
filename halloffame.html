@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — G.O.T.Y</title>
-  <link rel="stylesheet" href="styles.css?v=20260529b">
+  <link rel="stylesheet" href="styles.css?v=20260529d">
 </head>
 <body>
 
@@ -61,7 +61,6 @@
         <div class="hof-trophy-aura"></div>
         <img src="GOTY.png" class="hof-goty-trophy" alt="">
       </div>
-      <p class="hof-page-hero__sub">Los mejores juegos del Refugio 111</p>
       <div class="hof-page-hero__year-wrap">
         <label style="font-size:0.78rem;color:rgba(245,200,66,0.6);letter-spacing:0.06em">AÑO</label>
         <select class="form-select hof-year-select" id="rankingYear" style="width:100px"></select>
@@ -106,7 +105,7 @@
     rgba(245,200,66,0.06) 45%,
     transparent 100%);
   border-bottom: 1px solid rgba(245,200,66,0.25);
-  padding: 2rem 2rem 2.5rem;
+  padding: 1.5rem 2rem 0.75rem;
   text-align: center;
   overflow: hidden;
 }
@@ -175,28 +174,28 @@
 /* Corona sobre la carta del campeón */
 .hof-champion-corona-wrap {
   position: absolute;
-  top: -64px;
+  top: -82px;
   left: 50%;
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 20;
 }
 .hof-champion-corona {
-  width: 72px; height: auto;
+  width: 92px; height: auto;
   animation: hofCoronaFloat 3.4s ease-in-out infinite;
 }
 /* Permitir que la corona sobresalga del card */
 .hof-card.hof-gold {
   position: relative !important;
   overflow: visible !important;
-  margin-top: 68px !important;
+  margin-top: 88px !important;
 }
 
 /* ── TROPHY CENTRADO EN HERO ── */
 .hof-trophy-center {
   position: relative;
   display: inline-block;
-  margin-bottom: 0.9rem;
+  margin-bottom: 0.4rem;
 }
 
 /* Aura glow behind trophy */
@@ -219,19 +218,21 @@
 /* El trofeo en sí */
 .hof-goty-trophy {
   position: relative; z-index: 1;
-  height: 240px; width: auto; display: block;
-  -webkit-mask-image: radial-gradient(ellipse 66% 72% at 50% 50%,
-    black 30%,
-    rgba(0,0,0,0.92) 48%,
-    rgba(0,0,0,0.60) 63%,
-    rgba(0,0,0,0.18) 76%,
-    transparent 88%);
-  mask-image: radial-gradient(ellipse 66% 72% at 50% 50%,
-    black 30%,
-    rgba(0,0,0,0.92) 48%,
-    rgba(0,0,0,0.60) 63%,
-    rgba(0,0,0,0.18) 76%,
-    transparent 88%);
+  height: 288px; width: auto; display: block;
+  -webkit-mask-image: radial-gradient(ellipse 80% 86% at 50% 48%,
+    black 42%,
+    rgba(0,0,0,0.96) 58%,
+    rgba(0,0,0,0.72) 70%,
+    rgba(0,0,0,0.28) 82%,
+    rgba(0,0,0,0.06) 91%,
+    transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 86% at 50% 48%,
+    black 42%,
+    rgba(0,0,0,0.96) 58%,
+    rgba(0,0,0,0.72) 70%,
+    rgba(0,0,0,0.28) 82%,
+    rgba(0,0,0,0.06) 91%,
+    transparent 100%);
   animation: hofTrophyIn 1.1s cubic-bezier(0.22,1,0.36,1) both,
              hofTrophyGlow 2.5s ease-in-out 1.1s infinite;
 }
@@ -295,8 +296,9 @@
 
 /* Mobile tweaks */
 @media (max-width: 520px) {
-  .hof-goty-trophy { height: 190px; }
-  .hof-page-hero   { padding: 1.5rem 1rem 2rem; }
+  .hof-goty-trophy      { height: 210px; }
+  .hof-champion-corona  { width: 74px; }
+  .hof-page-hero        { padding: 1.2rem 1rem 0.75rem; }
 }
 
 /* ── HOF VIDEOS SECTION ── */
