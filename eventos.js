@@ -233,6 +233,39 @@
     setTimeout(function () { waitForDb(cb); }, 60);
   }
 
+  /* ── DECORACIÓN SHOW: focos + confeti solo el día del evento ── */
+  function updateShowDecorations() {
+    var today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+    var hasEventToday = _events.some(function (ev) {
+      return ev.isoDate && ev.isoDate.slice(0, 10) === today;
+    });
+    var spots    = document.getElementById('evtSpotlights');
+    var confetti = document.getElementById('evtConfetti');
+    var none = hasEventToday ? '' : 'none';
+    if (spots)    spots.style.display    = none;
+    if (confetti) confetti.style.display = none;
+  }
+
+  /* ── MARQUESINA: nombres reales de los eventos ─────────────── */
+  function updateMarquee() {
+    var wrap  = document.getElementById('evtMarqueeWrap');
+    var track = document.getElementById('evtMarqueeTrack');
+    if (!wrap || !track || !_events.length) return;
+
+    // Construir un span por evento con su accentColor
+    var sep = '<span style="color:rgba(255,255,255,0.22);padding:0 0.6rem">·</span>';
+    var items = _events.map(function (ev) {
+      var color = ev.accentColor || '#4facfe';
+      var emoji = (ev.tag || '').split(' ')[0] || '🎮';
+      return '<span class="evt-marquee-inner" style="color:' + color + '">'
+        + emoji + ' ' + ev.nombre + '</span>';
+    }).join(sep);
+    var content = items + sep; // trailing separator before the duplicate
+    // Duplicate for infinite scroll
+    track.innerHTML = content + content;
+    wrap.style.display = '';
+  }
+
   /* ── CARGAR EVENTOS DESDE FIRESTORE ────────────────────────── */
   function loadEvents() {
     db.collection('events').orderBy('order')
@@ -256,6 +289,8 @@
         renderCarouselDots();
         updateCarouselNav();
         renderTop5(_currentEvtIdx);
+        updateShowDecorations();
+        updateMarquee();
 
         /* Cargar bingos solo una vez que tengamos los eventos */
         if (!db._bingoLoaded) {
