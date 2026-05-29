@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Refugio 111 — Menú Principal</title>
-  <link rel="stylesheet" href="styles.css?v=20260529q">
+  <link rel="stylesheet" href="styles.css?v=20260529r">
 </head>
 <body>
 
@@ -167,11 +167,11 @@
     .spotlight-toggle[aria-expanded="true"] .spotlight-toggle__chevron {
       transform: rotate(180deg);
     }
-    /* Paneles ocultos en base (móvil default) */
-    .spotlight-panel { display: none; }
+    /* Paneles ocultos en móvil — !important para ganar a la def. base que tiene display:flex */
+    .spotlight-panel { display: none !important; }
     /* Cuando abierto: paneles visibles con animación */
     .hero__spotlight.sp-open .spotlight-panel {
-      display: flex;
+      display: flex !important;
       margin-top: 0.45rem;
       animation: spPanelIn 0.22s ease both;
     }
