@@ -703,9 +703,68 @@ window.GT.SampleData = (function () {
   return { initialize, reset };
 })();
 
+/* ── NIEVE DE DICIEMBRE ─────────────────────────────────────── */
+function initSnow() {
+  if (new Date().getMonth() !== 11) return; // Solo activo en diciembre
+
+  var canvas = document.createElement('canvas');
+  canvas.id = 'gtSnowCanvas';
+  canvas.style.cssText =
+    'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:8;';
+  document.body.appendChild(canvas);
+
+  var ctx = canvas.getContext('2d');
+  var W = 0, H = 0;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function makeFlake(randomY) {
+    var r = Math.random() * 2.8 + 0.8;
+    return {
+      x:     Math.random() * (W || 1200),
+      y:     randomY ? Math.random() * (H || 800) : -(r + 2),
+      r:     r,
+      vy:    Math.random() * 1.1 + 0.35,
+      vx:    (Math.random() - 0.5) * 0.5,
+      wave:  Math.random() * Math.PI * 2,
+      wSpeed: 0.007 + Math.random() * 0.013,
+      alpha: Math.random() * 0.50 + 0.22
+    };
+  }
+
+  var count = Math.min(Math.max(Math.floor((W || 1200) / 11), 60), 130);
+  var flakes = Array.from({ length: count }, function () { return makeFlake(true); });
+
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < flakes.length; i++) {
+      var f = flakes[i];
+      f.wave += f.wSpeed;
+      f.x    += f.vx + Math.sin(f.wave) * 0.45;
+      f.y    += f.vy;
+      if (f.x < -f.r)    f.x = W + f.r;
+      if (f.x > W + f.r) f.x = -f.r;
+      if (f.y > H + f.r) { flakes[i] = makeFlake(false); continue; }
+      ctx.globalAlpha = f.alpha;
+      ctx.fillStyle   = '#e8f4ff';
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
 /* ── BOOT ───────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function () {
   try { window.GT.Nav.init(); }            catch(e){}
   try { window.GT.SampleData.initialize(); } catch(e){}
   try { window.GT.FirestoreSync.start(); } catch(e){}
+  try { initSnow(); }                      catch(e){}
 });
