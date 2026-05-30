@@ -591,23 +591,32 @@
     // Videos section (only on halloffame page)
     safe(function() { renderVideosSection(year); }, 'renderVideosSection');
 
-    // Full ranking — no covers, just pos + title + score + votes
+    // Full ranking — with medals for top 3 and divider after them
+    var RANK_MEDALS  = ['🥇', '🥈', '🥉'];
+    var RANK_CLASSES = ['rank-list-gold', 'rank-list-silver', 'rank-list-bronze'];
     bodyEl.innerHTML = ranking.map(function(item, i) {
       var game = Biblioteca.getById(item.juegoId);
       if (!game) return '';
-      var sc = Utils.scoreColor(item.notaMedia);
-      var rowCls = i === 0 ? 'rank-list-gold' : i === 1 ? 'rank-list-silver' : i === 2 ? 'rank-list-bronze' : '';
-      return '<div class="rank-list-row ' + rowCls + '" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
-        '<div class="rank-list-pos">' + (i + 1) + '</div>' +
-        '<div class="rank-list-info">' +
-          '<div class="rank-list-title">' + Utils.escapeHtml(game.titulo) + '</div>' +
-          (game.desarrollador ? '<div class="rank-list-dev">' + Utils.escapeHtml(game.desarrollador) + '</div>' : '') +
-        '</div>' +
-        '<div class="rank-list-score-wrap">' +
-          '<div class="score-bar"><div class="score-bar__fill" style="width:' + Utils.scoreWidth(item.notaMedia) + ';background:' + sc + '"></div></div>' +
-          '<span class="score-num" style="color:' + sc + '">' + Utils.formatScore(item.notaMedia) + '</span>' +
-        '</div>' +
-      '</div>';
+      var sc     = Utils.scoreColor(item.notaMedia);
+      var rowCls = i < 3 ? RANK_CLASSES[i] : '';
+      var posHtml = i < 3
+        ? '<span class="rank-medal">' + RANK_MEDALS[i] + '</span><span class="rank-num">' + (i + 1) + '</span>'
+        : '<span class="rank-num">' + (i + 1) + '</span>';
+      var divider = i === 3
+        ? '<div class="rank-list-divider"><span>— Clasificación Completa —</span></div>'
+        : '';
+      return divider +
+        '<div class="rank-list-row ' + rowCls + '" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
+          '<div class="rank-list-pos">' + posHtml + '</div>' +
+          '<div class="rank-list-info">' +
+            '<div class="rank-list-title">' + Utils.escapeHtml(game.titulo) + '</div>' +
+            (game.desarrollador ? '<div class="rank-list-dev">' + Utils.escapeHtml(game.desarrollador) + '</div>' : '') +
+          '</div>' +
+          '<div class="rank-list-score-wrap">' +
+            '<div class="score-bar"><div class="score-bar__fill" style="width:' + Utils.scoreWidth(item.notaMedia) + ';background:' + sc + '"></div></div>' +
+            '<span class="score-num" style="color:' + sc + '">' + Utils.formatScore(item.notaMedia) + '</span>' +
+          '</div>' +
+        '</div>';
     }).join('');
   }
 

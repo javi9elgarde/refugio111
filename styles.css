@@ -4936,6 +4936,35 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
   font-weight: 500;
 }
 
+/* ══ GOTY MEDAL BANNER — fichas ganadoras ═══════════════════ */
+.detail-goty-banner {
+  display: flex; align-items: center; gap: 0.9rem;
+  padding: 0.9rem 1.1rem; border-radius: 12px;
+  margin-bottom: 1.1rem; position: relative; overflow: hidden;
+}
+.detail-goty-banner::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+.detail-goty-banner--gold   { background: linear-gradient(100deg, rgba(245,200,66,0.20) 0%, rgba(245,200,66,0.06) 100%); border: 1px solid rgba(245,200,66,0.40); }
+.detail-goty-banner--silver { background: linear-gradient(100deg, rgba(192,192,192,0.16) 0%, rgba(192,192,192,0.04) 100%); border: 1px solid rgba(192,192,192,0.32); }
+.detail-goty-banner--bronze { background: linear-gradient(100deg, rgba(205,127,50,0.16) 0%, rgba(205,127,50,0.04) 100%); border: 1px solid rgba(205,127,50,0.32); }
+.detail-goty-emoji { font-size: 2.1rem; flex-shrink: 0; line-height: 1; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
+.detail-goty-label {
+  font-family: 'Orbitron', sans-serif; font-size: 0.73rem;
+  font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.detail-goty-banner--gold   .detail-goty-label { color: #f5c842; }
+.detail-goty-banner--silver .detail-goty-label { color: #d4d4d4; }
+.detail-goty-banner--bronze .detail-goty-label { color: #d4934a; }
+.detail-goty-year { font-size: 0.70rem; color: rgba(232,232,248,0.50); margin-top: 0.18rem; font-weight: 500; }
+
+/* Tinte metálico en el modal completo */
+#detailModal.goty-gold   .modal { border-color: rgba(245,200,66,0.42) !important; box-shadow: 0 0 64px rgba(245,200,66,0.10), 0 24px 64px rgba(0,0,0,0.85) !important; }
+#detailModal.goty-silver .modal { border-color: rgba(192,192,192,0.36) !important; box-shadow: 0 0 50px rgba(192,192,192,0.08), 0 24px 64px rgba(0,0,0,0.85) !important; }
+#detailModal.goty-bronze .modal { border-color: rgba(205,127,50,0.36) !important; box-shadow: 0 0 50px rgba(205,127,50,0.08), 0 24px 64px rgba(0,0,0,0.85) !important; }
+
 /* ══════════════════════════════════════════════════════════════
    MOBILE OVERHAUL — v20260529
    Arregla overflow/zoom, hero inicio, filtros, tablas, modales

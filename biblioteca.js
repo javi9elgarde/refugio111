@@ -933,6 +933,23 @@
     return (day ? day + ' ' + mon + ' ' : mon + ' ') + p[0];
   }
 
+  /* ── GOTY MEDAL: comprueba si un juego fue top-3 en año pasado ── */
+  function getGameGotyMedal(gameId) {
+    var currentYear = new Date().getFullYear();
+    var yearSet = {};
+    Registro.getAll().forEach(function(r) { if (r.año) yearSet[r.año] = true; });
+    var years = Object.keys(yearSet).map(Number).filter(function(y) { return y < currentYear; });
+    for (var yi = 0; yi < years.length; yi++) {
+      var ranking = Registro.getRanking(years[yi]);
+      for (var pos = 0; pos < Math.min(3, ranking.length); pos++) {
+        if (ranking[pos].juegoId === gameId) {
+          return { pos: pos + 1, year: years[yi] }; // pos: 1, 2 o 3
+        }
+      }
+    }
+    return null;
+  }
+
   /* ── DETAIL MODAL ───────────────────────────────────────── */
   function openDetail(id) {
     var game = Biblioteca.getById(id);
@@ -1021,6 +1038,24 @@
         }).join('');
     }
 
+    // ── Medalla GOTY (años pasados) ──────────────────────
+    var gotyMedal  = getGameGotyMedal(id);
+    var modalEl    = document.getElementById('detailModal');
+    modalEl.classList.remove('goty-gold','goty-silver','goty-bronze');
+    if (gotyMedal) {
+      var _tier   = gotyMedal.pos === 1 ? 'gold' : gotyMedal.pos === 2 ? 'silver' : 'bronze';
+      var _emoji  = ['🥇','🥈','🥉'][gotyMedal.pos - 1];
+      var _labels = ['🏆 1º MEJOR JUEGO DEL AÑO', '🥈 2º MEJOR JUEGO DEL AÑO', '🥉 3º MEJOR JUEGO DEL AÑO'];
+      modalEl.classList.add('goty-' + _tier);
+      html = '<div class="detail-goty-banner detail-goty-banner--' + _tier + '">' +
+        '<span class="detail-goty-emoji">' + _emoji + '</span>' +
+        '<div>' +
+          '<div class="detail-goty-label">' + _labels[gotyMedal.pos - 1] + '</div>' +
+          '<div class="detail-goty-year">Game of the Year ' + gotyMedal.year + ' · Refugio 111</div>' +
+        '</div>' +
+      '</div>' + html;
+    }
+
     document.getElementById('detailBody').innerHTML = html;
     document.getElementById('detailModal').classList.add('open');
     document.getElementById('detailEdit').onclick = function () { openEdit(id); };
@@ -1051,7 +1086,8 @@
   }
 
   function closeDetail() {
-    document.getElementById('detailModal').classList.remove('open');
+    var m = document.getElementById('detailModal');
+    m.classList.remove('open', 'goty-gold', 'goty-silver', 'goty-bronze');
     state.detailFace = 'front';
   }
 
