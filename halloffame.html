@@ -362,6 +362,98 @@
 @keyframes hofSpinAnim { to { transform: rotate(360deg); } }
 </style>
 
+<!-- ══ PARTÍCULAS DE ORO — toda la página ══ -->
+<canvas id="hofBgParticles" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"></canvas>
+<script>
+(function () {
+  var canvas = document.getElementById('hofBgParticles');
+  if (!canvas || !canvas.getContext) return;
+  var ctx = canvas.getContext('2d');
+  var W = 0, H = 0;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  var GOLDS = [
+    [245, 200,  66],   // bright gold
+    [255, 215,   0],   // gold
+    [255, 238,  88],   // light gold
+    [200, 155,  10],   // dark gold
+    [255, 255, 255],   // white sparkle
+    [255, 248, 140],   // pale gold
+  ];
+
+  function makePt(randomY) {
+    var c = GOLDS[Math.floor(Math.random() * GOLDS.length)];
+    var sz = Math.random() < 0.45 ? 1 : Math.random() < 0.75 ? 2 : 3;
+    return {
+      x:    Math.random() * (W || 1200),
+      y:    randomY ? Math.random() * (H || 800) : (H || 800) + sz + 2,
+      vx:   (Math.random() - 0.5) * 0.38,
+      vy:   -(Math.random() * 0.48 + 0.14),  /* sube suavemente */
+      sz:   sz,
+      alpha: 0,
+      maxA: Math.random() * 0.42 + 0.12,
+      fadeIn: true,
+      r: c[0], g: c[1], b: c[2],
+      tw:    Math.random() * Math.PI * 2,
+      twS:   0.022 + Math.random() * 0.042
+    };
+  }
+
+  var pts = Array.from({ length: 70 }, function () { return makePt(true); });
+
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < pts.length; i++) {
+      var p = pts[i];
+      p.tw += p.twS;
+      var tw = 0.68 + Math.sin(p.tw) * 0.32;
+
+      if (p.fadeIn) {
+        p.alpha += 0.009;
+        if (p.alpha >= p.maxA) { p.alpha = p.maxA; p.fadeIn = false; }
+      } else {
+        p.alpha -= 0.0038;
+        if (p.alpha <= 0) { pts[i] = makePt(false); continue; }
+      }
+
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.vx += (Math.random() - 0.5) * 0.009;
+      if (p.vx >  0.5) p.vx =  0.5;
+      if (p.vx < -0.5) p.vx = -0.5;
+      if (p.y < -8)  { pts[i] = makePt(false); continue; }
+
+      var a = (p.alpha * tw).toFixed(3);
+      ctx.fillStyle = 'rgba(' + p.r + ',' + p.g + ',' + p.b + ',' + a + ')';
+
+      if (p.sz === 1) {
+        ctx.fillRect(Math.round(p.x), Math.round(p.y), 1, 1);
+      } else if (p.sz === 2) {
+        ctx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2);
+      } else {
+        /* diamante pequeño */
+        var px = Math.round(p.x), py = Math.round(p.y);
+        ctx.beginPath();
+        ctx.moveTo(px,     py - 2);
+        ctx.lineTo(px + 2, py    );
+        ctx.lineTo(px,     py + 2);
+        ctx.lineTo(px - 2, py    );
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+}());
+</script>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260519n" defer></script>
