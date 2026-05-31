@@ -530,7 +530,9 @@ ul, ol { list-style: none; }
 }
 
 /* ── DETAIL MODAL REDISENO ───────────────────────────────── */
-#detailModal .modal { max-width: 700px; overflow: visible; position: relative; }
+#detailModal .modal,
+#gdModal      .modal { overflow: visible; position: relative; }
+#detailModal  .modal { max-width: 700px; }
 
 /* Botón flotante de flip — fuera de la cabecera, sobre el borde derecho del modal */
 .detail-flip-float {
