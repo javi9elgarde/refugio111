@@ -201,14 +201,14 @@
 </div>
 
 <div class="page">
-  <div class="page-header">
-    <div class="page-header__inner">
-      <div>
-        <h1 class="page-header__title">⏳ Juegos Pendientes</h1>
-        <p class="page-header__sub">Selecciona un jugador · pulsa ✓ para marcar como jugado</p>
-      </div>
-      <a href="biblioteca.html" class="btn btn-secondary">📚 Añadir juegos</a>
+  <div class="page-hero page-hero--pendientes">
+    <div class="page-hero__bg">
+      <div class="page-hero__orb page-hero__orb--1"></div>
+      <div class="page-hero__orb page-hero__orb--2"></div>
+      <div class="page-hero__orb page-hero__orb--3"></div>
     </div>
+    <h1 class="page-hero__title">PENDIENTES</h1>
+    <p class="page-hero__sub">Selecciona un jugador · pulsa ✓ para marcar como jugado</p>
   </div>
 
   <!-- Selector de jugador -->
@@ -248,6 +248,8 @@
       <!-- renderizado por backlog.js -->
     </div>
   </div>
+
+  <a href="biblioteca.html?add=1" class="btn-fab" title="Añadir juego">＋</a>
 
   <footer class="footer">
     <span>REFUGIO 111</span> · David · Javi · Mery · <span id="footerYear"></span>
