@@ -92,22 +92,43 @@ ul, ol { list-style: none; }
   position: relative;
   z-index: 101;
 }
-.nav__logo-img {
+/* ── Logo de dos capas: engranaje gira, interior quieto ── */
+.nav__logo-wrap {
+  position: relative;
   height: 76px;
-  width: auto;
-  display: block;
+  width: 76px;
   margin-bottom: -8px;
-  filter: drop-shadow(0 6px 18px rgba(79,172,254,0.45));
+  flex-shrink: 0;
+}
+.nav__logo-gear,
+.nav__logo-inner {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.nav__logo-gear {
   animation: gearSpin 12s linear infinite;
   transform-origin: center center;
+  filter: drop-shadow(0 6px 18px rgba(79,172,254,0.45));
 }
 @keyframes gearSpin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-.nav__logo:hover .nav__logo-img {
+.nav__logo-inner {
+  pointer-events: none;
+}
+.nav__logo:hover .nav__logo-gear {
   animation: gearSpin 1.8s linear infinite;
   filter: drop-shadow(0 8px 28px rgba(79,172,254,0.85));
+}
+/* Mantener .nav__logo-img por si alguna página aún lo usa */
+.nav__logo-img {
+  height: 76px; width: auto; display: block;
+  margin-bottom: -8px;
+  filter: drop-shadow(0 6px 18px rgba(79,172,254,0.45));
 }
 .nav__links {
   display: flex;
