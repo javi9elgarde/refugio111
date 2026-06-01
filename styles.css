@@ -3692,16 +3692,22 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
   .nav__links { display: none; }
   .nav__year  { display: none; }
   .nav__hamburger { display: flex; }
+  .nav__player-pill { display: none; }   /* ocultar en móvil — va en el menú hamburguesa */
   .top5-grid { grid-template-columns: repeat(3, 1fr); }
   .chart-grid { grid-template-columns: 1fr; }
   .player-compare { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
 }
+/* Logo más pequeño en móvil */
+@media (max-width: 640px) {
+  .nav__logo-img { height: 52px; margin-bottom: 0; }
+  .nav__logo { padding: 0 0.75rem; }
+}
 /* ── MOBILE: hero con paneles spotlight debajo del fondo ── */
 @media (max-width: 640px) {
-  /* El fondo del hero se muestra en ~200px, los paneles fluyen debajo */
+  /* El fondo se muestra completo en móvil */
   .hero.hero--bg {
-    min-height: 200px !important;
+    min-height: 100svh !important;
     padding: 0 !important;
     overflow: visible !important;
   }

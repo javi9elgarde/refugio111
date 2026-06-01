@@ -756,6 +756,7 @@ window.GT.Nav = (function () {
     try {
       var ap = window.GT.getActivePlayer();
       if (ap) {
+        /* ── Pill en nav desktop ── */
         var indicator = document.createElement('button');
         indicator.type  = 'button';
         indicator.title = 'Jugando como ' + ap + ' · Pulsa para cambiar';
@@ -773,6 +774,27 @@ window.GT.Nav = (function () {
         var hamburger = document.getElementById('navHamburger');
         if (nav && hamburger) nav.insertBefore(indicator, hamburger);
         else if (nav) nav.appendChild(indicator);
+
+        /* ── Entrada en menú móvil ── */
+        var mob = document.getElementById('navMobile');
+        if (mob) {
+          var mobPlayer = document.createElement('button');
+          mobPlayer.type = 'button';
+          mobPlayer.className = 'nav__link nav__mobile-player-btn';
+          mobPlayer.style.cssText = 'display:flex;align-items:center;gap:0.6rem;width:100%;border:none;background:rgba(255,255,255,0.04);border-radius:8px;margin-bottom:0.25rem;cursor:pointer;';
+          mobPlayer.innerHTML =
+            '<div style="width:28px;height:28px;border-radius:50%;background:' + (PLAYER_COLORS[ap] || '#666') + ';display:flex;align-items:center;justify-content:center;font-family:Orbitron,sans-serif;font-size:0.7rem;font-weight:900;color:#07070f;flex-shrink:0">' +
+              (PLAYER_INITIALS[ap] || ap[0]) +
+            '</div>' +
+            '<span style="font-size:0.85rem;font-weight:600;color:rgba(232,232,248,0.85)">Jugando como <strong style="color:' + (PLAYER_COLORS[ap] || '#fff') + '">' + ap + '</strong></span>' +
+            '<span style="margin-left:auto;font-size:0.7rem;color:var(--txt3)">cambiar</span>';
+          mobPlayer.addEventListener('click', function(e) {
+            e.stopPropagation();
+            mob.classList.remove('open');
+            togglePlayerSwitchModal(mobPlayer);
+          });
+          mob.insertBefore(mobPlayer, mob.firstChild);
+        }
       }
     } catch(e){}
   }
