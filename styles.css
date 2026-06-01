@@ -1196,9 +1196,9 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 @media (max-width: 768px) {
   .hero--bg {
     background-image: url('fondomovilinicio.png') !important;
-    background-position: center center !important;
+    background-position: top center !important;
     background-size: cover !important;
-    min-height: 100svh;
+    min-height: 100svh !important;
   }
 }
 
@@ -3698,10 +3698,17 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
   .player-compare { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
 }
-/* Logo más pequeño en móvil */
-@media (max-width: 640px) {
-  .nav__logo-img { height: 52px; margin-bottom: 0; }
-  .nav__logo { padding: 0 0.75rem; }
+/* Logo centrado y más pequeño en móvil */
+@media (max-width: 900px) {
+  .nav__logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0;
+    pointer-events: auto;
+  }
+  .nav__logo-img { height: 54px; margin-bottom: 0; }
+  .nav { position: fixed; } /* asegurar contexto para absolute */
 }
 /* ── MOBILE: hero con paneles spotlight debajo del fondo ── */
 @media (max-width: 640px) {
