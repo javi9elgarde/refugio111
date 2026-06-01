@@ -5201,14 +5201,14 @@ html {
 
 @media (max-width: 640px) {
 
-  /* ── HERO INICIO: solo fondo limpio, sin paneles encima ── */
+  /* ── HERO INICIO: fondo completo en móvil ── */
   .hero.hero--bg {
-    min-height: 52vw !important;   /* proporcional: ~195px en un móvil de 375px */
-    max-height: 58vw !important;
+    min-height: 100svh !important;
+    max-height: none !important;
     background-attachment: scroll !important;
     overflow: hidden !important;
     padding: 0 !important;
-    margin-bottom: 0 !important;  /* sin hueco entre hero e imagen */
+    margin-bottom: 0 !important;
   }
   /* Ocultar canvas de partículas en móvil */
   #heroCanvas { display: none; }
