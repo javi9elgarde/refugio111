@@ -98,11 +98,16 @@ ul, ol { list-style: none; }
   display: block;
   margin-bottom: -8px;
   filter: drop-shadow(0 6px 18px rgba(79,172,254,0.45));
-  transition: opacity 0.2s, filter 0.3s;
+  animation: gearSpin 12s linear infinite;
+  transform-origin: center center;
+}
+@keyframes gearSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 .nav__logo:hover .nav__logo-img {
-  opacity: 0.92;
-  filter: drop-shadow(0 8px 24px rgba(79,172,254,0.75));
+  animation: gearSpin 1.8s linear infinite;
+  filter: drop-shadow(0 8px 28px rgba(79,172,254,0.85));
 }
 .nav__links {
   display: flex;
