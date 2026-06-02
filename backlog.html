@@ -19,6 +19,7 @@
     .blg-player-hero {
       display: flex; flex-direction: column; align-items: center;
       gap: 0.5rem; padding: 1.5rem 0 1rem; text-align: center;
+      width: 100%; margin: 0 auto;
     }
     .blg-player-hero__icon {
       width: 88px; height: 88px; border-radius: 50%;
@@ -36,13 +37,14 @@
       animation: heroTitleIn 0.5s 0.2s cubic-bezier(0.22,1,0.36,1) both;
     }
 
-    /* Cabecera del jugador activo (legacy) */
+    /* Cabecera del jugador activo */
     .blg-player-bar {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 1rem;
-      padding: 1.1rem 0 1.25rem;
-      border-bottom: 1px solid var(--border);
+      padding: 0;
+      border-bottom: none;
       margin-bottom: 1.5rem;
     }
     .blg-player-bar__av {
