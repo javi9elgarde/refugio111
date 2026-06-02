@@ -4514,6 +4514,16 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
   gap: 0.35rem;
   margin-bottom: 0.35rem;
 }
+/* Título BINGO unificado — siempre 5 letras a lo ancho, fondo único */
+.bingo-header-row--title {
+  grid-template-columns: repeat(5, 1fr) !important;
+  background: rgba(255,255,255,0.025);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  gap: 0;
+  padding: 0.1rem 0;
+  overflow: hidden;
+}
 .bingo-letter {
   font-family: 'Orbitron', sans-serif;
   font-size: 1.35rem;

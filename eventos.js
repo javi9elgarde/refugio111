@@ -690,13 +690,13 @@
     var winSet   = new Set();
     winLines.forEach(function (line) { line.forEach(function (i) { winSet.add(i); }); });
 
-    /* Letras de cabecera: solo si cols <= 5 */
-    var BINGO_LETTERS = ['B','I','N','G','O','X','Y'];
-    var headerHtml = '';
-    for (var ci = 0; ci < cols; ci++) {
-      var l = BINGO_LETTERS[ci] || (ci + 1);
-      headerHtml += '<div class="bingo-letter bingo-letter--' + (typeof l === 'string' ? l.toLowerCase() : 'n') + '">' + l + '</div>';
-    }
+    /* Cabecera siempre BINGO completo, unificado como título */
+    var headerHtml =
+      '<div class="bingo-letter bingo-letter--b">B</div>' +
+      '<div class="bingo-letter bingo-letter--i">I</div>' +
+      '<div class="bingo-letter bingo-letter--n">N</div>' +
+      '<div class="bingo-letter bingo-letter--g">G</div>' +
+      '<div class="bingo-letter bingo-letter--o">O</div>';
 
     var gridHtml = cells.map(function (cell, i) {
       var marked = !!cell.marcada;
@@ -740,7 +740,7 @@
         '<button class="btn btn-ghost btn-sm bingo-edit-btn" onclick="window.GT_Bingo.openEditCard(\'' + escId(card.id) + '\')">✏️ Editar</button>' +
       '</div>' +
       '<div class="bingo-board">' +
-        '<div class="bingo-header-row" style="grid-template-columns:repeat(' + cols + ',1fr)">' + headerHtml + '</div>' +
+        '<div class="bingo-header-row bingo-header-row--title">' + headerHtml + '</div>' +
         '<div class="bingo-grid" style="grid-template-columns:repeat(' + cols + ',1fr)">' + gridHtml + '</div>' +
       '</div>';
 
