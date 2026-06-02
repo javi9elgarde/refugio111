@@ -283,10 +283,30 @@
       return '<span class="evt-marquee-inner" style="color:' + color + '">'
         + emoji + ' ' + ev.nombre + '</span>';
     }).join(sep);
-    var content = items + sep; // trailing separator before the duplicate
+    var content = items + sep;
     // Duplicate for infinite scroll
     track.innerHTML = content + content;
     wrap.style.display = '';
+
+    // Medir el ancho REAL de una copia y generar keyframe exacto en píxeles
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        var halfW = Math.round(track.scrollWidth / 2);
+        if (!halfW) return;
+        var styleEl = document.getElementById('evtMarqueeKF');
+        if (!styleEl) {
+          styleEl = document.createElement('style');
+          styleEl.id = 'evtMarqueeKF';
+          document.head.appendChild(styleEl);
+        }
+        styleEl.textContent =
+          '@keyframes evtMarqueeScroll{0%{transform:translateX(0)}100%{transform:translateX(-' + halfW + 'px)}}';
+        // Reiniciar animación para que tome el nuevo keyframe
+        track.style.animation = 'none';
+        void track.offsetWidth; // reflow
+        track.style.animation = '';
+      });
+    });
   }
 
   /* ── CARGAR EVENTOS DESDE FIRESTORE ────────────────────────── */
