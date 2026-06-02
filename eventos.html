@@ -572,10 +572,9 @@
         <label class="form-label">Nombre del evento *</label>
         <input type="text" class="form-input" id="bingoModalName" placeholder="Ej: Summer Game Fest 2026" maxlength="80">
       </div>
+      <div class="form-group" id="bingoSizePicker" style="margin-bottom:0.5rem"></div>
       <div class="form-group">
-        <label class="form-label">
-          Predicciones (4×5 · 20 casillas)
-        </label>
+        <label class="form-label" id="bingoGridLabel">Predicciones</label>
         <div id="bingoModalGrid"></div>
       </div>
     </div>
@@ -654,6 +653,24 @@
   0%,100% { transform: rotate(10deg);  opacity: 0.50; }
   50%     { transform: rotate(-17deg); opacity: 0.88; }
 }
+
+/* ── SELECTOR DE TAMAÑO BINGO ─────────────────── */
+#bingoSizePicker { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.bingo-sz-btn {
+  background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 0.5rem 0.6rem; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+  flex: 1; min-width: 70px;
+}
+.bingo-sz-btn:hover { border-color: rgba(79,172,254,0.5); background: rgba(79,172,254,0.06); transform: translateY(-2px); }
+.bingo-sz--active  { border-color: rgba(79,172,254,0.8) !important; background: rgba(79,172,254,0.12) !important; }
+.bingo-sz-grid { display: flex; flex-direction: column; gap: 2px; }
+.bingo-sz-row  { display: flex; gap: 2px; }
+.bingo-sz-cell { width: 8px; height: 8px; border-radius: 2px; background: rgba(255,255,255,0.3); }
+.bingo-sz--active .bingo-sz-cell { background: #4facfe; }
+.bingo-sz-label { font-family: 'Orbitron', sans-serif; font-size: 0.6rem; font-weight: 700; color: var(--txt3); letter-spacing: 0.05em; }
+.bingo-sz--active .bingo-sz-label { color: #4facfe; }
 
 /* ── MARQUESINA ──────────────────────────────────── */
 .evt-marquee-wrap {

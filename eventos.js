@@ -145,15 +145,33 @@
   var _editingEvtId  = null;
   var _prevWasFull   = false;
 
-  /* Líneas ganadoras — grid 5×4 (B-I-N-G-O), solo horizontales y verticales
-     Celdas:  0  1  2  3  4
-              5  6  7  8  9
-             10 11 12 13 14
-             15 16 17 18 19  */
-  var LINES = [
-    [0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],          /* 4 horizontales */
-    [0,5,10,15],[1,6,11,16],[2,7,12,17],[3,8,13,18],[4,9,14,19]          /* 5 verticales   */
+  /* ── Tamaños de bingo disponibles ── */
+  var BINGO_SIZES = [
+    { cols: 3, rows: 3, label: '3×3' },
+    { cols: 4, rows: 4, label: '4×4' },
+    { cols: 5, rows: 5, label: '5×5' },
+    { cols: 5, rows: 4, label: '5×4' },
+    { cols: 3, rows: 4, label: '3×4' },
   ];
+  var _bingoSize = BINGO_SIZES[3]; /* default 5×4 */
+
+  function getLines(cols, rows) {
+    var lines = [];
+    for (var r = 0; r < rows; r++) {
+      var h = [];
+      for (var c = 0; c < cols; c++) h.push(r * cols + c);
+      lines.push(h);
+    }
+    for (var c2 = 0; c2 < cols; c2++) {
+      var v = [];
+      for (var r2 = 0; r2 < rows; r2++) v.push(r2 * cols + c2);
+      lines.push(v);
+    }
+    return lines;
+  }
+
+  /* Legacy: LINES y TOTAL_CELLS para compatibilidad */
+  var LINES = getLines(5, 4);
   var TOTAL_CELLS = 20;
 
   /* ── HELPERS DE COLOR ───────────────────────────────────────── */
@@ -665,15 +683,20 @@
 
   /* ── RENDER TABLERO ─────────────────────────────────────────── */
   function renderBoard(card) {
+    var cols     = card.cols || 5;
+    var rows     = card.rows || 4;
     var cells    = card.cells || [];
-    var winLines = getWinLines(cells);
+    var winLines = getWinLines(cells, cols, rows);
     var winSet   = new Set();
     winLines.forEach(function (line) { line.forEach(function (i) { winSet.add(i); }); });
 
-    var letters    = ['B','I','N','G','O'];
-    var headerHtml = letters.map(function (l) {
-      return '<div class="bingo-letter bingo-letter--' + l.toLowerCase() + '">' + l + '</div>';
-    }).join('');
+    /* Letras de cabecera: solo si cols <= 5 */
+    var BINGO_LETTERS = ['B','I','N','G','O','X','Y'];
+    var headerHtml = '';
+    for (var ci = 0; ci < cols; ci++) {
+      var l = BINGO_LETTERS[ci] || (ci + 1);
+      headerHtml += '<div class="bingo-letter bingo-letter--' + (typeof l === 'string' ? l.toLowerCase() : 'n') + '">' + l + '</div>';
+    }
 
     var gridHtml = cells.map(function (cell, i) {
       var marked = !!cell.marcada;
@@ -717,8 +740,8 @@
         '<button class="btn btn-ghost btn-sm bingo-edit-btn" onclick="window.GT_Bingo.openEditCard(\'' + escId(card.id) + '\')">✏️ Editar</button>' +
       '</div>' +
       '<div class="bingo-board">' +
-        '<div class="bingo-header-row">' + headerHtml + '</div>' +
-        '<div class="bingo-grid">' + gridHtml + '</div>' +
+        '<div class="bingo-header-row" style="grid-template-columns:repeat(' + cols + ',1fr)">' + headerHtml + '</div>' +
+        '<div class="bingo-grid" style="grid-template-columns:repeat(' + cols + ',1fr)">' + gridHtml + '</div>' +
       '</div>';
 
     renderStats(winLines, marked, total);
@@ -730,8 +753,9 @@
     }
   }
 
-  function getWinLines(cells) {
-    return LINES.filter(function (line) {
+  function getWinLines(cells, cols, rows) {
+    var lines = getLines(cols || 5, rows || 4);
+    return lines.filter(function (line) {
       return line.every(function (i) { return cells[i] && cells[i].marcada; });
     });
   }
@@ -950,11 +974,13 @@
   /* ── MODAL CREAR / EDITAR BINGO ─────────────────────────────── */
   function openNewCardModal() {
     _editingCardId = null;
+    _bingoSize = BINGO_SIZES[3]; /* reset a 5×4 */
     var ev = _events[_currentEvtIdx] || {};
     document.getElementById('bingoModalHeading').textContent = 'Nuevo Bingo — ' + (ev.nombre || '');
     document.getElementById('bingoModalName').value = ev.nombre || '';
     document.getElementById('bingoModalDelete').style.display = 'none';
-    buildModalGrid(null);
+    buildSizePicker(true);
+    buildModalGrid(null, _bingoSize.cols, _bingoSize.rows);
     document.getElementById('bingoModalOverlay').classList.add('open');
     document.getElementById('bingoModalName').focus();
     document.getElementById('bingoModalName').select();
@@ -968,15 +994,47 @@
       document.getElementById('bingoModalHeading').textContent = 'Editar Bingo';
       document.getElementById('bingoModalName').value = data.titulo || '';
       document.getElementById('bingoModalDelete').style.display = 'inline-flex';
-      buildModalGrid(data.cells || null);
+      buildSizePicker(false);
+      buildModalGrid(data.cells || null, data.cols || 5, data.rows || 4);
       document.getElementById('bingoModalOverlay').classList.add('open');
     });
   }
 
-  function buildModalGrid(existingCells) {
+  function buildSizePicker(editable) {
+    var wrap = document.getElementById('bingoSizePicker');
+    if (!wrap) return;
+    wrap.style.display = editable ? '' : 'none';
+    if (!editable) return;
+    wrap.innerHTML = BINGO_SIZES.map(function(sz) {
+      var sel = (sz.cols === _bingoSize.cols && sz.rows === _bingoSize.rows) ? ' bingo-sz--active' : '';
+      var miniRows = '';
+      for (var r = 0; r < sz.rows; r++) {
+        miniRows += '<div class="bingo-sz-row">';
+        for (var c = 0; c < sz.cols; c++) miniRows += '<div class="bingo-sz-cell"></div>';
+        miniRows += '</div>';
+      }
+      return '<button class="bingo-sz-btn' + sel + '" data-cols="' + sz.cols + '" data-rows="' + sz.rows + '">' +
+        '<div class="bingo-sz-grid">' + miniRows + '</div>' +
+        '<span class="bingo-sz-label">' + sz.label + '</span>' +
+      '</button>';
+    }).join('');
+    wrap.querySelectorAll('.bingo-sz-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        _bingoSize = BINGO_SIZES.find(function(s){ return s.cols === +btn.dataset.cols && s.rows === +btn.dataset.rows; }) || _bingoSize;
+        wrap.querySelectorAll('.bingo-sz-btn').forEach(function(b){ b.classList.remove('bingo-sz--active'); });
+        btn.classList.add('bingo-sz--active');
+        buildModalGrid(null, _bingoSize.cols, _bingoSize.rows);
+      });
+    });
+  }
+
+  function buildModalGrid(existingCells, cols, rows) {
+    cols = cols || 5; rows = rows || 4;
+    var total = cols * rows;
     var container = document.getElementById('bingoModalGrid');
+    container.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
     container.innerHTML = '';
-    for (var i = 0; i < TOTAL_CELLS; i++) {
+    for (var i = 0; i < total; i++) {
       var cell = existingCells ? existingCells[i] : null;
       var wrap = document.createElement('div');
       wrap.className = 'bingo-modal-cell';
@@ -994,7 +1052,7 @@
       imgInp.className = 'bingo-modal-input bingo-modal-input--img';
       imgInp.dataset.idx = i;
       imgInp.value = cell ? (cell.imageUrl || '') : '';
-      imgInp.placeholder = '🖼 URL imagen…';
+      imgInp.placeholder = '🖼 URL…';
 
       wrap.appendChild(inp);
       wrap.appendChild(imgInp);
@@ -1016,7 +1074,8 @@
     } else {
       var ev = _events[_currentEvtIdx] || {};
       db.collection('bingo_cards').add({
-        titulo: nombre, eventoId: ev.id, jugador: _player, cells: cells,
+        titulo: nombre, eventoId: ev.id, jugador: _player,
+        cols: _bingoSize.cols, rows: _bingoSize.rows, cells: cells,
         createdAt: window.firebase.firestore.FieldValue.serverTimestamp()
       }).then(function (ref) { _activeCardId = ref.id; closeCardModal(); });
     }

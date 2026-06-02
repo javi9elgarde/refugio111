@@ -10,9 +10,9 @@
   var Toast      = window.GT.Toast;
 
   var PLAYERS = [
-    { key: 'David', name: 'David Garde',   initial: 'D', color: 'var(--player-david)', hex: '#3b82f6' },
-    { key: 'Javi',  name: 'Javier Garde',  initial: 'J', color: 'var(--player-javi)',  hex: '#9b1742' },
-    { key: 'Mery',  name: 'Mariam Moreno', initial: 'M', color: 'var(--player-mery)',  hex: '#9b59ff' }
+    { key: 'David', name: 'David Garde',   initial: 'D', color: 'var(--player-david)', hex: '#3b82f6', icon: 'icondavidneutral.png' },
+    { key: 'Javi',  name: 'Javier Garde',  initial: 'J', color: 'var(--player-javi)',  hex: '#9b1742', icon: 'iconjavineutral.png'  },
+    { key: 'Mery',  name: 'Mariam Moreno', initial: 'M', color: 'var(--player-mery)',  hex: '#9b59ff', icon: 'iconmeryneutral.png'  }
   ];
 
   var SORT_STATES = [
@@ -119,15 +119,15 @@
     /* ── Player bar ── */
     var bar = document.getElementById('blgPlayerBar');
     if (bar) {
-      bar.style.display = 'flex';
+      bar.style.display = '';
       bar.style.setProperty('--pc', color);
       bar.innerHTML =
-        '<div class="blg-player-bar__av" style="background:' + hex + ';box-shadow:0 2px 20px -4px ' + hex + '">' +
-          playerData.initial +
-        '</div>' +
-        '<div>' +
-          '<div class="blg-player-bar__name">' + Utils.escapeHtml(playerData.name) + '</div>' +
-          '<div class="blg-player-bar__count">' +
+        '<div class="blg-player-hero">' +
+          '<img class="blg-player-hero__icon" src="' + (playerData.icon || '') + '" alt="' + playerData.name + '" onerror="this.style.display=\'none\'">' +
+          '<div class="blg-player-hero__name" style="color:' + hex + ';text-shadow:0 0 24px ' + hex + '88">' +
+            Utils.escapeHtml(playerData.name) +
+          '</div>' +
+          '<div class="blg-player-hero__count">' +
             pendingGames.length + ' juego' + (pendingGames.length !== 1 ? 's' : '') +
             ' pendiente' + (pendingGames.length !== 1 ? 's' : '') +
           '</div>' +
