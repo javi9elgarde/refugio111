@@ -91,53 +91,6 @@
     render();
   }
 
-  /* ── BURBUJA CAMBIO DE JUGADOR ─────────────────────────────── */
-  var _bubbleOpen = false;
-
-  function toggleBubble(currentPlayer) {
-    var bubble = document.getElementById('blgPlayerBubble');
-    if (!bubble) return;
-    if (_bubbleOpen) { closeBubble(); return; }
-
-    var others = PLAYERS.filter(function(p) { return p.key !== currentPlayer.key; });
-    bubble.innerHTML = others.map(function(p) {
-      return '<div class="blg-bubble-player" data-key="' + p.key + '" style="--bc:' + p.hex + '">' +
-        '<img class="blg-bubble-player__icon" src="' + p.icon + '" alt="' + p.name + '" style="border-color:' + p.hex + '66" onerror="this.style.display=\'none\'">' +
-        '<span class="blg-bubble-player__name" style="color:' + p.hex + '">' + p.key + '</span>' +
-      '</div>';
-    }).join('');
-    bubble.style.display = 'flex';
-    _bubbleOpen = true;
-
-    bubble.querySelectorAll('.blg-bubble-player').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        state.player = btn.dataset.key;
-        closeBubble();
-        render();
-        /* Sincronizar jugador activo global */
-        if (window.GT && window.GT.setActivePlayer) window.GT.setActivePlayer(state.player);
-      });
-    });
-
-    /* Cerrar al clicar fuera */
-    setTimeout(function() {
-      document.addEventListener('click', closeBubbleOutside);
-    }, 0);
-  }
-
-  function closeBubble() {
-    var bubble = document.getElementById('blgPlayerBubble');
-    if (bubble) bubble.style.display = 'none';
-    _bubbleOpen = false;
-    document.removeEventListener('click', closeBubbleOutside);
-  }
-
-  function closeBubbleOutside(e) {
-    var bubble = document.getElementById('blgPlayerBubble');
-    if (bubble && !bubble.contains(e.target)) closeBubble();
-  }
-
   /* ── RENDER ──────────────────────────────────────────────────── */
   function render() {
     var playerData = PLAYERS.find(function(p) { return p.key === state.player; });
@@ -170,11 +123,26 @@
       bar.style.setProperty('--pc', color);
       var sortIdx   = SORT_STATES.findIndex(function(s){ return s.key === state.sort; });
       var sortLabel = SORT_STATES[sortIdx] ? SORT_STATES[sortIdx].label : '⏱ A–Z';
+
+      /* Ordenar: activo en el centro, los otros a los lados */
+      var others = PLAYERS.filter(function(p) { return p.key !== playerData.key; });
+      var left = others[0], right = others[1];
+
+      function playerSlot(p, isActive) {
+        var cls = 'blg-trio-player blg-trio-player--' + (isActive ? 'active' : 'side');
+        var borderStyle = 'border-color:' + p.hex + (isActive ? 'aa' : '44');
+        return '<div class="' + cls + '" data-key="' + p.key + '">' +
+          '<img class="blg-trio-icon" src="' + p.icon + '" alt="' + p.name + '" style="' + borderStyle + '" onerror="this.style.display=\'none\'">' +
+          '<span class="blg-trio-player__name" style="color:' + p.hex + '">' + p.key + '</span>' +
+        '</div>';
+      }
+
       bar.innerHTML =
-        '<div class="blg-player-hero">' +
-          '<div class="blg-player-hero__icon-wrap" id="blgIconWrap">' +
-            '<img class="blg-player-hero__icon" src="' + (playerData.icon || '') + '" alt="' + playerData.name + '" style="border-color:' + hex + '66" onerror="this.style.display=\'none\'">' +
-            '<span class="blg-player-hero__switch-hint">⇄</span>' +
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;width:100%">' +
+          '<div class="blg-player-trio">' +
+            playerSlot(left, false) +
+            playerSlot(playerData, true) +
+            playerSlot(right, false) +
           '</div>' +
           '<div class="blg-player-hero__name" style="color:' + hex + ';text-shadow:0 0 24px ' + hex + '44">' +
             Utils.escapeHtml(playerData.name) +
@@ -183,15 +151,17 @@
             '<span class="blg-player-hero__count">' +
               pendingGames.length + ' juego' + (pendingGames.length !== 1 ? 's' : '') + ' pendiente' + (pendingGames.length !== 1 ? 's' : '') +
             '</span>' +
-            '<button class="btn btn-ghost btn-sm btn--compact" id="blgSortBtn" style="font-size:0.72rem;padding:0.2rem 0.55rem" title="Cambiar orden">' + sortLabel + '</button>' +
+            '<button class="btn btn-ghost btn-sm btn--compact" id="blgSortBtn" style="font-size:0.72rem;padding:0.2rem 0.55rem">' + sortLabel + '</button>' +
           '</div>' +
         '</div>';
 
-      /* Click en icono → burbuja */
-      var iconWrap = document.getElementById('blgIconWrap');
-      if (iconWrap) iconWrap.addEventListener('click', function(e) {
-        e.stopPropagation();
-        toggleBubble(playerData);
+      /* Clic en jugadores laterales → cambiar */
+      bar.querySelectorAll('.blg-trio-player--side').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          state.player = btn.dataset.key;
+          if (window.GT && window.GT.setActivePlayer) window.GT.setActivePlayer(state.player);
+          render();
+        });
       });
 
       /* Sort button */
