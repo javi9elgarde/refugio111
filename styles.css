@@ -154,8 +154,7 @@ ul, ol { list-style: none; }
 .nav__hub-solo {
   flex-shrink: 0;
   margin-right: 0.35rem;
-  padding-right: 1.1rem;
-  border-right: 1px solid rgba(0,255,136,0.12);
+  text-align: center;
 }
 /* Indicador de evento HOY — punto rojo pulsante en el link Eventos */
 .nav__link--event-today {
