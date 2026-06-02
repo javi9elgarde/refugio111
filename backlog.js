@@ -91,6 +91,53 @@
     render();
   }
 
+  /* ── BURBUJA CAMBIO DE JUGADOR ─────────────────────────────── */
+  var _bubbleOpen = false;
+
+  function toggleBubble(currentPlayer) {
+    var bubble = document.getElementById('blgPlayerBubble');
+    if (!bubble) return;
+    if (_bubbleOpen) { closeBubble(); return; }
+
+    var others = PLAYERS.filter(function(p) { return p.key !== currentPlayer.key; });
+    bubble.innerHTML = others.map(function(p) {
+      return '<div class="blg-bubble-player" data-key="' + p.key + '" style="--bc:' + p.hex + '">' +
+        '<img class="blg-bubble-player__icon" src="' + p.icon + '" alt="' + p.name + '" style="border-color:' + p.hex + '66" onerror="this.style.display=\'none\'">' +
+        '<span class="blg-bubble-player__name" style="color:' + p.hex + '">' + p.key + '</span>' +
+      '</div>';
+    }).join('');
+    bubble.style.display = 'flex';
+    _bubbleOpen = true;
+
+    bubble.querySelectorAll('.blg-bubble-player').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        state.player = btn.dataset.key;
+        closeBubble();
+        render();
+        /* Sincronizar jugador activo global */
+        if (window.GT && window.GT.setActivePlayer) window.GT.setActivePlayer(state.player);
+      });
+    });
+
+    /* Cerrar al clicar fuera */
+    setTimeout(function() {
+      document.addEventListener('click', closeBubbleOutside);
+    }, 0);
+  }
+
+  function closeBubble() {
+    var bubble = document.getElementById('blgPlayerBubble');
+    if (bubble) bubble.style.display = 'none';
+    _bubbleOpen = false;
+    document.removeEventListener('click', closeBubbleOutside);
+  }
+
+  function closeBubbleOutside(e) {
+    var bubble = document.getElementById('blgPlayerBubble');
+    if (bubble && !bubble.contains(e.target)) closeBubble();
+  }
+
   /* ── RENDER ──────────────────────────────────────────────────── */
   function render() {
     var playerData = PLAYERS.find(function(p) { return p.key === state.player; });
@@ -121,17 +168,39 @@
     if (bar) {
       bar.style.display = '';
       bar.style.setProperty('--pc', color);
+      var sortIdx   = SORT_STATES.findIndex(function(s){ return s.key === state.sort; });
+      var sortLabel = SORT_STATES[sortIdx] ? SORT_STATES[sortIdx].label : '⏱ A–Z';
       bar.innerHTML =
         '<div class="blg-player-hero">' +
-          '<img class="blg-player-hero__icon" src="' + (playerData.icon || '') + '" alt="' + playerData.name + '" onerror="this.style.display=\'none\'">' +
-          '<div class="blg-player-hero__name" style="color:' + hex + ';text-shadow:0 0 24px ' + hex + '88">' +
+          '<div class="blg-player-hero__icon-wrap" id="blgIconWrap">' +
+            '<img class="blg-player-hero__icon" src="' + (playerData.icon || '') + '" alt="' + playerData.name + '" style="border-color:' + hex + '66" onerror="this.style.display=\'none\'">' +
+            '<span class="blg-player-hero__switch-hint">⇄</span>' +
+          '</div>' +
+          '<div class="blg-player-hero__name" style="color:' + hex + ';text-shadow:0 0 24px ' + hex + '44">' +
             Utils.escapeHtml(playerData.name) +
           '</div>' +
-          '<div class="blg-player-hero__count">' +
-            pendingGames.length + ' juego' + (pendingGames.length !== 1 ? 's' : '') +
-            ' pendiente' + (pendingGames.length !== 1 ? 's' : '') +
+          '<div class="blg-player-hero__meta">' +
+            '<span class="blg-player-hero__count">' +
+              pendingGames.length + ' juego' + (pendingGames.length !== 1 ? 's' : '') + ' pendiente' + (pendingGames.length !== 1 ? 's' : '') +
+            '</span>' +
+            '<button class="btn btn-ghost btn-sm btn--compact" id="blgSortBtn" style="font-size:0.72rem;padding:0.2rem 0.55rem" title="Cambiar orden">' + sortLabel + '</button>' +
           '</div>' +
         '</div>';
+
+      /* Click en icono → burbuja */
+      var iconWrap = document.getElementById('blgIconWrap');
+      if (iconWrap) iconWrap.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleBubble(playerData);
+      });
+
+      /* Sort button */
+      var sortBtn = document.getElementById('blgSortBtn');
+      if (sortBtn) sortBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        state.sort = SORT_STATES[(sortIdx + 1) % SORT_STATES.length].key;
+        render();
+      });
     }
 
     /* ── Game grid ── */
@@ -317,14 +386,9 @@
 
     /* Pre-select active player */
     var ap = window.GT && window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;
-    if (ap && ap !== 'All') { state.player = ap; }
-
-    var radio = document.querySelector('#blgPlayerCards input[value="' + state.player + '"]');
-    if (radio) radio.checked = true;
+    if (ap && ap !== 'All') state.player = ap;
 
     injectDoneModal();
-    initPlayerTabs();
-    initSortBtn();
     render();
   }
 
