@@ -1167,7 +1167,7 @@
       '</div>';
     }
 
-    var portada = game.portada || '';
+    var portada = game.portadaUrl || game.portada || '';
     var titulo  = game.titulo  || '';
 
     return '<div class="' + cardCls + '">' +
