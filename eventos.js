@@ -222,6 +222,9 @@
 
   /* ── INIT ───────────────────────────────────────────────────── */
   function init() {
+    var fy = document.getElementById('footerYear');
+    if (fy) fy.textContent = new Date().getFullYear();
+
     waitForDb(function (firedb) {
       db = firedb;
       loadEvents();
