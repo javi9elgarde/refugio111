@@ -417,7 +417,7 @@
     var endDiff  = (target + durMs) - Date.now(); /* tiempo hasta que termina */
     var isLive   = diff <= 0 && endDiff > 0;      /* entre inicio y fin */
     var isOver   = endDiff <= 0 && diff <= 0;     /* ya terminó */
-    var badgeText = isLive ? '🔴 EN DIRECTO' : isOver ? '' : (diff < 86400000 ? '¡HOY!' : 'PRÓXIMAMENTE');
+    var badgeText = isLive ? '🔴 EN DIRECTO' : isOver ? '✅ FINALIZADO' : (diff < 86400000 ? '¡HOY!' : 'PRÓXIMAMENTE');
     var badgeCls  = isLive ? 'evt-badge evt-badge--live' : 'evt-badge';
 
     var visualHtml = ev.img
@@ -502,7 +502,7 @@
         ['evtCdDays','evtCdHours','evtCdMins','evtCdSecs'].forEach(function(id) {
           var el = document.getElementById(id); if (el) el.textContent = '00';
         });
-        if (badge) { badge.textContent = ''; badge.classList.remove('evt-badge--live'); }
+        if (badge) { badge.textContent = '✅ FINALIZADO'; badge.classList.remove('evt-badge--live'); badge.classList.add('evt-badge--over'); }
         return;
       }
       if (isLive) {
