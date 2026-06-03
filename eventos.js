@@ -648,7 +648,7 @@
 
   function setActiveCard(cardId) {
     _activeCardId  = cardId;
-    _prevWinCount  = 0;
+    _prevWinCount  = -1;   /* -1 = primera carga, no disparar celebración */
     _prevWasFull   = false;
     renderTabs(getCardsForEvent(_currentEvtIdx));
     if (_unsubCard) _unsubCard();
@@ -728,7 +728,8 @@
 
     var marked      = cells.filter(function (c) { return c.marcada && !c.libre; }).length;
     var total       = cells.filter(function (c) { return !c.libre; }).length;
-    var prevWins    = _prevWinCount;
+    var firstLoad   = (_prevWinCount === -1);  /* primera carga: no celebrar */
+    var prevWins    = firstLoad ? winLines.length : _prevWinCount;
     _prevWinCount   = winLines.length;
     var isFullBingo = (total > 0 && marked === total);
     var prevFull    = _prevWasFull;
@@ -1123,8 +1124,22 @@
     if (!ev) { section.style.display = 'none'; return; }
 
     /* Esperar a que la biblioteca esté cargada */
-    if (!window.GT || !window.GT._cache || !Array.isArray(window.GT._cache.biblioteca)) {
-      setTimeout(function() { renderTop5(evtIdx); }, 200);
+    if (!window.GT || !window.GT._cache || !Array.isArray(window.GT._cache.biblioteca) || window.GT._cache.biblioteca.length === 0) {
+      if (window.GT && window.GT.onDataReady) {
+        window.GT.onDataReady(function() { renderTop5(evtIdx); });
+      } else {
+        /* fallback: reintentar con backoff */
+        var _t5Tries = 0;
+        var _t5Retry = function() {
+          _t5Tries++;
+          if (window.GT && window.GT._cache && Array.isArray(window.GT._cache.biblioteca) && window.GT._cache.biblioteca.length > 0) {
+            renderTop5(evtIdx);
+          } else if (_t5Tries < 20) {
+            setTimeout(_t5Retry, 300);
+          }
+        };
+        setTimeout(_t5Retry, 300);
+      }
       return;
     }
 
