@@ -341,13 +341,34 @@
         }
         _events = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
 
-        /* Índice inicial: primer evento no archivado */
-        var firstActive = _events.length - 1;
-        for (var i = 0; i < _events.length; i++) {
-          if (!isHistoric(_events[i])) { firstActive = i; break; }
+        /* Índice inicial: en directo > próximo más cercano > más reciente pasado */
+        var bestIdx = _currentEvtIdx;
+        if (_currentEvtIdx >= _events.length || _currentEvtIdx === 0) {
+          var now = Date.now();
+          var liveIdx    = -1;  /* evento en directo */
+          var nextIdx    = -1;  /* próximo evento más cercano */
+          var nextDiff   = Infinity;
+          var recentIdx  = -1;  /* evento pasado más reciente */
+          var recentTime = -Infinity;
+
+          _events.forEach(function(ev, i) {
+            var t = new Date(ev.isoDate).getTime();
+            var diff = t - now;
+            if (diff <= 0 && (t + 14400000) > now) { /* en directo (ventana de 4h) */
+              liveIdx = i;
+            } else if (diff > 0 && diff < nextDiff) { /* próximo */
+              nextDiff = diff; nextIdx = i;
+            } else if (diff <= 0 && t > recentTime && !isHistoric(ev)) { /* reciente pasado */
+              recentTime = t; recentIdx = i;
+            }
+          });
+
+          bestIdx = liveIdx !== -1 ? liveIdx
+                  : nextIdx !== -1 ? nextIdx
+                  : recentIdx !== -1 ? recentIdx
+                  : 0;
+          _currentEvtIdx = bestIdx;
         }
-        /* Solo reposicionar si es la primera carga o el índice es inválido */
-        if (_currentEvtIdx >= _events.length) _currentEvtIdx = firstActive;
 
         renderFeaturedEvent(_currentEvtIdx);
         renderCarouselDots();
