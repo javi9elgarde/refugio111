@@ -828,6 +828,7 @@
     var isFullBingo = (total > 0 && marked === total);
     var prevFull    = _prevWasFull;
     _prevWasFull    = isFullBingo;
+
     document.getElementById('bingoBoardWrap').innerHTML =
       '<div class="bingo-evento-title">' +
         escHtml(card.titulo) +
@@ -1064,6 +1065,97 @@
       });
     } catch(e){}
   }
+
+  /* ── MODAL CREAR / EDITAR BINGO ─────────────────────────────── */
+  function openNewCardModal() {
+    _editingCardId = null;
+    _bingoSize = BINGO_SIZES[3]; /* reset a 5×4 */
+    var ev = _events[_currentEvtIdx] || {};
+    document.getElementById('bingoModalHeading').textContent = 'Nuevo Bingo — ' + (ev.nombre || '');
+    document.getElementById('bingoModalName').value = ev.nombre || '';
+    document.getElementById('bingoModalDelete').style.display = 'none';
+    buildSizePicker(true);
+    buildModalGrid(null, _bingoSize.cols, _bingoSize.rows);
+    document.getElementById('bingoModalOverlay').classList.add('open');
+    document.getElementById('bingoModalName').focus();
+    document.getElementById('bingoModalName').select();
+  }
+
+  function openEditCard(cardId) {
+    db.collection('bingo_cards').doc(cardId).get().then(function (doc) {
+      if (!doc.exists) return;
+      var data = doc.data();
+      _editingCardId = cardId;
+      document.getElementById('bingoModalHeading').textContent = 'Editar Bingo';
+      document.getElementById('bingoModalName').value = data.titulo || '';
+      document.getElementById('bingoModalDelete').style.display = 'inline-flex';
+      buildSizePicker(false);
+      buildModalGrid(data.cells || null, data.cols || 5, data.rows || 4);
+      document.getElementById('bingoModalOverlay').classList.add('open');
+    });
+  }
+
+  function buildSizePicker(editable) {
+    var wrap = document.getElementById('bingoSizePicker');
+    if (!wrap) return;
+    wrap.style.display = editable ? '' : 'none';
+    if (!editable) return;
+    wrap.innerHTML = BINGO_SIZES.map(function(sz) {
+      var sel = (sz.cols === _bingoSize.cols && sz.rows === _bingoSize.rows) ? ' bingo-sz--active' : '';
+      var miniRows = '';
+      for (var r = 0; r < sz.rows; r++) {
+        miniRows += '<div class="bingo-sz-row">';
+        for (var c = 0; c < sz.cols; c++) miniRows += '<div class="bingo-sz-cell"></div>';
+        miniRows += '</div>';
+      }
+      return '<button class="bingo-sz-btn' + sel + '" data-cols="' + sz.cols + '" data-rows="' + sz.rows + '">' +
+        '<div class="bingo-sz-grid">' + miniRows + '</div>' +
+        '<span class="bingo-sz-label">' + sz.label + ' — ' + sz.desc + '</span>' +
+        (sz.hint ? '<span class="bingo-sz-hint">' + sz.hint + '</span>' : '') +
+      '</button>';
+    }).join('');
+    wrap.querySelectorAll('.bingo-sz-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        _bingoSize = BINGO_SIZES.find(function(s){ return s.cols === +btn.dataset.cols && s.rows === +btn.dataset.rows; }) || _bingoSize;
+        wrap.querySelectorAll('.bingo-sz-btn').forEach(function(b){ b.classList.remove('bingo-sz--active'); });
+        btn.classList.add('bingo-sz--active');
+        buildModalGrid(null, _bingoSize.cols, _bingoSize.rows);
+      });
+    });
+  }
+
+  function buildModalGrid(existingCells, cols, rows) {
+    cols = cols || 5; rows = rows || 4;
+    var total = cols * rows;
+    var container = document.getElementById('bingoModalGrid');
+    container.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+    container.innerHTML = '';
+    for (var i = 0; i < total; i++) {
+      var cell = existingCells ? existingCells[i] : null;
+      var wrap = document.createElement('div');
+      wrap.className = 'bingo-modal-cell';
+      wrap.dataset.idx = i;
+
+      var inp = document.createElement('input');
+      inp.type = 'text'; inp.maxLength = 60;
+      inp.className = 'bingo-modal-input bingo-modal-input--text';
+      inp.dataset.idx = i;
+      inp.value = cell ? (cell.texto || '') : '';
+      inp.placeholder = 'Texto…';
+
+      var imgInp = document.createElement('input');
+      imgInp.type = 'url';
+      imgInp.className = 'bingo-modal-input bingo-modal-input--img';
+      imgInp.dataset.idx = i;
+      imgInp.value = cell ? (cell.imageUrl || '') : '';
+      imgInp.placeholder = '🖼 URL…';
+
+      wrap.appendChild(inp);
+      wrap.appendChild(imgInp);
+      container.appendChild(wrap);
+    }
+  }
+
   function saveCardModal() {
     var nombre = document.getElementById('bingoModalName').value.trim();
     if (!nombre) { document.getElementById('bingoModalName').focus(); return; }
@@ -1314,7 +1406,8 @@
     saveCardModal    : saveCardModal,
     closeCardModal   : closeCardModal,
     deleteCard       : deleteCard,
-    resetMarks       : resetMarks,    openCreateEventModal: openCreateEventModal,
+    resetMarks       : resetMarks,
+    openCreateEventModal: openCreateEventModal,
     openEditEventModal : openEditEventModal,
     closeEditEventModal: closeEditEventModal,
     saveEditEventModal : saveEditEventModal,
