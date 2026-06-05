@@ -199,7 +199,7 @@
     var ev = _events[idx];
     if (!ev) return [];
     return _cards.filter(function (c) {
-      return (c.eventoId === ev.id || (!c.eventoId && idx === 0)) && c.jugador === _player;
+      return c.eventoId === ev.id && c.jugador === _player;
     });
   }
 
@@ -207,7 +207,7 @@
     var ev = _events[idx];
     if (!ev) return false;
     return _cards.some(function(c) {
-      return (c.eventoId === ev.id || (!c.eventoId && idx === 0)) && c.jugador === _player;
+      return c.eventoId === ev.id && c.jugador === _player;
     });
   }
 
