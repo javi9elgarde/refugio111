@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20260605a">
+  <link rel="stylesheet" href="mt-styles.css?v=20260605b">
 </head>
 <body>
 
@@ -118,10 +118,29 @@
 
 </div>
 
+<!-- ════════════════════════════════════════════
+     MODAL: REGISTRAR ESTADO / NOTA
+═══════════════════════════════════════════════ -->
+<div class="mt-modal-overlay" id="regModal">
+  <div class="mt-modal" style="max-width:480px">
+    <div class="mt-modal__header">
+      <h2 class="mt-modal__title" id="regModalTitle">Registrar</h2>
+      <button class="mt-modal__close" id="regModalClose">✕</button>
+    </div>
+    <div class="mt-modal__body">
+      <div class="mt-player-rows" id="regPlayerRows"></div>
+    </div>
+    <div class="mt-modal__footer">
+      <button class="mt-btn mt-btn--secondary" id="regCancel">Cancelar</button>
+      <button class="mt-btn mt-btn--primary"   id="regSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
-<script src="mt-main.js?v=20260522a"         defer></script>
-<script src="mt-registro.js?v=20260605a"     defer></script>
+<script src="mt-main.js?v=20260605b"         defer></script>
+<script src="mt-registro.js?v=20260605b"     defer></script>
 </body>
 </html>

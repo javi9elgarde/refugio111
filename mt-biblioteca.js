@@ -116,6 +116,7 @@
     document.getElementById('labelDirector').textContent = isFilm ? 'Director' : 'Estudio';
     document.getElementById('labelDuracion').textContent = isFilm ? 'Duración (min)' : 'Temporadas';
     document.getElementById('groupEpisodios').style.display = isFilm ? 'none' : '';
+    document.getElementById('groupPlataforma').style.display = isFilm ? 'none' : '';
     document.getElementById('fDirector').placeholder = isFilm ? 'Ej: Denis Villeneuve' : 'Ej: MAPPA, Toei';
   }
 
@@ -325,7 +326,6 @@
     _selGeneros = []; _selPlats = [];
     document.getElementById('btnDelete').style.display = 'none';
     buildChips();
-    buildPlayerRows(null);
     document.getElementById('editModal').classList.add('open');
     document.getElementById('fTitulo').focus();
   }
@@ -348,7 +348,6 @@
     _selPlats   = item.plataforma ? [item.plataforma] : [];
     document.getElementById('btnDelete').style.display = 'inline-flex';
     buildChips();
-    buildPlayerRows(item.jugadores || null);
     document.getElementById('editModal').classList.add('open');
   }
 
@@ -423,31 +422,18 @@
     var isFilm = cat === 'peliculas';
     var dirKey = isFilm ? 'director' : 'estudio';
 
-    var jugadores = {};
-    ['David', 'Javi', 'Mery'].forEach(function (p) {
-      var estadoEl = document.getElementById('fEstado' + p);
-      var notaEl   = document.getElementById('fNota' + p);
-      var epEl     = document.getElementById('fEp' + p);
-      var estado   = estadoEl ? estadoEl.value : '';
-      var nota     = notaEl && notaEl.value !== '' ? parseFloat(notaEl.value) : null;
-      var ep       = epEl && epEl.value !== '' ? parseInt(epEl.value) : null;
-      jugadores[p] = { estado: estado, nota: nota };
-      if (!isFilm) jugadores[p].episodio = ep;
-    });
-
     var data = {
       tipo      : cat,
       titulo    : titulo,
       portadaUrl: document.getElementById('fPortada').value.trim() || null,
       anio      : parseInt(document.getElementById('fAnio').value) || null,
       duracion  : parseFloat(document.getElementById('fDuracion').value) || null,
-      generos   : _selGeneros.slice(),
-      plataforma: _selPlats[0] || null,
-      jugadores : jugadores
+      generos   : _selGeneros.slice()
     };
     data[dirKey] = document.getElementById('fDirector').value.trim() || null;
     if (!isFilm) {
-      data.episodios = parseInt(document.getElementById('fEpisodios').value) || null;
+      data.plataforma = _selPlats[0] || null;
+      data.episodios  = parseInt(document.getElementById('fEpisodios').value) || null;
     }
 
     var db = window.MT.getDb();

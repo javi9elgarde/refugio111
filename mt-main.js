@@ -13,10 +13,8 @@ window.MT = window.MT || {};
   /* ── GÉNEROS POR CATEGORÍA ──────────────────────────────── */
   var GENEROS = {
     peliculas: [
-      'Acción', 'Aventura', 'Animación', 'Ciencia ficción', 'Comedia',
-      'Drama', 'Fantásía', 'Horror', 'Musical', 'Misterio',
-      'Romance', 'Suspense', 'Terror', 'Thriller', 'Western',
-      'Documental', 'Biográfico', 'Histórico', 'Superhéroes', 'Deportes'
+      'Acción', 'Terror', 'Animación', 'Comedia', 'Drama',
+      'Blockbuster', 'Fantasía', 'Musical', 'Suspense', 'Romántica'
     ],
     series: [
       'Acción', 'Aventura', 'Comedia', 'Crimen', 'Ciencia ficción',

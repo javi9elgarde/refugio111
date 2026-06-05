@@ -1,15 +1,16 @@
 /* ============================================================
    MEDIA TRACKER — Registro (actividad reciente)
-   Version: 20260605a
+   Version: 20260605b
    ============================================================ */
 (function () {
   'use strict';
 
-  var _items      = [];
-  var _unsub      = null;
+  var _items        = [];
+  var _unsub        = null;
   var _filterPlayer = 'All';
   var _filterStatus = '';
   var _searchQuery  = '';
+  var _editingId    = null;
 
   function waitForMT(cb) {
     if (window.MT && window.MT.getDb && window.MT.getDb()) return cb();
@@ -37,6 +38,14 @@
       });
     });
 
+    /* Modal de registro */
+    document.getElementById('regModalClose').addEventListener('click', closeRegModal);
+    document.getElementById('regCancel').addEventListener('click', closeRegModal);
+    document.getElementById('regSave').addEventListener('click', saveReg);
+    document.getElementById('regModal').addEventListener('click', function (e) {
+      if (e.target === this) closeRegModal();
+    });
+
     window.addEventListener('mt:catChange', function () {
       if (_unsub) _unsub();
       loadItems();
@@ -52,7 +61,6 @@
       .where('tipo', '==', cat)
       .onSnapshot(function (snap) {
         _items = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        /* Ordenar por fecha de añadido, más reciente primero */
         _items.sort(function (a, b) {
           var ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
           var tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
@@ -137,9 +145,10 @@
   }
 
   function renderRow(item) {
-    var U     = window.MT.Utils;
-    var nota  = U.calcNotaMedia(item.jugadores);
+    var U    = window.MT.Utils;
+    var nota = U.calcNotaMedia(item.jugadores);
     var color = nota !== null ? U.notaColor(nota) : null;
+    var id   = item.id;
 
     var cover = item.portadaUrl
       ? '<img src="' + U.escHtml(item.portadaUrl) + '" loading="lazy" onerror="this.style.display=\'none\'">'
@@ -150,21 +159,20 @@
       : '';
 
     var dots = ['David', 'Javi', 'Mery'].map(function (p) {
-      var est = item.jugadores && item.jugadores[p] && item.jugadores[p].estado;
-      var nota_p = item.jugadores && item.jugadores[p] && item.jugadores[p].nota;
-      var dotCls = U.playerDotClass(est);
+      var est   = item.jugadores && item.jugadores[p] && item.jugadores[p].estado;
+      var notaP = item.jugadores && item.jugadores[p] && item.jugadores[p].nota;
       return '<div class="mt-reg-row__player">' +
-        '<div class="mt-card__dot ' + dotCls + '" title="' + p + ': ' + (est || 'sin estado') + '"></div>' +
+        '<div class="mt-card__dot ' + U.playerDotClass(est) + '" title="' + p + ': ' + (est || 'sin estado') + '"></div>' +
         '<span class="mt-reg-row__pname">' + p.charAt(0) + '</span>' +
-        (nota_p !== null && nota_p !== undefined && nota_p !== '' ? '<span class="mt-reg-row__pnota" style="color:' + U.notaColor(nota_p) + '">' + U.formatNota(nota_p) + '</span>' : '') +
+        (notaP !== null && notaP !== undefined && notaP !== ''
+          ? '<span class="mt-reg-row__pnota" style="color:' + U.notaColor(notaP) + '">' + U.formatNota(notaP) + '</span>'
+          : '') +
       '</div>';
     }).join('');
 
     var genre = item.generos && item.generos[0]
       ? '<span class="mt-badge mt-badge--genre">' + U.escHtml(item.generos[0]) + '</span>'
       : '';
-
-    var dateStr = formatDate(item.createdAt);
 
     return '<div class="mt-reg-row">' +
       '<div class="mt-reg-row__cover">' + cover + scoreBadge + '</div>' +
@@ -178,9 +186,73 @@
         '</div>' +
         '<div class="mt-reg-row__players">' + dots + '</div>' +
       '</div>' +
-      '<div class="mt-reg-row__date">' + dateStr + '</div>' +
+      '<div class="mt-reg-row__actions">' +
+        '<div class="mt-reg-row__date">' + formatDate(item.createdAt) + '</div>' +
+        '<button class="mt-btn mt-btn--ghost mt-btn--sm mt-reg-row__btn" onclick="window.MTReg.openReg(\'' + id.replace(/'/g, "\\'") + '\')">✏️ Registrar</button>' +
+      '</div>' +
     '</div>';
   }
+
+  /* ── MODAL REGISTRAR ─────────────────────────────────────── */
+  function openReg(id) {
+    var item = _items.find(function (i) { return i.id === id; });
+    if (!item) return;
+    _editingId = id;
+
+    document.getElementById('regModalTitle').textContent = item.titulo;
+
+    var cat     = window.MT.getCat();
+    var estados = window.MT.ESTADOS[cat] || ['Visto', 'Viendo', 'Pendiente', 'Abandonado'];
+    var isFilm  = cat === 'peliculas';
+
+    document.getElementById('regPlayerRows').innerHTML = ['David', 'Javi', 'Mery'].map(function (p) {
+      var info   = item.jugadores && item.jugadores[p] ? item.jugadores[p] : {};
+      var estado = info.estado || '';
+      var nota   = info.nota !== undefined && info.nota !== null ? info.nota : '';
+      var ep     = info.episodio || '';
+      var opts   = '<option value="">— Sin estado</option>' +
+        estados.map(function (e) {
+          return '<option value="' + e + '"' + (e === estado ? ' selected' : '') + '>' + e + '</option>';
+        }).join('');
+      return '<div class="mt-player-row" id="rprow-' + p.toLowerCase() + '">' +
+        '<div class="mt-player-row__avatar mt-player-row__avatar--' + p.toLowerCase() + '">' + p.charAt(0) + '</div>' +
+        '<select class="mt-form-select" id="rEstado' + p + '">' + opts + '</select>' +
+        '<input type="number" class="mt-form-input" id="rNota' + p + '" value="' + nota + '" placeholder="Nota" min="0" max="10" step="0.5">' +
+        (!isFilm ? '<input type="number" class="mt-form-input" id="rEp' + p + '" value="' + ep + '" placeholder="Ep." min="0">' : '') +
+      '</div>';
+    }).join('');
+
+    document.getElementById('regModal').classList.add('open');
+  }
+
+  function closeRegModal() {
+    document.getElementById('regModal').classList.remove('open');
+    _editingId = null;
+  }
+
+  function saveReg() {
+    if (!_editingId) return;
+    var cat    = window.MT.getCat();
+    var isFilm = cat === 'peliculas';
+
+    var jugadores = {};
+    ['David', 'Javi', 'Mery'].forEach(function (p) {
+      var estado = document.getElementById('rEstado' + p).value;
+      var notaEl = document.getElementById('rNota' + p);
+      var nota   = notaEl && notaEl.value !== '' ? parseFloat(notaEl.value) : null;
+      var epEl   = document.getElementById('rEp' + p);
+      var ep     = epEl && epEl.value !== '' ? parseInt(epEl.value) : null;
+      jugadores[p] = { estado: estado, nota: nota };
+      if (!isFilm) jugadores[p].episodio = ep;
+    });
+
+    window.MT.getDb().collection('mt_items').doc(_editingId)
+      .update({ jugadores: jugadores })
+      .then(closeRegModal);
+  }
+
+  /* ── EXPOSE ──────────────────────────────────────────────── */
+  window.MTReg = { openReg: openReg };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

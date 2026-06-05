@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20260605a">
+  <link rel="stylesheet" href="mt-styles.css?v=20260605b">
 </head>
 <body>
 
@@ -180,18 +180,10 @@
           <div class="mt-chip-group" id="generoChips"></div>
         </div>
 
-        <!-- Plataforma -->
-        <div class="mt-form-group mt-form-group--full">
+        <!-- Plataforma (oculta para películas) -->
+        <div class="mt-form-group mt-form-group--full" id="groupPlataforma" style="display:none">
           <label class="mt-form-label">Plataforma</label>
           <div class="mt-chip-group" id="plataformaChips"></div>
-        </div>
-
-        <!-- Estado y nota por jugador -->
-        <div class="mt-form-group mt-form-group--full">
-          <label class="mt-form-label">Estado y nota por jugador</label>
-          <div class="mt-player-rows" id="playerRows">
-            <!-- Generado por JS -->
-          </div>
         </div>
 
       </div>
@@ -223,7 +215,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
-<script src="mt-main.js?v=20260522a"         defer></script>
+<script src="mt-main.js?v=20260605b"         defer></script>
 <script src="mt-biblioteca.js?v=20260605a"   defer></script>
 </body>
 </html>
