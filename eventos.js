@@ -147,13 +147,10 @@
 
   /* ── Tamaños de bingo disponibles ── */
   var BINGO_SIZES = [
-    { cols: 3, rows: 3, label: '3×3' },
-    { cols: 4, rows: 4, label: '4×4' },
-    { cols: 5, rows: 5, label: '5×5' },
-    { cols: 5, rows: 4, label: '5×4' },
-    { cols: 3, rows: 4, label: '3×4' },
+    { cols: 4, rows: 3, label: '4×3', desc: 'Normal',  hint: 'Nintendo Direct, State of Play…' },
+    { cols: 5, rows: 4, label: '5×4', desc: 'Grande',  hint: 'Summer Game Fest, The Game Awards…' },
   ];
-  var _bingoSize = BINGO_SIZES[3]; /* default 5×4 */
+  var _bingoSize = BINGO_SIZES[0]; /* default 4×3 */
 
   function getLines(cols, rows) {
     var lines = [];
@@ -202,12 +199,19 @@
     var ev = _events[idx];
     if (!ev) return [];
     return _cards.filter(function (c) {
-      return (c.eventoId === ev.id || (!c.eventoId && idx === 0)) && c.jugador === _player;
+      if (!(c.eventoId === ev.id || (!c.eventoId && idx === 0))) return false;
+      /* Combinadas: visibles para todos */
+      if (c.jugador === 'Combinada') return true;
+      return c.jugador === _player;
     });
   }
 
   function playerHasCardForEvent(idx) {
-    return getCardsForEvent(idx).length > 0;
+    var ev = _events[idx];
+    if (!ev) return false;
+    return _cards.some(function(c) {
+      return (c.eventoId === ev.id || (!c.eventoId && idx === 0)) && c.jugador === _player;
+    });
   }
 
   function updateNewBingoBtn() {
@@ -241,12 +245,16 @@
       if (e.target === this) closeCardModal();
     });
 
-    /* Modal editar evento */
+    /* Modal editar/crear evento */
     document.getElementById('evtEditSave').addEventListener('click', saveEditEventModal);
     document.getElementById('evtEditCancel').addEventListener('click', closeEditEventModal);
     document.getElementById('evtEditOverlay').addEventListener('click', function (e) {
       if (e.target === this) closeEditEventModal();
     });
+    var delEvtBtn = document.getElementById('evtEditDelete');
+    if (delEvtBtn) delEvtBtn.addEventListener('click', deleteEventModal);
+    var createBtn = document.getElementById('btnCreateEvent');
+    if (createBtn) createBtn.addEventListener('click', openCreateEventModal);
 
     /* Sync _player with active player from localStorage */
     var _ap = window.GT && window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;
@@ -571,29 +579,43 @@
   }
 
   /* ── MODAL EDITAR EVENTO ────────────────────────────────────── */
-  function openEditEventModal(evId) {
-    var ev = _events.find(function (e) { return e.id === evId; });
-    if (!ev) return;
-    _editingEvtId = evId;
-
-    /* Rellenar campos */
+  function _fillEventModal(ev) {
     document.getElementById('evtEditNombre').value    = ev.nombre    || '';
     document.getElementById('evtEditTag').value       = ev.tag       || '';
     document.getElementById('evtEditFechaLabel').value= ev.fechaLabel|| '';
     document.getElementById('evtEditHora').value      = ev.hora      || '';
     document.getElementById('evtEditDonde').value     = ev.donde     || '';
     document.getElementById('evtEditDuracion').value  = ev.duracion  || '';
-    document.getElementById('evtEditDesc').value      = ev.desc ? ev.desc.replace(/<[^>]+>/g, '') : '';
+    document.getElementById('evtEditDesc').value      = ev.desc ? ev.desc.replace(/<[^>]+>/g,'') : '';
     document.getElementById('evtEditImg').value       = ev.img       || '';
     document.getElementById('evtEditLink').value      = ev.link      || '';
     document.getElementById('evtEditLinkLabel').value = ev.linkLabel  || '';
     document.getElementById('evtEditBrand').value     = ev.brand     || '';
     document.getElementById('evtEditColor').value     = ev.accentColor || '#4facfe';
-
-    /* Fecha/hora ISO → datetime-local (primeros 16 chars: YYYY-MM-DDTHH:MM) */
     var iso = ev.isoDate || '';
-    document.getElementById('evtEditIsoDate').value = iso.substring(0, 16);
+    document.getElementById('evtEditIsoDate').value   = iso.substring(0, 16);
+  }
 
+  function openCreateEventModal() {
+    _editingEvtId = null;
+    _fillEventModal({});
+    document.getElementById('evtEditModalTitle').textContent = '✨ Crear Evento';
+    document.getElementById('evtEditSave').textContent = '✨ Crear';
+    var delBtn = document.getElementById('evtEditDelete');
+    if (delBtn) delBtn.style.display = 'none';
+    document.getElementById('evtEditOverlay').classList.add('open');
+    document.getElementById('evtEditNombre').focus();
+  }
+
+  function openEditEventModal(evId) {
+    var ev = _events.find(function(e){ return e.id === evId; });
+    if (!ev) return;
+    _editingEvtId = evId;
+    _fillEventModal(ev);
+    document.getElementById('evtEditModalTitle').textContent = '✏️ Editar Evento';
+    document.getElementById('evtEditSave').textContent = '💾 Guardar';
+    var delBtn = document.getElementById('evtEditDelete');
+    if (delBtn) delBtn.style.display = 'inline-flex';
     document.getElementById('evtEditOverlay').classList.add('open');
     document.getElementById('evtEditNombre').focus();
   }
@@ -603,37 +625,52 @@
     _editingEvtId = null;
   }
 
-  function saveEditEventModal() {
+  function deleteEventModal() {
     if (!_editingEvtId) return;
-    var ev = _events.find(function (e) { return e.id === _editingEvtId; });
-    if (!ev) return;
+    var ev = _events.find(function(e){ return e.id === _editingEvtId; });
+    if (!ev || !confirm('¿Eliminar "' + ev.nombre + '"? No se puede deshacer.')) return;
+    db.collection('events').doc(_editingEvtId).delete().then(closeEditEventModal);
+  }
 
-    var isoRaw = document.getElementById('evtEditIsoDate').value; /* YYYY-MM-DDTHH:MM */
-    var isoDate = isoRaw ? isoRaw + ':00+02:00' : ev.isoDate;
-
-    /* Descripción: texto plano, sin HTML */
+  function saveEditEventModal() {
+    var isoRaw    = document.getElementById('evtEditIsoDate').value;
+    var isoDate   = isoRaw ? isoRaw + ':00+02:00' : '';
     var descPlain = document.getElementById('evtEditDesc').value.trim();
+    var nombre    = document.getElementById('evtEditNombre').value.trim();
+    if (!nombre) { document.getElementById('evtEditNombre').focus(); return; }
 
-    var updates = {
-      nombre     : document.getElementById('evtEditNombre').value.trim()    || ev.nombre,
-      tag        : document.getElementById('evtEditTag').value.trim()        || ev.tag,
-      isoDate    : isoDate,
-      fechaLabel : document.getElementById('evtEditFechaLabel').value.trim() || ev.fechaLabel,
-      hora       : document.getElementById('evtEditHora').value.trim()       || ev.hora,
-      donde      : document.getElementById('evtEditDonde').value.trim()      || ev.donde,
-      duracion   : document.getElementById('evtEditDuracion').value.trim()   || ev.duracion,
-      desc       : descPlain,
-      img        : document.getElementById('evtEditImg').value.trim(),
-      link       : document.getElementById('evtEditLink').value.trim()       || ev.link,
-      linkLabel  : document.getElementById('evtEditLinkLabel').value.trim()  || ev.linkLabel,
-      brand      : document.getElementById('evtEditBrand').value.trim()      || ev.brand,
-      accentColor: document.getElementById('evtEditColor').value             || ev.accentColor
+    var data = {
+      nombre: nombre,
+      tag: document.getElementById('evtEditTag').value.trim(),
+      isoDate: isoDate,
+      fechaLabel: document.getElementById('evtEditFechaLabel').value.trim(),
+      hora: document.getElementById('evtEditHora').value.trim(),
+      donde: document.getElementById('evtEditDonde').value.trim(),
+      duracion: document.getElementById('evtEditDuracion').value.trim(),
+      desc: descPlain,
+      img: document.getElementById('evtEditImg').value.trim(),
+      link: document.getElementById('evtEditLink').value.trim(),
+      linkLabel: document.getElementById('evtEditLinkLabel').value.trim(),
+      brand: document.getElementById('evtEditBrand').value.trim(),
+      accentColor: document.getElementById('evtEditColor').value || '#4facfe'
     };
 
-    db.collection('events').doc(_editingEvtId).update(updates)
-      .then(closeEditEventModal)
-      .catch(function (err) { console.error('Error guardando evento:', err); });
+    if (_editingEvtId) {
+      var ev = _events.find(function(e){ return e.id === _editingEvtId; });
+      Object.keys(data).forEach(function(k){ if (!data[k] && ev && ev[k]) data[k] = ev[k]; });
+      db.collection('events').doc(_editingEvtId).update(data)
+        .then(closeEditEventModal)
+        .catch(function(err){ console.error(err); });
+    } else {
+      data.order = _events.length + 1;
+      data.top5  = [];
+      db.collection('events').add(data)
+        .then(closeEditEventModal)
+        .catch(function(err){ console.error(err); });
+    }
   }
+
+  /* ── HISTÓRICO
 
   /* ── HISTÓRICO ──────────────────────────────────────────────── */
   function renderHistorico() {
@@ -1076,7 +1113,8 @@
       }
       return '<button class="bingo-sz-btn' + sel + '" data-cols="' + sz.cols + '" data-rows="' + sz.rows + '">' +
         '<div class="bingo-sz-grid">' + miniRows + '</div>' +
-        '<span class="bingo-sz-label">' + sz.label + '</span>' +
+        '<span class="bingo-sz-label">' + sz.label + ' — ' + sz.desc + '</span>' +
+        (sz.hint ? '<span class="bingo-sz-hint">' + sz.hint + '</span>' : '') +
       '</button>';
     }).join('');
     wrap.querySelectorAll('.bingo-sz-btn').forEach(function(btn) {
@@ -1372,9 +1410,11 @@
     closeCardModal   : closeCardModal,
     deleteCard       : deleteCard,
     resetMarks       : resetMarks,
+    openCreateEventModal: openCreateEventModal,
     openEditEventModal : openEditEventModal,
     closeEditEventModal: closeEditEventModal,
     saveEditEventModal : saveEditEventModal,
+    deleteEventModal   : deleteEventModal,
     openTop5Modal    : openTop5Modal,
     closeTop5Modal   : closeTop5Modal
   };

@@ -62,6 +62,11 @@
 
 <div class="page">
 
+  <!-- Botón crear evento (esquina superior derecha del contenido) -->
+  <div style="display:flex;justify-content:flex-end;padding:0.75rem 2rem 0">
+    <button class="btn btn-ghost btn-sm" id="btnCreateEvent" style="font-size:0.75rem;opacity:0.65">＋ Crear Evento</button>
+  </div>
+
   <!-- ══ MARQUESINA (se rellena por JS con eventos reales) ══ -->
   <div class="evt-marquee-wrap" id="evtMarqueeWrap" aria-hidden="true" style="display:none">
     <div class="evt-marquee-track" id="evtMarqueeTrack"></div>
@@ -431,7 +436,14 @@
           <div class="reg-pcard__name">Mery</div>
         </div>
       </label>
-      <div style="display:flex;align-items:center;padding:0 0.5rem;color:var(--txt3);font-size:0.78rem;line-height:1.35;max-width:200px">
+      <label class="reg-pcard reg-pcard--combinada">
+        <input type="radio" name="bingoPlayer" value="Combinada">
+        <div class="reg-pcard__inner">
+          <div class="reg-pcard__avatar" style="font-size:0.55rem;letter-spacing:-0.03em">ALL</div>
+          <div class="reg-pcard__name">Combinada</div>
+        </div>
+      </label>
+      <div style="display:flex;align-items:center;padding:0 0.5rem;color:var(--txt3);font-size:0.78rem;line-height:1.35;max-width:180px">
         Selecciona quién marca las casillas
       </div>
     </div>
@@ -483,11 +495,11 @@
 
 </div>
 
-<!-- MODAL EDITAR EVENTO -->
+<!-- MODAL EDITAR / CREAR EVENTO -->
 <div class="modal-overlay" id="evtEditOverlay">
   <div class="modal" style="max-width:640px">
     <div class="modal__header">
-      <h2 class="modal__title">✏️ Editar Evento</h2>
+      <h2 class="modal__title" id="evtEditModalTitle">✏️ Editar Evento</h2>
       <button class="modal__close" onclick="window.GT_Bingo.closeEditEventModal()">✕</button>
     </div>
     <div class="modal__body" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem 1.25rem">
@@ -562,8 +574,9 @@
 
     </div>
     <div class="modal__footer">
+      <button class="btn btn-danger btn-sm" id="evtEditDelete" style="margin-right:auto;display:none">🗑 Eliminar evento</button>
       <button class="btn btn-secondary" id="evtEditCancel">Cancelar</button>
-      <button class="btn btn-primary"   id="evtEditSave">💾 Guardar cambios</button>
+      <button class="btn btn-primary"   id="evtEditSave">💾 Guardar</button>
     </div>
   </div>
 </div>
@@ -677,8 +690,15 @@
 .bingo-sz-row  { display: flex; gap: 2px; }
 .bingo-sz-cell { width: 8px; height: 8px; border-radius: 2px; background: rgba(255,255,255,0.3); }
 .bingo-sz--active .bingo-sz-cell { background: #4facfe; }
-.bingo-sz-label { font-family: 'Orbitron', sans-serif; font-size: 0.6rem; font-weight: 700; color: var(--txt3); letter-spacing: 0.05em; }
+.bingo-sz-label { font-family: 'Orbitron', sans-serif; font-size: 0.62rem; font-weight: 700; color: var(--txt3); letter-spacing: 0.05em; }
 .bingo-sz--active .bingo-sz-label { color: #4facfe; }
+.bingo-sz-hint { font-size: 0.58rem; color: var(--txt3); opacity: 0.65; text-align: center; max-width: 120px; line-height: 1.3; }
+.bingo-sz-btn { flex-direction: column; gap: 0.3rem; min-width: 130px; }
+
+/* Card COMBINADA */
+.reg-pcard--combinada input:checked ~ .reg-pcard__inner { border-color: rgba(245,200,66,0.6); background: rgba(245,200,66,0.08); }
+.reg-pcard--combinada .reg-pcard__avatar { background: linear-gradient(135deg, #3b82f6, #9b1742, #9b59ff); color: #fff; font-size: 0.55rem; }
+.reg-pcard--combinada .reg-pcard__name { color: #f5c842; }
 
 /* ── MARQUESINA ──────────────────────────────────── */
 .evt-marquee-wrap {
