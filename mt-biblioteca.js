@@ -10,7 +10,6 @@
   var _editingId  = null;
   var _selGeneros = [];
   var _selPlats   = [];
-  var _filterPlayer = 'All';
   var _filterGenre  = '';
   var _filterStatus = '';
   var _filterYear   = '';
@@ -64,12 +63,6 @@
       _filterYear = this.value; renderGrid();
     });
     document.getElementById('clearFilters').addEventListener('click', clearFilters);
-
-    document.querySelectorAll('input[name="mtPlayer"]').forEach(function (r) {
-      r.addEventListener('change', function () {
-        _filterPlayer = this.value; renderGrid();
-      });
-    });
 
     /* Escuchar cambios de categoría */
     window.addEventListener('mt:catChange', function (e) {
@@ -147,11 +140,6 @@
   /* ── FILTROS ─────────────────────────────────────────────── */
   function filterItems() {
     return _items.filter(function (item) {
-      /* Jugador */
-      if (_filterPlayer && _filterPlayer !== 'All') {
-        var jInfo = item.jugadores && item.jugadores[_filterPlayer];
-        if (!jInfo || !jInfo.estado) return false;
-      }
       /* Estado */
       if (_filterStatus) {
         var hasStatus = false;
@@ -181,10 +169,10 @@
 
   function clearFilters() {
     _filterGenre = ''; _filterStatus = ''; _filterYear = ''; _searchQuery = '';
-    document.getElementById('searchInput').value = '';
-    document.getElementById('genreFilter').value = '';
+    document.getElementById('searchInput').value  = '';
+    document.getElementById('genreFilter').value  = '';
     document.getElementById('statusFilter').value = '';
-    document.getElementById('yearFilter').value = '';
+    document.getElementById('yearFilter').value   = '';
     renderGrid();
   }
 
