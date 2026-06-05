@@ -89,9 +89,9 @@
     if (_unsub) _unsub();
     _unsub = db.collection('mt_items')
       .where('tipo', '==', cat)
-      .orderBy('titulo')
       .onSnapshot(function (snap) {
         _items = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+        _items.sort(function (a, b) { return (a.titulo || '').localeCompare(b.titulo || '', 'es', { sensitivity: 'base' }); });
         renderGrid();
         buildYearFilter();
         window.MT.hideLoading();
