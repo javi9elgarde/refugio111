@@ -621,7 +621,25 @@ body {
 .mt-loading__dot:nth-child(3) { animation: dotPulse 1.2s ease-in-out 0.4s infinite; }
 .mt-loading__sub { font-size: 0.75rem; color: rgba(232,232,248,0.3); letter-spacing: 0.06em; }
 
-/* ── REGISTRO (lista cronológica) ────────────────────────── */
+/* ── ESTADO BADGE EN TARJETA (Registro / Pendientes) ────── */
+.mt-card__reg-status {
+  display: inline-block; margin-top: 0.35rem;
+  font-size: 0.68rem; font-weight: 600;
+  padding: 0.18rem 0.55rem; border-radius: 5px;
+  letter-spacing: 0.02em;
+}
+.mt-status--sinregistrar {
+  background: rgba(255,255,255,0.04); color: var(--txt3);
+  border: 1px solid var(--border);
+}
+/* Resaltar fila del jugador activo en el modal de registro */
+.mt-player-row--active {
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  outline: 1px solid var(--accent);
+}
+
+/* ── REGISTRO (lista cronológica — legacy, ya no se usa) ── */
 .mt-list {
   display: flex; flex-direction: column; gap: 0.65rem;
   margin-top: 1.25rem;

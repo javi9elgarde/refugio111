@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20260605b">
+  <link rel="stylesheet" href="mt-styles.css?v=20260605c">
 </head>
 <body>
 
@@ -37,8 +37,9 @@
 
   <!-- Links secundarios -->
   <div class="mt-nav__links">
-    <a href="mt-biblioteca.html" class="mt-nav__link mt-nav__link--active">Biblioteca</a>
+    <a href="mt-biblioteca.html"  class="mt-nav__link mt-nav__link--active">Biblioteca</a>
     <a href="mt-registro.html"   class="mt-nav__link">Registro</a>
+    <a href="mt-pendientes.html" class="mt-nav__link">Pendientes</a>
   </div>
 
   <!-- Jugador activo -->
@@ -70,14 +71,6 @@
       <input type="text" class="mt-search" id="searchInput" placeholder="Buscar título, director, estudio...">
     </div>
     <select class="mt-select" id="genreFilter"><option value="">🏷 Géneros</option></select>
-    <select class="mt-select" id="statusFilter">
-      <option value="">▶ Estado</option>
-      <option value="visto">Visto / Terminado</option>
-      <option value="viendo">Viendo</option>
-      <option value="pendiente">Pendiente</option>
-      <option value="pausado">Pausado</option>
-      <option value="abandonado">Abandonado</option>
-    </select>
     <select class="mt-select" id="yearFilter"><option value="">📅 Año</option></select>
     <button class="mt-btn mt-btn--ghost mt-btn--sm" id="clearFilters" title="Limpiar filtros">✕</button>
   </div>

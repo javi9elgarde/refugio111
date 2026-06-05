@@ -1,16 +1,16 @@
 /* ============================================================
-   MEDIA TRACKER — Registro (vista personal por jugador)
+   MEDIA TRACKER — Pendientes (por jugador)
    Version: 20260605c
    ============================================================ */
 (function () {
   'use strict';
 
-  var _items        = [];
-  var _unsub        = null;
-  var _filterStatus = '';
-  var _filterYear   = '';
-  var _searchQuery  = '';
-  var _editingId    = null;
+  var _items      = [];
+  var _unsub      = null;
+  var _filterGenre = '';
+  var _filterYear  = '';
+  var _searchQuery = '';
+  var _editingId   = null;
 
   function waitForMT(cb) {
     if (window.MT && window.MT.getDb && window.MT.getDb()) return cb();
@@ -20,14 +20,15 @@
   function init() {
     waitForMT(function () {
       loadItems();
+      buildGenreFilter();
       updatePageMeta();
     });
 
     document.getElementById('searchInput').addEventListener('input', function () {
       _searchQuery = this.value.toLowerCase(); renderGrid();
     });
-    document.getElementById('statusFilter').addEventListener('change', function () {
-      _filterStatus = this.value; renderGrid();
+    document.getElementById('genreFilter').addEventListener('change', function () {
+      _filterGenre = this.value; renderGrid();
     });
     document.getElementById('yearFilter').addEventListener('change', function () {
       _filterYear = this.value; renderGrid();
@@ -45,6 +46,7 @@
     window.addEventListener('mt:catChange', function () {
       if (_unsub) _unsub();
       loadItems();
+      buildGenreFilter();
       updatePageMeta();
     });
   }
@@ -64,31 +66,30 @@
         buildYearFilter();
         window.MT.hideLoading();
       }, function (err) {
-        console.error('MT registro error:', err);
+        console.error('MT pendientes error:', err);
         window.MT.hideLoading();
       });
   }
 
   function updatePageMeta() {
     var cat    = window.MT.getCat();
-    var player = window.MT.getPlayer();
-    var titles = { peliculas: 'Registro · Películas', series: 'Registro · Series', anime: 'Registro · Anime' };
-    document.getElementById('pageTitle').textContent = titles[cat] || 'Registro';
-    document.title = 'Refugio 111 — ' + (titles[cat] || 'Registro');
+    var titles = { peliculas: 'Pendientes · Películas', series: 'Pendientes · Series', anime: 'Pendientes · Anime' };
+    document.getElementById('pageTitle').textContent = titles[cat] || 'Pendientes';
+    document.title = 'Refugio 111 — ' + (titles[cat] || 'Pendientes');
   }
 
   function getPlayer() { return window.MT.getPlayer(); }
 
+  /* Muestra solo ítems donde el jugador tiene estado 'Pendiente'
+     o no tiene estado registrado aún */
   function filterItems() {
     var player = getPlayer();
     return _items.filter(function (item) {
       var jInfo  = item.jugadores && item.jugadores[player];
-      var estado = jInfo && jInfo.estado ? jInfo.estado : '';
+      var estado = jInfo && jInfo.estado ? jInfo.estado.toLowerCase() : '';
+      if (estado && estado !== 'pendiente') return false;
 
-      if (_filterStatus) {
-        var sc = MT.Utils.statusClass(estado);
-        if (sc.indexOf(_filterStatus) < 0 && _filterStatus.indexOf(sc) < 0) return false;
-      }
+      if (_filterGenre && !(item.generos || []).includes(_filterGenre)) return false;
       if (_filterYear && String(item.anio || item.año || '') !== _filterYear) return false;
       if (_searchQuery) {
         var hay = [item.titulo, item.director, item.estudio].join(' ').toLowerCase();
@@ -100,11 +101,19 @@
   }
 
   function clearFilters() {
-    _filterStatus = ''; _filterYear = ''; _searchQuery = '';
-    document.getElementById('searchInput').value  = '';
-    document.getElementById('statusFilter').value = '';
-    document.getElementById('yearFilter').value   = '';
+    _filterGenre = ''; _filterYear = ''; _searchQuery = '';
+    document.getElementById('searchInput').value = '';
+    document.getElementById('genreFilter').value = '';
+    document.getElementById('yearFilter').value  = '';
     renderGrid();
+  }
+
+  function buildGenreFilter() {
+    var cat    = window.MT.getCat();
+    var genres = window.MT.GENEROS[cat] || [];
+    var sel    = document.getElementById('genreFilter');
+    sel.innerHTML = '<option value="">🏷 Géneros</option>' +
+      genres.map(function (g) { return '<option value="' + g + '">' + g + '</option>'; }).join('');
   }
 
   function buildYearFilter() {
@@ -117,9 +126,9 @@
 
   /* ── RENDER ─────────────────────────────────────────────── */
   function renderGrid() {
-    var grid  = document.getElementById('mtGrid');
-    var items = filterItems();
-    var count = document.getElementById('pageCount');
+    var grid   = document.getElementById('mtGrid');
+    var items  = filterItems();
+    var count  = document.getElementById('pageCount');
     var player = getPlayer();
 
     count.textContent = items.length + ' título' + (items.length !== 1 ? 's' : '') + ' · ' + player;
@@ -127,9 +136,9 @@
     if (items.length === 0) {
       grid.innerHTML =
         '<div class="mt-empty">' +
-          '<div class="mt-empty__icon">' + window.MT.Utils.catEmoji(window.MT.getCat()) + '</div>' +
-          '<div class="mt-empty__title">No se encontraron títulos</div>' +
-          '<p>Prueba a cambiar los filtros.</p>' +
+          '<div class="mt-empty__icon">✅</div>' +
+          '<div class="mt-empty__title">¡Todo al día!</div>' +
+          '<p>' + player + ' no tiene títulos pendientes en esta categoría.</p>' +
         '</div>';
       return;
     }
@@ -142,14 +151,7 @@
     var player = getPlayer();
     var jInfo  = item.jugadores && item.jugadores[player];
     var estado = jInfo && jInfo.estado ? jInfo.estado : null;
-    var notaP  = jInfo && jInfo.nota !== null && jInfo.nota !== undefined && jInfo.nota !== '' ? parseFloat(jInfo.nota) : null;
-    var color  = notaP !== null ? U.notaColor(notaP) : null;
-    var sc     = estado ? U.statusClass(estado) : 'sinregistrar';
     var id     = item.id;
-
-    var scoreBadge = notaP !== null
-      ? '<div class="mt-card__score" style="color:' + color + '">' + U.formatNota(notaP) + '</div>'
-      : '';
 
     var cover = item.portadaUrl
       ? '<img src="' + U.escHtml(item.portadaUrl) + '" loading="lazy" onerror="this.style.display=\'none\'">'
@@ -160,9 +162,10 @@
       : '';
 
     var statusLabel = estado || 'Sin registrar';
+    var sc = estado ? U.statusClass(estado) : 'sinregistrar';
 
-    return '<div class="mt-card" onclick="window.MTReg.openReg(\'' + id.replace(/'/g, "\\'") + '\')">' +
-      '<div class="mt-card__cover">' + cover + scoreBadge + '</div>' +
+    return '<div class="mt-card" onclick="window.MTPend.openReg(\'' + id.replace(/'/g, "\\'") + '\')">' +
+      '<div class="mt-card__cover">' + cover + '</div>' +
       '<div class="mt-card__body">' +
         '<div class="mt-card__title">' + U.escHtml(item.titulo) + '</div>' +
         '<div class="mt-card__meta">' +
@@ -194,7 +197,6 @@
         estados.map(function (e) {
           return '<option value="' + e + '"' + (e === estado ? ' selected' : '') + '>' + e + '</option>';
         }).join('');
-      /* Resaltar el jugador activo */
       var activeClass = p === player ? ' mt-player-row--active' : '';
       return '<div class="mt-player-row' + activeClass + '">' +
         '<div class="mt-player-row__avatar mt-player-row__avatar--' + p.toLowerCase() + '">' + p.charAt(0) + '</div>' +
@@ -231,7 +233,7 @@
       .then(closeRegModal);
   }
 
-  window.MTReg = { openReg: openReg };
+  window.MTPend = { openReg: openReg };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

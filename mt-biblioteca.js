@@ -11,7 +11,6 @@
   var _selGeneros = [];
   var _selPlats   = [];
   var _filterGenre  = '';
-  var _filterStatus = '';
   var _filterYear   = '';
   var _searchQuery  = '';
 
@@ -55,9 +54,6 @@
     });
     document.getElementById('genreFilter').addEventListener('change', function () {
       _filterGenre = this.value; renderGrid();
-    });
-    document.getElementById('statusFilter').addEventListener('change', function () {
-      _filterStatus = this.value; renderGrid();
     });
     document.getElementById('yearFilter').addEventListener('change', function () {
       _filterYear = this.value; renderGrid();
@@ -140,19 +136,6 @@
   /* ── FILTROS ─────────────────────────────────────────────── */
   function filterItems() {
     return _items.filter(function (item) {
-      /* Estado */
-      if (_filterStatus) {
-        var hasStatus = false;
-        if (item.jugadores) {
-          Object.values(item.jugadores).forEach(function (j) {
-            if (j && j.estado) {
-              var sc = MT.Utils.statusClass(j.estado);
-              if (sc.indexOf(_filterStatus) >= 0 || _filterStatus.indexOf(sc) >= 0) hasStatus = true;
-            }
-          });
-        }
-        if (!hasStatus) return false;
-      }
       /* Género */
       if (_filterGenre && !(item.generos || []).includes(_filterGenre)) return false;
       /* Año */
@@ -168,11 +151,10 @@
   }
 
   function clearFilters() {
-    _filterGenre = ''; _filterStatus = ''; _filterYear = ''; _searchQuery = '';
-    document.getElementById('searchInput').value  = '';
-    document.getElementById('genreFilter').value  = '';
-    document.getElementById('statusFilter').value = '';
-    document.getElementById('yearFilter').value   = '';
+    _filterGenre = ''; _filterYear = ''; _searchQuery = '';
+    document.getElementById('searchInput').value = '';
+    document.getElementById('genreFilter').value = '';
+    document.getElementById('yearFilter').value  = '';
     renderGrid();
   }
 

@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#e63946">
-  <title>Refugio 111 — Registro</title>
+  <title>Refugio 111 — Pendientes</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
     <div class="mt-loading__dot"></div>
     <div class="mt-loading__dot"></div>
   </div>
-  <div class="mt-loading__sub">Cargando registro...</div>
+  <div class="mt-loading__sub">Cargando pendientes...</div>
 </div>
 
 <!-- ── NAVEGACIÓN ─────────────────────────────────────────── -->
@@ -36,8 +36,8 @@
 
   <div class="mt-nav__links">
     <a href="mt-biblioteca.html"  class="mt-nav__link">Biblioteca</a>
-    <a href="mt-registro.html"    class="mt-nav__link mt-nav__link--active">Registro</a>
-    <a href="mt-pendientes.html"  class="mt-nav__link">Pendientes</a>
+    <a href="mt-registro.html"    class="mt-nav__link">Registro</a>
+    <a href="mt-pendientes.html"  class="mt-nav__link mt-nav__link--active">Pendientes</a>
   </div>
 
   <a href="mt-hub.html" class="mt-nav__player-pill" id="mtPlayerPill" title="Cambiar jugador">
@@ -54,7 +54,7 @@
 
   <div class="mt-page-header">
     <div>
-      <h1 class="mt-page-header__title" id="pageTitle">Registro · Películas</h1>
+      <h1 class="mt-page-header__title" id="pageTitle">Pendientes · Películas</h1>
       <p class="mt-page-header__sub" id="pageCount">Cargando...</p>
     </div>
   </div>
@@ -65,14 +65,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" class="mt-search" id="searchInput" placeholder="Buscar título, director, estudio...">
     </div>
-    <select class="mt-select" id="statusFilter">
-      <option value="">▶ Estado</option>
-      <option value="visto">Visto / Terminado</option>
-      <option value="viendo">Viendo</option>
-      <option value="pendiente">Pendiente</option>
-      <option value="pausado">Pausado</option>
-      <option value="abandonado">Abandonado</option>
-    </select>
+    <select class="mt-select" id="genreFilter"><option value="">🏷 Géneros</option></select>
     <select class="mt-select" id="yearFilter"><option value="">📅 Año</option></select>
     <button class="mt-btn mt-btn--ghost mt-btn--sm" id="clearFilters" title="Limpiar filtros">✕</button>
   </div>
@@ -105,6 +98,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="mt-main.js?v=20260605b"         defer></script>
-<script src="mt-registro.js?v=20260605c"     defer></script>
+<script src="mt-pendientes.js?v=20260605c"   defer></script>
 </body>
 </html>
