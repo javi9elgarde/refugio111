@@ -9,13 +9,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20260605c">
+  <link rel="stylesheet" href="mt-styles.css?v=20260605d">
 </head>
 <body>
 
-<!-- Loading overlay -->
 <div id="mtLoading">
-  <div class="mt-loading__brand" id="mtLoadingBrand">🎬 REFUGIO 111</div>
+  <div class="mt-loading__brand">🎬 REFUGIO 111</div>
   <div class="mt-loading__dots">
     <div class="mt-loading__dot"></div>
     <div class="mt-loading__dot"></div>
@@ -24,60 +23,78 @@
   <div class="mt-loading__sub">Cargando pendientes...</div>
 </div>
 
-<!-- ── NAVEGACIÓN ─────────────────────────────────────────── -->
 <nav class="mt-nav">
   <a href="hub.html" class="mt-nav__hub">🏠 Hub</a>
-
   <div class="mt-cat-tabs">
     <button class="mt-cat-tab mt-cat-tab--active" data-cat="peliculas">🎬 <span class="label">Películas</span></button>
     <button class="mt-cat-tab" data-cat="series">📺 <span class="label">Series</span></button>
     <button class="mt-cat-tab" data-cat="anime">🌸 <span class="label">Anime</span></button>
   </div>
-
   <div class="mt-nav__links">
     <a href="mt-biblioteca.html"  class="mt-nav__link">Biblioteca</a>
     <a href="mt-registro.html"    class="mt-nav__link">Registro</a>
     <a href="mt-pendientes.html"  class="mt-nav__link mt-nav__link--active">Pendientes</a>
   </div>
-
   <a href="mt-hub.html" class="mt-nav__player-pill" id="mtPlayerPill" title="Cambiar jugador">
     <div class="mt-nav__player-avatar mt-nav__player-avatar--javi">J</div>
     <span class="mt-player-pill-name">Javi</span>
   </a>
-
   <button class="mt-nav__hamburger" id="mtHamburger" aria-label="Menú">☰</button>
 </nav>
 <div class="mt-accent-bar" id="mtAccentBar"></div>
 
-<!-- ── CONTENIDO ──────────────────────────────────────────── -->
 <div class="mt-page">
 
-  <div class="mt-page-header">
+  <!-- Selector de jugador -->
+  <div class="mt-psel" id="playerSelector">
+    <div class="mt-psel__card mt-psel__card--david" data-player="David">
+      <div class="mt-psel__img-wrap">
+        <img src="icondavidneutral.png" alt="David"
+             onerror="this.style.display='none';this.parentNode.innerHTML='<div class=mt-psel__fallback>D</div>'">
+      </div>
+      <div class="mt-psel__name">David</div>
+      <div class="mt-psel__count" id="pselCount-David">—</div>
+    </div>
+    <div class="mt-psel__card mt-psel__card--javi" data-player="Javi">
+      <div class="mt-psel__img-wrap">
+        <img src="iconjavineutral.png" alt="Javi"
+             onerror="this.style.display='none';this.parentNode.innerHTML='<div class=mt-psel__fallback>J</div>'">
+      </div>
+      <div class="mt-psel__name">Javi</div>
+      <div class="mt-psel__count" id="pselCount-Javi">—</div>
+    </div>
+    <div class="mt-psel__card mt-psel__card--mery" data-player="Mery">
+      <div class="mt-psel__img-wrap">
+        <img src="iconmeryneutral.png" alt="Mery"
+             onerror="this.style.display='none';this.parentNode.innerHTML='<div class=mt-psel__fallback>M</div>'">
+      </div>
+      <div class="mt-psel__name">Mery</div>
+      <div class="mt-psel__count" id="pselCount-Mery">—</div>
+    </div>
+  </div>
+
+  <div class="mt-page-header" style="margin-top:0">
     <div>
       <h1 class="mt-page-header__title" id="pageTitle">Pendientes · Películas</h1>
       <p class="mt-page-header__sub" id="pageCount">Cargando...</p>
     </div>
   </div>
 
-  <!-- Filtros -->
   <div class="mt-filters">
     <div class="mt-search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" class="mt-search" id="searchInput" placeholder="Buscar título, director, estudio...">
+      <input type="text" class="mt-search" id="searchInput" placeholder="Buscar título, director...">
     </div>
     <select class="mt-select" id="genreFilter"><option value="">🏷 Géneros</option></select>
     <select class="mt-select" id="yearFilter"><option value="">📅 Año</option></select>
     <button class="mt-btn mt-btn--ghost mt-btn--sm" id="clearFilters" title="Limpiar filtros">✕</button>
   </div>
 
-  <!-- Grid de tarjetas -->
   <div class="mt-grid" id="mtGrid"></div>
 
 </div>
 
-<!-- ════════════════════════════════════════════
-     MODAL: REGISTRAR ESTADO / NOTA
-═══════════════════════════════════════════════ -->
+<!-- Modal registrar -->
 <div class="mt-modal-overlay" id="regModal">
   <div class="mt-modal" style="max-width:480px">
     <div class="mt-modal__header">
@@ -98,6 +115,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="mt-main.js?v=20260605b"         defer></script>
-<script src="mt-pendientes.js?v=20260605c"   defer></script>
+<script src="mt-pendientes.js?v=20260605d"   defer></script>
 </body>
 </html>

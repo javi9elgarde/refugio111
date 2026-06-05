@@ -621,6 +621,43 @@ body {
 .mt-loading__dot:nth-child(3) { animation: dotPulse 1.2s ease-in-out 0.4s infinite; }
 .mt-loading__sub { font-size: 0.75rem; color: rgba(232,232,248,0.3); letter-spacing: 0.06em; }
 
+/* ── SELECTOR DE JUGADOR (Pendientes) ───────────────────── */
+.mt-psel {
+  display: flex; justify-content: center; gap: 2rem;
+  padding: 2rem 0 1.5rem;
+}
+.mt-psel__card {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.5rem; cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+  opacity: 0.45;
+}
+.mt-psel__card--active { opacity: 1; transform: scale(1.08); }
+.mt-psel__card:hover   { opacity: 0.8; transform: scale(1.04); }
+.mt-psel__card--active.mt-psel__card--david .mt-psel__img-wrap { border-color: #60a5fa; box-shadow: 0 0 18px rgba(96,165,250,0.35); }
+.mt-psel__card--active.mt-psel__card--javi  .mt-psel__img-wrap { border-color: #f87171; box-shadow: 0 0 18px rgba(248,113,113,0.35); }
+.mt-psel__card--active.mt-psel__card--mery  .mt-psel__img-wrap { border-color: #c084fc; box-shadow: 0 0 18px rgba(192,132,252,0.35); }
+.mt-psel__img-wrap {
+  width: 80px; height: 80px; border-radius: 50%;
+  overflow: hidden; border: 2px solid transparent;
+  background: rgba(255,255,255,0.05);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.mt-psel__img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.mt-psel__fallback {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Orbitron', sans-serif; font-size: 1.8rem; font-weight: 900;
+}
+.mt-psel__card--david .mt-psel__fallback { color: #60a5fa; }
+.mt-psel__card--javi  .mt-psel__fallback { color: #f87171; }
+.mt-psel__card--mery  .mt-psel__fallback { color: #c084fc; }
+.mt-psel__name {
+  font-family: 'Orbitron', sans-serif; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.1em; color: var(--txt1);
+}
+.mt-psel__count { font-size: 0.68rem; color: var(--txt3); }
+
 /* ── ESTADO BADGE EN TARJETA (Registro / Pendientes) ────── */
 .mt-card__reg-status {
   display: inline-block; margin-top: 0.35rem;
