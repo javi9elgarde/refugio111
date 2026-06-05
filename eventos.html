@@ -62,11 +62,6 @@
 
 <div class="page">
 
-  <!-- Botón crear evento (esquina superior derecha del contenido) -->
-  <div style="display:flex;justify-content:flex-end;padding:0.75rem 2rem 0">
-    <button class="btn btn-ghost btn-sm" id="btnCreateEvent" style="font-size:0.75rem;opacity:0.65">＋ Crear Evento</button>
-  </div>
-
   <!-- ══ MARQUESINA (se rellena por JS con eventos reales) ══ -->
   <div class="evt-marquee-wrap" id="evtMarqueeWrap" aria-hidden="true" style="display:none">
     <div class="evt-marquee-track" id="evtMarqueeTrack"></div>
@@ -81,7 +76,10 @@
       </div>
       <button class="evt-carousel__btn" id="evtNext" title="Siguiente evento" aria-label="Siguiente evento">&#9654;</button>
     </div>
-    <div class="evt-dots" id="evtDots"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:0.5rem">
+      <div class="evt-dots" id="evtDots"></div>
+      <button class="btn btn-secondary btn-sm" id="btnCreateEvent" style="font-size:0.72rem;padding:0.3rem 0.8rem">＋ Crear Evento</button>
+    </div>
   </div>
 
   <style>
