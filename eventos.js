@@ -199,10 +199,7 @@
     var ev = _events[idx];
     if (!ev) return [];
     return _cards.filter(function (c) {
-      if (!(c.eventoId === ev.id || (!c.eventoId && idx === 0))) return false;
-      /* Combinadas: visibles para todos */
-      if (c.jugador === 'Combinada') return true;
-      return c.jugador === _player;
+      return (c.eventoId === ev.id || (!c.eventoId && idx === 0)) && c.jugador === _player;
     });
   }
 
@@ -831,13 +828,9 @@
     var isFullBingo = (total > 0 && marked === total);
     var prevFull    = _prevWasFull;
     _prevWasFull    = isFullBingo;
-
-    var isCombinada = card.jugador === 'Combinada';
     document.getElementById('bingoBoardWrap').innerHTML =
       '<div class="bingo-evento-title">' +
         escHtml(card.titulo) +
-        (isCombinada ? '<span class="bingo-combinada-badge">🎲 Combinada</span>' : '') +
-        (isCombinada ? '<button class="btn btn-ghost btn-sm bingo-edit-btn" onclick="window.GT_Bingo.rerandomizeCard(\'' + escId(card.id) + '\')" title="Mezclar casillas al azar desde los bingos individuales">🔀</button>' : '') +
         '<button class="btn btn-ghost btn-sm bingo-edit-btn" onclick="window.GT_Bingo.openEditCard(\'' + escId(card.id) + '\')">✏️ Editar</button>' +
       '</div>' +
       '<div class="bingo-board">' +
@@ -1071,164 +1064,6 @@
       });
     } catch(e){}
   }
-
-  /* ── POOL ALEATORIO DESDE BINGOS INDIVIDUALES ────────────────── */
-  function shuffle(arr) {
-    var a = arr.slice();
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = a[i]; a[i] = a[j]; a[j] = t;
-    }
-    return a;
-  }
-
-  function getPoolFromIndividualBingos(evIdx, cols, rows) {
-    var ev = _events[evIdx];
-    if (!ev) return [];
-    var total = cols * rows;
-    /* Reunir todas las casillas de D/J/M para este evento */
-    var pool = [];
-    var seen = {};
-    _cards.forEach(function(c) {
-      if ((c.eventoId !== ev.id) || c.jugador === 'Combinada') return;
-      (c.cells || []).forEach(function(cell) {
-        if (!cell || cell.libre) return;
-        var key = (cell.texto || '') + '|' + (cell.imageUrl || '');
-        if (!seen[key]) {
-          seen[key] = true;
-          pool.push({ texto: cell.texto || '', imageUrl: cell.imageUrl || null,
-                      marcada: false, libre: false, marcadoPor: null, marcadaAt: null });
-        }
-      });
-    });
-    /* Mezclar y tomar N */
-    pool = shuffle(pool);
-    while (pool.length < total) {
-      /* Si hay pocas casillas, rellena con vacías */
-      pool.push({ texto: '', imageUrl: null, marcada: false, libre: false, marcadoPor: null, marcadaAt: null });
-    }
-    return pool.slice(0, total);
-  }
-
-  /* ── MODAL CREAR / EDITAR BINGO ─────────────────────────────── */
-  function openNewCardModal() {
-    _editingCardId = null;
-    _bingoSize = BINGO_SIZES[1]; /* default 5×4 para combinada */
-    if (_player !== 'Combinada') _bingoSize = BINGO_SIZES[0]; /* 4×3 para individuales */
-    var ev = _events[_currentEvtIdx] || {};
-    document.getElementById('bingoModalHeading').textContent =
-      (_player === 'Combinada' ? '🎲 Bingo Combinado — ' : 'Nuevo Bingo — ') + (ev.nombre || '');
-    document.getElementById('bingoModalName').value = ev.nombre || '';
-    document.getElementById('bingoModalDelete').style.display = 'none';
-    buildSizePicker(_player !== 'Combinada'); /* no cambiar tamaño en combinada */
-
-    var prefilled = (_player === 'Combinada')
-      ? getPoolFromIndividualBingos(_currentEvtIdx, _bingoSize.cols, _bingoSize.rows)
-      : null;
-
-    /* Botón aleatorizar en el modal (solo combinada) */
-    var randBtn = document.getElementById('bingoModalRand');
-    if (randBtn) randBtn.style.display = (_player === 'Combinada') ? '' : 'none';
-
-    buildModalGrid(prefilled, _bingoSize.cols, _bingoSize.rows);
-    document.getElementById('bingoModalOverlay').classList.add('open');
-    document.getElementById('bingoModalName').focus();
-    document.getElementById('bingoModalName').select();
-  }
-
-  function openEditCard(cardId) {
-    db.collection('bingo_cards').doc(cardId).get().then(function (doc) {
-      if (!doc.exists) return;
-      var data = doc.data();
-      _editingCardId = cardId;
-      document.getElementById('bingoModalHeading').textContent = 'Editar Bingo';
-      document.getElementById('bingoModalName').value = data.titulo || '';
-      document.getElementById('bingoModalDelete').style.display = 'inline-flex';
-      buildSizePicker(false);
-      buildModalGrid(data.cells || null, data.cols || 5, data.rows || 4);
-      document.getElementById('bingoModalOverlay').classList.add('open');
-    });
-  }
-
-  function buildSizePicker(editable) {
-    var wrap = document.getElementById('bingoSizePicker');
-    if (!wrap) return;
-    wrap.style.display = editable ? '' : 'none';
-    if (!editable) return;
-    wrap.innerHTML = BINGO_SIZES.map(function(sz) {
-      var sel = (sz.cols === _bingoSize.cols && sz.rows === _bingoSize.rows) ? ' bingo-sz--active' : '';
-      var miniRows = '';
-      for (var r = 0; r < sz.rows; r++) {
-        miniRows += '<div class="bingo-sz-row">';
-        for (var c = 0; c < sz.cols; c++) miniRows += '<div class="bingo-sz-cell"></div>';
-        miniRows += '</div>';
-      }
-      return '<button class="bingo-sz-btn' + sel + '" data-cols="' + sz.cols + '" data-rows="' + sz.rows + '">' +
-        '<div class="bingo-sz-grid">' + miniRows + '</div>' +
-        '<span class="bingo-sz-label">' + sz.label + ' — ' + sz.desc + '</span>' +
-        (sz.hint ? '<span class="bingo-sz-hint">' + sz.hint + '</span>' : '') +
-      '</button>';
-    }).join('');
-    wrap.querySelectorAll('.bingo-sz-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        _bingoSize = BINGO_SIZES.find(function(s){ return s.cols === +btn.dataset.cols && s.rows === +btn.dataset.rows; }) || _bingoSize;
-        wrap.querySelectorAll('.bingo-sz-btn').forEach(function(b){ b.classList.remove('bingo-sz--active'); });
-        btn.classList.add('bingo-sz--active');
-        buildModalGrid(null, _bingoSize.cols, _bingoSize.rows);
-      });
-    });
-  }
-
-  function buildModalGrid(existingCells, cols, rows) {
-    cols = cols || 5; rows = rows || 4;
-    var total = cols * rows;
-    var container = document.getElementById('bingoModalGrid');
-    container.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
-    container.innerHTML = '';
-    for (var i = 0; i < total; i++) {
-      var cell = existingCells ? existingCells[i] : null;
-      var wrap = document.createElement('div');
-      wrap.className = 'bingo-modal-cell';
-      wrap.dataset.idx = i;
-
-      var inp = document.createElement('input');
-      inp.type = 'text'; inp.maxLength = 60;
-      inp.className = 'bingo-modal-input bingo-modal-input--text';
-      inp.dataset.idx = i;
-      inp.value = cell ? (cell.texto || '') : '';
-      inp.placeholder = 'Texto…';
-
-      var imgInp = document.createElement('input');
-      imgInp.type = 'url';
-      imgInp.className = 'bingo-modal-input bingo-modal-input--img';
-      imgInp.dataset.idx = i;
-      imgInp.value = cell ? (cell.imageUrl || '') : '';
-      imgInp.placeholder = '🖼 URL…';
-
-      wrap.appendChild(inp);
-      wrap.appendChild(imgInp);
-      container.appendChild(wrap);
-    }
-  }
-
-  /* 🔀 Aleatorizar casillas del modal (combinada) */
-  function randModalCells() {
-    var pool = getPoolFromIndividualBingos(_currentEvtIdx, _bingoSize.cols, _bingoSize.rows);
-    buildModalGrid(pool, _bingoSize.cols, _bingoSize.rows);
-  }
-
-  /* 🔀 Re-aleatorizar tablero combinado ya guardado */
-  function rerandomizeCard(cardId) {
-    db.collection('bingo_cards').doc(cardId).get().then(function(doc) {
-      if (!doc.exists) return;
-      var data = doc.data();
-      var cols = data.cols || 5, rows = data.rows || 4;
-      var newCells = getPoolFromIndividualBingos(_currentEvtIdx, cols, rows);
-      db.collection('bingo_cards').doc(cardId).update({ cells: newCells });
-      if (window.GT && window.GT.Toast) window.GT.Toast.show('🔀 Casillas mezcladas al azar');
-    });
-  }
-
   function saveCardModal() {
     var nombre = document.getElementById('bingoModalName').value.trim();
     if (!nombre) { document.getElementById('bingoModalName').focus(); return; }
@@ -1479,10 +1314,7 @@
     saveCardModal    : saveCardModal,
     closeCardModal   : closeCardModal,
     deleteCard       : deleteCard,
-    resetMarks       : resetMarks,
-    randModalCells     : randModalCells,
-    rerandomizeCard    : rerandomizeCard,
-    openCreateEventModal: openCreateEventModal,
+    resetMarks       : resetMarks,    openCreateEventModal: openCreateEventModal,
     openEditEventModal : openEditEventModal,
     closeEditEventModal: closeEditEventModal,
     saveEditEventModal : saveEditEventModal,
