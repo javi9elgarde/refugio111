@@ -832,9 +832,12 @@
     var prevFull    = _prevWasFull;
     _prevWasFull    = isFullBingo;
 
+    var isCombinada = card.jugador === 'Combinada';
     document.getElementById('bingoBoardWrap').innerHTML =
       '<div class="bingo-evento-title">' +
         escHtml(card.titulo) +
+        (isCombinada ? '<span class="bingo-combinada-badge">🎲 Combinada</span>' : '') +
+        (isCombinada ? '<button class="btn btn-ghost btn-sm bingo-edit-btn" onclick="window.GT_Bingo.rerandomizeCard(\'' + escId(card.id) + '\')" title="Mezclar casillas al azar desde los bingos individuales">🔀</button>' : '') +
         '<button class="btn btn-ghost btn-sm bingo-edit-btn" onclick="window.GT_Bingo.openEditCard(\'' + escId(card.id) + '\')">✏️ Editar</button>' +
       '</div>' +
       '<div class="bingo-board">' +
@@ -1069,16 +1072,65 @@
     } catch(e){}
   }
 
+  /* ── POOL ALEATORIO DESDE BINGOS INDIVIDUALES ────────────────── */
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function getPoolFromIndividualBingos(evIdx, cols, rows) {
+    var ev = _events[evIdx];
+    if (!ev) return [];
+    var total = cols * rows;
+    /* Reunir todas las casillas de D/J/M para este evento */
+    var pool = [];
+    var seen = {};
+    _cards.forEach(function(c) {
+      if ((c.eventoId !== ev.id) || c.jugador === 'Combinada') return;
+      (c.cells || []).forEach(function(cell) {
+        if (!cell || cell.libre) return;
+        var key = (cell.texto || '') + '|' + (cell.imageUrl || '');
+        if (!seen[key]) {
+          seen[key] = true;
+          pool.push({ texto: cell.texto || '', imageUrl: cell.imageUrl || null,
+                      marcada: false, libre: false, marcadoPor: null, marcadaAt: null });
+        }
+      });
+    });
+    /* Mezclar y tomar N */
+    pool = shuffle(pool);
+    while (pool.length < total) {
+      /* Si hay pocas casillas, rellena con vacías */
+      pool.push({ texto: '', imageUrl: null, marcada: false, libre: false, marcadoPor: null, marcadaAt: null });
+    }
+    return pool.slice(0, total);
+  }
+
   /* ── MODAL CREAR / EDITAR BINGO ─────────────────────────────── */
   function openNewCardModal() {
     _editingCardId = null;
-    _bingoSize = BINGO_SIZES[3]; /* reset a 5×4 */
+    _bingoSize = BINGO_SIZES[1]; /* default 5×4 para combinada */
+    if (_player !== 'Combinada') _bingoSize = BINGO_SIZES[0]; /* 4×3 para individuales */
     var ev = _events[_currentEvtIdx] || {};
-    document.getElementById('bingoModalHeading').textContent = 'Nuevo Bingo — ' + (ev.nombre || '');
+    document.getElementById('bingoModalHeading').textContent =
+      (_player === 'Combinada' ? '🎲 Bingo Combinado — ' : 'Nuevo Bingo — ') + (ev.nombre || '');
     document.getElementById('bingoModalName').value = ev.nombre || '';
     document.getElementById('bingoModalDelete').style.display = 'none';
-    buildSizePicker(true);
-    buildModalGrid(null, _bingoSize.cols, _bingoSize.rows);
+    buildSizePicker(_player !== 'Combinada'); /* no cambiar tamaño en combinada */
+
+    var prefilled = (_player === 'Combinada')
+      ? getPoolFromIndividualBingos(_currentEvtIdx, _bingoSize.cols, _bingoSize.rows)
+      : null;
+
+    /* Botón aleatorizar en el modal (solo combinada) */
+    var randBtn = document.getElementById('bingoModalRand');
+    if (randBtn) randBtn.style.display = (_player === 'Combinada') ? '' : 'none';
+
+    buildModalGrid(prefilled, _bingoSize.cols, _bingoSize.rows);
     document.getElementById('bingoModalOverlay').classList.add('open');
     document.getElementById('bingoModalName').focus();
     document.getElementById('bingoModalName').select();
@@ -1157,6 +1209,24 @@
       wrap.appendChild(imgInp);
       container.appendChild(wrap);
     }
+  }
+
+  /* 🔀 Aleatorizar casillas del modal (combinada) */
+  function randModalCells() {
+    var pool = getPoolFromIndividualBingos(_currentEvtIdx, _bingoSize.cols, _bingoSize.rows);
+    buildModalGrid(pool, _bingoSize.cols, _bingoSize.rows);
+  }
+
+  /* 🔀 Re-aleatorizar tablero combinado ya guardado */
+  function rerandomizeCard(cardId) {
+    db.collection('bingo_cards').doc(cardId).get().then(function(doc) {
+      if (!doc.exists) return;
+      var data = doc.data();
+      var cols = data.cols || 5, rows = data.rows || 4;
+      var newCells = getPoolFromIndividualBingos(_currentEvtIdx, cols, rows);
+      db.collection('bingo_cards').doc(cardId).update({ cells: newCells });
+      if (window.GT && window.GT.Toast) window.GT.Toast.show('🔀 Casillas mezcladas al azar');
+    });
   }
 
   function saveCardModal() {
@@ -1410,6 +1480,8 @@
     closeCardModal   : closeCardModal,
     deleteCard       : deleteCard,
     resetMarks       : resetMarks,
+    randModalCells     : randModalCells,
+    rerandomizeCard    : rerandomizeCard,
     openCreateEventModal: openCreateEventModal,
     openEditEventModal : openEditEventModal,
     closeEditEventModal: closeEditEventModal,

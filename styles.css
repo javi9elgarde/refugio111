@@ -4848,6 +4848,13 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
   display: flex; flex-direction: column; gap: 0.6rem;
   max-width: 680px; margin: 0 auto;
 }
+.bingo-combinada-badge {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em;
+  background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(155,23,66,0.2), rgba(155,89,255,0.2));
+  border: 1px solid rgba(245,200,66,0.3);
+  color: #f5c842; border-radius: 20px; padding: 0.15rem 0.55rem;
+  margin-left: 0.4rem; vertical-align: middle;
+}
 .bingo-rank-year { margin-bottom: 1.25rem; }
 .bingo-rank-year__hdr {
   font-family: 'Orbitron', sans-serif;
