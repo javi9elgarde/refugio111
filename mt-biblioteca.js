@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER — Biblioteca
-   Version: 20260606d
+   Version: 20260606e
    ============================================================ */
 (function () {
   'use strict';
@@ -97,7 +97,12 @@
       .where('tipo', '==', cat)
       .onSnapshot(function (snap) {
         _items = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        _items.sort(function (a, b) { return (a.titulo || '').localeCompare(b.titulo || '', 'es', { sensitivity: 'base' }); });
+        _items.sort(function (a, b) {
+          var ya = a.anio || a.año || 9999;
+          var yb = b.anio || b.año || 9999;
+          if (ya !== yb) return ya - yb;
+          return (a.titulo || '').localeCompare(b.titulo || '', 'es', { sensitivity: 'base' });
+        });
         buildFilters();
         renderGrid();
         buildYearFilter();
@@ -193,7 +198,8 @@
       return '<div class="mt-card__dot ' + U.playerDotClass(est) + '" title="' + p + ': ' + U.escHtml(est || 'sin estado') + '"></div>';
     }).join('');
 
-    var genre = item.generos && item.generos[0] ? '<span class="mt-card__genre">' + U.escHtml(item.generos[0]) + '</span>' : '';
+    var genre    = item.generos && item.generos[0] ? '<span class="mt-card__genre">' + U.escHtml(item.generos[0]) + '</span>' : '';
+    var sagaLine = item.saga ? '<div class="mt-card__saga">' + U.escHtml(item.saga) + '</div>' : '';
 
     return '<div class="mt-card" onclick="window.MT_Bib.openDetail(\'' + id.replace(/'/g, "\\'") + '\')">' +
       '<div class="mt-card__cover">' +
@@ -202,6 +208,7 @@
       '</div>' +
       '<div class="mt-card__body">' +
         '<div class="mt-card__title">' + U.escHtml(item.titulo) + '</div>' +
+        sagaLine +
         '<div class="mt-card__meta">' +
           (item.anio || item.año ? '<span class="mt-card__year">' + (item.anio || item.año) + '</span>' : '') +
           genre +
@@ -274,6 +281,7 @@
     if (item.anio || item.año) badges += '<span class="mt-badge mt-badge--year">📅 ' + (item.anio || item.año) + '</span>';
 
     var stats = '';
+    if (item.saga)         stats += '<div class="mt-detail-stat"><div class="mt-detail-stat__lbl">SAGA</div><div class="mt-detail-stat__val" style="color:var(--accent)">⛓ ' + U.escHtml(item.saga) + '</div></div>';
     if (item.director)     stats += '<div class="mt-detail-stat"><div class="mt-detail-stat__lbl">DIRECTOR</div><div class="mt-detail-stat__val">' + U.escHtml(item.director) + '</div></div>';
     if (item.estudio)      stats += '<div class="mt-detail-stat"><div class="mt-detail-stat__lbl">ESTUDIO</div><div class="mt-detail-stat__val">' + U.escHtml(item.estudio) + '</div></div>';
     var numTemp = item.numTemporadas || (item.temporadas ? item.temporadas.length : null) || item.duracion;
@@ -357,6 +365,7 @@
     document.getElementById('fDuracion').value     = '';
     document.getElementById('fNumTemporadas').value= '';
     document.getElementById('fEpisodios').value    = '';
+    document.getElementById('fSaga').value         = '';
     _selGeneros = []; _selPlats = [];
     document.getElementById('btnDelete').style.display = 'none';
     resetTMDBSearch();
@@ -380,6 +389,7 @@
     document.getElementById('fDuracion').value     = item.duracion || '';
     document.getElementById('fNumTemporadas').value= item.numTemporadas || (item.temporadas ? item.temporadas.length : '') || '';
     document.getElementById('fEpisodios').value    = item.episodios || '';
+    document.getElementById('fSaga').value         = item.saga || '';
     _selGeneros = (item.generos   || []).slice();
     _selPlats   = item.plataforma ? [item.plataforma] : [];
     document.getElementById('btnDelete').style.display = 'inline-flex';
@@ -532,6 +542,10 @@
         document.getElementById('fAnio').value     = (det.release_date || '').split('-')[0] || '';
         document.getElementById('fDuracion').value = det.runtime   || '';
         _selGeneros = (det.genres || []).map(function (g) { return g.name; });
+        /* Saga desde belongs_to_collection de TMDB */
+        var sagaName = det.belongs_to_collection ? (det.belongs_to_collection.name || '') : '';
+        sagaName = sagaName.replace(/\s*(Collection|Coleccion|Colección|Saga)\s*$/i, '').trim();
+        document.getElementById('fSaga').value = sagaName;
       } else {
         var tv      = await tmdbFetch('/tv/' + tmdbId);
         var creator = tv.created_by && tv.created_by.length ? tv.created_by[0].name : '';
@@ -541,6 +555,7 @@
         document.getElementById('fDirector').value        = creator || studio || '';
         document.getElementById('fAnio').value            = (tv.first_air_date || '').split('-')[0] || '';
         document.getElementById('fNumTemporadas').value   = tv.number_of_seasons || '';
+        document.getElementById('fSaga').value            = '';
         _selGeneros = (tv.genres || []).map(function (g) { return g.name; });
       }
 
@@ -570,7 +585,8 @@
       titulo    : titulo,
       portadaUrl: document.getElementById('fPortada').value.trim() || null,
       anio      : parseInt(document.getElementById('fAnio').value) || null,
-      generos   : _selGeneros.slice()
+      generos   : _selGeneros.slice(),
+      saga      : document.getElementById('fSaga').value.trim() || null
     };
     data[dirKey] = document.getElementById('fDirector').value.trim() || null;
 
