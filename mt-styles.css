@@ -568,13 +568,16 @@ body {
 /* Sección superior: póster izquierda + info derecha */
 .mt-detail-top {
   display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 1.25rem;
+  grid-template-columns: 220px 1fr;
+  gap: 1.5rem;
   margin-bottom: 1.1rem;
   align-items: start;
 }
-@media (max-width: 520px) {
-  .mt-detail-top { grid-template-columns: 100px 1fr; gap: 0.75rem; }
+@media (max-width: 600px) {
+  .mt-detail-top { grid-template-columns: 140px 1fr; gap: 0.9rem; }
+}
+@media (max-width: 420px) {
+  .mt-detail-top { grid-template-columns: 110px 1fr; gap: 0.7rem; }
 }
 
 /* Póster vertical (2:3) */
