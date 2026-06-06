@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es" data-mt-cat="peliculas">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="logonavegador.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#e63946">
+  <title>Refugio 111 — Importar Películas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="mt-styles.css?v=20260605d">
+  <style>
+    /* ── IMPORTAR ───────────────────────────────────────────── */
+    .imp-page { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+    /* Step 1 — Input */
+    .imp-header { margin-bottom: 2rem; }
+    .imp-header__title {
+      font-family: 'Orbitron', sans-serif; font-size: 1.5rem; font-weight: 900;
+      color: var(--accent); letter-spacing: 0.08em; margin-bottom: 0.4rem;
+    }
+    .imp-header__sub { font-size: 0.88rem; color: var(--txt2); }
+    .imp-textarea {
+      width: 100%; min-height: 220px; resize: vertical;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1rem; color: var(--txt1);
+      font-family: 'Inter', sans-serif; font-size: 0.9rem; line-height: 1.7;
+      outline: none; transition: border-color 0.18s;
+    }
+    .imp-textarea:focus { border-color: var(--accent); }
+    .imp-textarea::placeholder { color: var(--txt3); }
+    .imp-hint { font-size: 0.75rem; color: var(--txt3); margin-top: 0.5rem; }
+
+    /* Step 2 — Progress */
+    .imp-progress { text-align: center; padding: 3rem 1rem; }
+    .imp-progress__title {
+      font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700;
+      color: var(--txt2); margin-bottom: 1.5rem; letter-spacing: 0.06em;
+    }
+    .imp-progress__movie { font-size: 0.85rem; color: var(--txt3); margin-bottom: 1rem; min-height: 1.2em; }
+    .imp-bar-wrap {
+      background: rgba(255,255,255,0.06); border-radius: 999px;
+      height: 8px; overflow: hidden; margin-bottom: 0.75rem;
+    }
+    .imp-bar {
+      height: 100%; background: var(--accent); border-radius: 999px;
+      transition: width 0.3s ease; width: 0%;
+    }
+    .imp-progress__counter { font-size: 0.78rem; color: var(--txt3); }
+
+    /* Step 3 — Resultados */
+    .imp-res-header {
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+    .imp-res-header__title {
+      font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700;
+      color: var(--txt1); flex: 1;
+    }
+    .imp-badge { font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 6px; }
+    .imp-badge--ok  { background: rgba(67,233,123,0.12); color: #43e97b; }
+    .imp-badge--err { background: rgba(239,68,68,0.12);  color: #f87171; }
+
+    .imp-result-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+
+    .imp-row {
+      display: grid; grid-template-columns: 28px 70px 1fr auto;
+      gap: 0.85rem; align-items: center;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 12px; padding: 0.6rem 0.85rem;
+      transition: background 0.15s;
+    }
+    .imp-row:hover { background: rgba(255,255,255,0.055); }
+    .imp-row--notfound {
+      grid-template-columns: 1fr; background: rgba(239,68,68,0.05);
+      border-color: rgba(239,68,68,0.15);
+    }
+    .imp-row__notfound { font-size: 0.82rem; color: #f87171; padding: 0.2rem 0; }
+
+    .imp-row__check { display: flex; align-items: center; justify-content: center; }
+    .imp-row__check input[type=checkbox] {
+      width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer;
+    }
+
+    .imp-row__cover {
+      width: 70px; height: 98px; border-radius: 6px; overflow: hidden;
+      background: rgba(255,255,255,0.05); flex-shrink: 0;
+    }
+    .imp-row__cover img { width: 100%; height: 100%; object-fit: cover; }
+    .imp-cover-ph {
+      width: 100%; height: 100%; display: flex;
+      align-items: center; justify-content: center; font-size: 1.6rem;
+    }
+
+    .imp-row__info { min-width: 0; }
+    .imp-row__title {
+      font-weight: 700; font-size: 0.92rem; color: var(--txt1);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 0.3rem;
+    }
+    .imp-row__meta { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+    .imp-tag {
+      font-size: 0.7rem; background: rgba(255,255,255,0.07);
+      border: 1px solid var(--border); border-radius: 5px;
+      padding: 0.1rem 0.45rem; color: var(--txt2);
+    }
+    .imp-dir { font-size: 0.72rem; color: var(--txt3); }
+
+    .imp-row__genre { display: flex; flex-direction: column; gap: 0.3rem; min-width: 130px; }
+    .imp-sel { width: 100%; }
+    .imp-g2 { font-size: 0.65rem; color: var(--txt3); padding-left: 0.3rem; }
+
+    /* Step 4 — Done */
+    .imp-done { text-align: center; padding: 4rem 1rem; }
+    .imp-done__icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .imp-done__title {
+      font-family: 'Orbitron', sans-serif; font-size: 1.2rem; font-weight: 900;
+      color: #43e97b; margin-bottom: 0.5rem; letter-spacing: 0.06em;
+    }
+    .imp-done__sub { font-size: 0.88rem; color: var(--txt2); margin-bottom: 2rem; }
+    .imp-actions { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+
+    /* Selección global */
+    .imp-selall { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="mtLoading">
+  <div class="mt-loading__brand">🎬 REFUGIO 111</div>
+  <div class="mt-loading__dots">
+    <div class="mt-loading__dot"></div>
+    <div class="mt-loading__dot"></div>
+    <div class="mt-loading__dot"></div>
+  </div>
+  <div class="mt-loading__sub">Cargando...</div>
+</div>
+
+<!-- NAV -->
+<nav class="mt-nav">
+  <a href="hub.html" class="mt-nav__hub">🏠 Hub</a>
+  <div class="mt-cat-tabs">
+    <button class="mt-cat-tab mt-cat-tab--active" data-cat="peliculas">🎬 <span class="label">Películas</span></button>
+    <button class="mt-cat-tab" data-cat="series">📺 <span class="label">Series</span></button>
+    <button class="mt-cat-tab" data-cat="anime">🌸 <span class="label">Anime</span></button>
+  </div>
+  <div class="mt-nav__links">
+    <a href="mt-biblioteca.html"  class="mt-nav__link">Biblioteca</a>
+    <a href="mt-registro.html"    class="mt-nav__link">Registro</a>
+    <a href="mt-pendientes.html"  class="mt-nav__link">Pendientes</a>
+    <a href="mt-importar.html"    class="mt-nav__link mt-nav__link--active">Importar</a>
+  </div>
+  <a href="mt-hub.html" class="mt-nav__player-pill" id="mtPlayerPill" title="Cambiar jugador">
+    <div class="mt-nav__player-avatar mt-nav__player-avatar--javi">J</div>
+    <span class="mt-player-pill-name">Javi</span>
+  </a>
+  <button class="mt-nav__hamburger" id="mtHamburger" aria-label="Menú">☰</button>
+</nav>
+<div class="mt-accent-bar" id="mtAccentBar"></div>
+
+<div class="imp-page">
+
+  <!-- ── STEP 1: INPUT ──────────────────────────────────────── -->
+  <div id="step1">
+    <div class="imp-header">
+      <div class="imp-header__title">📥 Importar Películas</div>
+      <div class="imp-header__sub">
+        Pega la lista de títulos (uno por línea) y buscaremos automáticamente el póster, año, director y géneros en TMDB.
+      </div>
+    </div>
+    <textarea class="imp-textarea" id="titleInput"
+      placeholder="Inception&#10;El Padrino&#10;Interestelar&#10;La La Land&#10;Parásitos&#10;..."></textarea>
+    <div class="imp-hint">💡 Cuanto más preciso sea el título (en español o en inglés original), mejor resultado.</div>
+    <div style="margin-top:1.25rem;display:flex;gap:0.75rem;align-items:center">
+      <button class="mt-btn mt-btn--primary" id="btnBuscar" style="padding:0.7rem 2rem;font-size:0.9rem">
+        🔍 Buscar en TMDB
+      </button>
+      <span id="btnHint" style="font-size:0.78rem;color:var(--txt3)"></span>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: PROGRESO ───────────────────────────────────── -->
+  <div id="stepProgress" style="display:none">
+    <div class="imp-progress">
+      <div class="imp-progress__title">Buscando en TMDB...</div>
+      <div class="imp-progress__movie" id="progressTitle">—</div>
+      <div class="imp-bar-wrap">
+        <div class="imp-bar" id="progressBar"></div>
+      </div>
+      <div class="imp-progress__counter">
+        <span id="progressCurrent">0</span> de <span id="progressTotal">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: RESULTADOS ─────────────────────────────────── -->
+  <div id="stepResults" style="display:none">
+    <div class="imp-res-header">
+      <div class="imp-res-header__title">Resultados</div>
+      <span class="imp-badge imp-badge--ok" id="resFound">0 encontradas</span>
+      <span class="imp-badge imp-badge--err" id="resNoFound" style="display:none">0 no encontradas</span>
+    </div>
+    <div class="imp-selall">
+      <button class="mt-btn mt-btn--ghost mt-btn--sm" id="btnSelAll">Seleccionar todo</button>
+      <button class="mt-btn mt-btn--ghost mt-btn--sm" id="btnSelNone">Deseleccionar todo</button>
+    </div>
+    <div class="imp-result-list" id="resultList"></div>
+    <div class="imp-actions">
+      <button class="mt-btn mt-btn--secondary" id="btnVolver">← Volver a editar la lista</button>
+      <button class="mt-btn mt-btn--primary"   id="importBtn" style="padding:0.7rem 2rem;font-size:0.9rem">
+        Importar películas
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: DONE ───────────────────────────────────────── -->
+  <div id="stepDone" style="display:none">
+    <div class="imp-done">
+      <div class="imp-done__icon">✅</div>
+      <div class="imp-done__title">¡Importación completada!</div>
+      <div class="imp-done__sub"><span id="doneCount">0</span> películas añadidas a la biblioteca.</div>
+      <div class="imp-actions">
+        <a href="mt-biblioteca.html" class="mt-btn mt-btn--primary">Ver Biblioteca</a>
+        <button class="mt-btn mt-btn--secondary" id="btnReset">Importar más</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /imp-page -->
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js?v=20260521c" defer></script>
+<script src="mt-main.js?v=20260605b"         defer></script>
+<script src="mt-importar.js?v=20260605e"     defer></script>
+</body>
+</html>
