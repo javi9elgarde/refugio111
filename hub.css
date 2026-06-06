@@ -45,15 +45,16 @@ html, body {
   filter: brightness(0.72) saturate(0.88);
 }
 
-/* Corte diagonal medido al píxel en hub-right.png (1920×1080):
-   TOP y=2 → x=871 (45.4%) / BOTTOM y=1077 → x=644 (33.5%) */
+/* Diagonal con el mismo ángulo de la imagen pero centrada al 50/50:
+   misma pendiente (11.9%) desplazada para que avg = 50%
+   TOP = 56%  /  BOTTOM = 44% */
 .hub__split-img--left  {
-  clip-path: polygon(0 0, 45.4% 0, 33.5% 100%, 0 100%);
+  clip-path: polygon(0 0, 56% 0, 44% 100%, 0 100%);
   transform-origin: left center;
   object-position: left center;
 }
 .hub__split-img--right {
-  clip-path: polygon(45.4% 0, 100% 0, 100% 100%, 33.5% 100%);
+  clip-path: polygon(56% 0, 100% 0, 100% 100%, 44% 100%);
   transform-origin: right center;
   object-position: right center;
 }
@@ -164,7 +165,7 @@ html, body {
   transition: opacity 0.4s;
 }
 
-/* ── ZONAS DE CLICK — proporcional a la diagonal (avg 39.5%) ── */
+/* ── ZONAS DE CLICK — 50/50 centrado ──────────────── */
 .hub__zone {
   position: absolute;
   top: 0;
@@ -172,8 +173,8 @@ html, body {
   z-index: 12;
   cursor: pointer;
 }
-.hub__zone--left  { left: 0;   width: 40%; }
-.hub__zone--right { right: 0;  width: 60%; }
+.hub__zone--left  { left: 0;   width: 50%; }
+.hub__zone--right { right: 0;  width: 50%; }
 
 /* Las líneas de borde de zona se omiten — el divisor diagonal central lo sustituye */
 
@@ -183,12 +184,12 @@ html, body {
   inset: 0;
   pointer-events: none;
   z-index: 8;
-  /* Banda de ~10px sobre la diagonal medida al píxel (45.4% top → 33.5% bottom) */
+  /* Banda de ~10px — diagonal centrada 56% top → 44% bottom */
   clip-path: polygon(
-    calc(45.4% - 5px) 0%,
-    calc(45.4% + 5px) 0%,
-    calc(33.5% + 5px) 100%,
-    calc(33.5% - 5px) 100%
+    calc(56% - 5px) 0%,
+    calc(56% + 5px) 0%,
+    calc(44% + 5px) 100%,
+    calc(44% - 5px) 100%
   );
   background: linear-gradient(
     to bottom,
@@ -210,7 +211,7 @@ html, body {
 /* ── TÍTULO CENTRAL — centrado sobre la diagonal ───── */
 .hub__title {
   position: absolute;
-  left: 45%;
+  left: 50%;
   top: 6%;
   transform: translateX(-50%);
   z-index: 20;
@@ -297,7 +298,7 @@ html, body {
 }
 
 .hub__label--left {
-  left: 20%;
+  left: 27%;
   border: 1px solid rgba(0, 255, 136, 0.18);
   border-top: 2px solid rgba(0, 255, 136, 0.55);
   box-shadow:
@@ -307,7 +308,7 @@ html, body {
 }
 
 .hub__label--right {
-  left: 70%;
+  left: 75%;
   border: 1px solid rgba(79, 172, 254, 0.18);
   border-top: 2px solid rgba(79, 172, 254, 0.55);
   box-shadow:
