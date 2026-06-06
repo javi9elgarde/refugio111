@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER — Importador TMDB
-   Version: 20260606a
+   Version: 20260606b
    ============================================================ */
 (function () {
   'use strict';
@@ -26,6 +26,26 @@
   function escHtml(s) {
     if (!s) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* Normaliza un título para comparación: minúsculas, sin tildes, solo alfanumérico */
+  function normTitle(s) {
+    return (s || '').toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]/g, '');
+  }
+
+  /* Devuelve un Set con los títulos normalizados ya existentes en Firestore para esa categoría */
+  async function checkDuplicates(cat) {
+    var db = window.firebase && window.firebase.firestore ? window.firebase.firestore() : null;
+    if (!db) return new Set();
+    var snap = await db.collection('mt_items').where('tipo', '==', cat).get();
+    var titles = new Set();
+    snap.docs.forEach(function (d) {
+      var t = d.data().titulo;
+      if (t) titles.add(normTitle(t));
+    });
+    return titles;
   }
 
   /* ── BÚSQUEDA: PELÍCULA ──────────────────────────────────── */
@@ -136,6 +156,17 @@
       }
     }
 
+    /* Comprobar duplicados contra Firestore */
+    document.getElementById('progressTitle').textContent = '🔎 Comprobando duplicados...';
+    try {
+      var existing = await checkDuplicates(cat);
+      _results.forEach(function (r) {
+        if (r.found) r.duplicate = existing.has(normTitle(r.titulo));
+      });
+    } catch (e) {
+      console.warn('No se pudo comprobar duplicados:', e);
+    }
+
     document.getElementById('stepProgress').style.display = 'none';
     showResults();
   }
@@ -184,11 +215,15 @@
         return '<span class="imp-tag imp-tag--genre">' + escHtml(g) + '</span>';
       }).join('');
 
-      return '<div class="imp-row">' +
-        '<label class="imp-row__check"><input type="checkbox" class="imp-cb" data-idx="' + idx + '" checked></label>' +
+      var dupClass  = r.duplicate ? ' imp-row--dup' : '';
+      var dupBadge  = r.duplicate ? ' <span class="imp-dup-badge">⚠️ Ya en biblioteca</span>' : '';
+      var cbChecked = r.duplicate ? '' : ' checked';
+
+      return '<div class="imp-row' + dupClass + '">' +
+        '<label class="imp-row__check"><input type="checkbox" class="imp-cb" data-idx="' + idx + '"' + cbChecked + '></label>' +
         '<div class="imp-row__cover">' + thumb + '</div>' +
         '<div class="imp-row__info">' +
-          '<div class="imp-row__title">' + escHtml(r.titulo) + '</div>' +
+          '<div class="imp-row__title">' + escHtml(r.titulo) + dupBadge + '</div>' +
           (metaLine ? '<div class="imp-row__meta">' + metaLine + '</div>' : '') +
           (genTags  ? '<div class="imp-row__meta imp-row__genres">' + genTags + '</div>' : '') +
         '</div>' +
