@@ -45,14 +45,17 @@ html, body {
   filter: brightness(0.72) saturate(0.88);
 }
 
-/* Corte diagonal: izquierda gaming, derecha cine — sigue la diagonal de la imagen */
+/* Corte diagonal medido al píxel en hub-right.png (1920×1080):
+   TOP y=2 → x=871 (45.4%) / BOTTOM y=1077 → x=644 (33.5%) */
 .hub__split-img--left  {
-  clip-path: polygon(0 0, 54% 0, 46% 100%, 0 100%);
+  clip-path: polygon(0 0, 45.4% 0, 33.5% 100%, 0 100%);
   transform-origin: left center;
+  object-position: left center;
 }
 .hub__split-img--right {
-  clip-path: polygon(54% 0, 100% 0, 100% 100%, 46% 100%);
+  clip-path: polygon(45.4% 0, 100% 0, 100% 100%, 33.5% 100%);
   transform-origin: right center;
+  object-position: right center;
 }
 
 /* Hover izquierda (gaming): iluminar izq, oscurecer+desaturar derecha */
@@ -161,17 +164,16 @@ html, body {
   transition: opacity 0.4s;
 }
 
-/* ── ZONAS DE CLICK ────────────────────────────────── */
+/* ── ZONAS DE CLICK — proporcional a la diagonal (avg 39.5%) ── */
 .hub__zone {
   position: absolute;
   top: 0;
-  width: 50%;
   height: 100%;
   z-index: 12;
   cursor: pointer;
 }
-.hub__zone--left  { left: 0; }
-.hub__zone--right { right: 0; }
+.hub__zone--left  { left: 0;   width: 40%; }
+.hub__zone--right { right: 0;  width: 60%; }
 
 /* Las líneas de borde de zona se omiten — el divisor diagonal central lo sustituye */
 
@@ -181,12 +183,12 @@ html, body {
   inset: 0;
   pointer-events: none;
   z-index: 8;
-  /* Banda de ~10px que sigue exactamente la diagonal del clip-path (54% top → 46% bottom) */
+  /* Banda de ~10px sobre la diagonal medida al píxel (45.4% top → 33.5% bottom) */
   clip-path: polygon(
-    calc(54% - 5px) 0%,
-    calc(54% + 5px) 0%,
-    calc(46% + 5px) 100%,
-    calc(46% - 5px) 100%
+    calc(45.4% - 5px) 0%,
+    calc(45.4% + 5px) 0%,
+    calc(33.5% + 5px) 100%,
+    calc(33.5% - 5px) 100%
   );
   background: linear-gradient(
     to bottom,
@@ -295,7 +297,7 @@ html, body {
 }
 
 .hub__label--left {
-  left: 25%;
+  left: 20%;
   border: 1px solid rgba(0, 255, 136, 0.18);
   border-top: 2px solid rgba(0, 255, 136, 0.55);
   box-shadow:
@@ -305,7 +307,7 @@ html, body {
 }
 
 .hub__label--right {
-  left: 75%;
+  left: 70%;
   border: 1px solid rgba(79, 172, 254, 0.18);
   border-top: 2px solid rgba(79, 172, 254, 0.55);
   box-shadow:
