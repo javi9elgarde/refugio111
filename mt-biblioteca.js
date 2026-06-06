@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER — Biblioteca
-   Version: 20260606a
+   Version: 20260606c
    ============================================================ */
 (function () {
   'use strict';
@@ -13,6 +13,11 @@
   var _filterGenre  = '';
   var _filterYear   = '';
   var _searchQuery  = '';
+
+  /* ── TMDB ───────────────────────────────────────────────── */
+  var TMDB_KEY  = '2a0181b8eb1bb888042a00f91e10681c';
+  var IMG_FULL  = 'https://image.tmdb.org/t/p/w500';
+  var IMG_THUMB = 'https://image.tmdb.org/t/p/w92';
 
   /* ── ESPERAR MT.init ────────────────────────────────────── */
   function waitForMT(cb) {
@@ -58,6 +63,19 @@
       _filterYear = this.value; renderGrid();
     });
     document.getElementById('clearFilters').addEventListener('click', clearFilters);
+
+    /* TMDB quick search */
+    document.getElementById('tmdbSearchBtn').addEventListener('click', tmdbSearch);
+    document.getElementById('tmdbQuery').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); tmdbSearch(); }
+    });
+    document.getElementById('tmdbRefill').addEventListener('click', function () {
+      document.getElementById('tmdbFillDone').style.display    = 'none';
+      document.getElementById('tmdbSearchSection').style.display = '';
+      document.getElementById('tmdbResultsList').innerHTML     = '';
+      document.getElementById('tmdbQuery').value               = '';
+      document.getElementById('tmdbQuery').focus();
+    });
 
     /* Escuchar cambios de categoría */
     window.addEventListener('mt:catChange', function () {
@@ -319,6 +337,13 @@
   }
 
   /* ── MODAL ADD / EDIT ────────────────────────────────────── */
+  function resetTMDBSearch() {
+    document.getElementById('tmdbSearchSection').style.display = '';
+    document.getElementById('tmdbFillDone').style.display      = 'none';
+    document.getElementById('tmdbResultsList').innerHTML       = '';
+    document.getElementById('tmdbQuery').value                 = '';
+  }
+
   function openAddModal() {
     _editingId = null;
     var cat = window.MT.getCat();
@@ -334,9 +359,10 @@
     document.getElementById('fEpisodios').value    = '';
     _selGeneros = []; _selPlats = [];
     document.getElementById('btnDelete').style.display = 'none';
+    resetTMDBSearch();
     buildChips();
     document.getElementById('editModal').classList.add('open');
-    document.getElementById('fTitulo').focus();
+    setTimeout(function () { document.getElementById('tmdbQuery').focus(); }, 80);
   }
 
   function openEditModal(id) {
@@ -357,6 +383,7 @@
     _selGeneros = (item.generos   || []).slice();
     _selPlats   = item.plataforma ? [item.plataforma] : [];
     document.getElementById('btnDelete').style.display = 'inline-flex';
+    resetTMDBSearch();
     buildChips();
     document.getElementById('editModal').classList.add('open');
   }
@@ -413,6 +440,106 @@
       document.querySelectorAll('#plataformaChips .mt-chip').forEach(function (c) {
         c.classList.toggle('active', c.textContent === val);
       });
+    }
+  }
+
+  /* ── TMDB QUICK SEARCH ──────────────────────────────────── */
+  function tmdbFetch(path) {
+    var sep = path.indexOf('?') >= 0 ? '&' : '?';
+    var url = 'https://api.themoviedb.org/3' + path + sep + 'api_key=' + TMDB_KEY + '&language=es-ES';
+    return fetch(url).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  function tmdbSearch() {
+    var query = (document.getElementById('tmdbQuery').value || '').trim();
+    if (query.length < 2) return;
+
+    var cat    = window.MT.getCat();
+    var isFilm = cat === 'peliculas';
+    var ep     = isFilm ? '/search/movie' : '/search/tv';
+    var list   = document.getElementById('tmdbResultsList');
+    list.innerHTML = '<div class="mt-tmdb-msg">Buscando...</div>';
+
+    tmdbFetch(ep + '?query=' + encodeURIComponent(query))
+      .then(function (data) {
+        var results = (data.results || []).slice(0, 6);
+        if (!results.length) {
+          list.innerHTML = '<div class="mt-tmdb-msg">Sin resultados para "' + escHtml(query) + '"</div>';
+          return;
+        }
+        list.innerHTML = results.map(function (r) {
+          var title = escHtml(r.title || r.name || '');
+          var year  = (r.release_date || r.first_air_date || '').split('-')[0] || '—';
+          var cover = r.poster_path
+            ? '<img src="' + IMG_THUMB + r.poster_path + '" loading="lazy">'
+            : '<div class="mt-tmdb-item__ph">' + window.MT.Utils.catEmoji(cat) + '</div>';
+          return '<div class="mt-tmdb-item" data-tmdb-id="' + r.id + '">' +
+            '<div class="mt-tmdb-item__cover">' + cover + '</div>' +
+            '<div class="mt-tmdb-item__info">' +
+              '<div class="mt-tmdb-item__title">' + title + '</div>' +
+              '<div class="mt-tmdb-item__meta">' + year + '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        list.querySelectorAll('.mt-tmdb-item').forEach(function (el) {
+          el.addEventListener('click', function () {
+            tmdbFill(parseInt(this.dataset.tmdbId));
+          });
+        });
+      })
+      .catch(function () {
+        list.innerHTML = '<div class="mt-tmdb-msg">❌ Error al conectar con TMDB</div>';
+      });
+  }
+
+  async function tmdbFill(tmdbId) {
+    var cat    = window.MT.getCat();
+    var isFilm = cat === 'peliculas';
+    var list   = document.getElementById('tmdbResultsList');
+
+    /* Indicar carga en el item clicado */
+    var clicked = list.querySelector('[data-tmdb-id="' + tmdbId + '"]');
+    if (clicked) clicked.style.opacity = '0.5';
+
+    try {
+      if (isFilm) {
+        var det  = await tmdbFetch('/movie/' + tmdbId + '?append_to_response=credits');
+        var crew = (det.credits && det.credits.crew) || [];
+        var dir  = '';
+        for (var i = 0; i < crew.length; i++) {
+          if (crew[i].job === 'Director') { dir = crew[i].name; break; }
+        }
+        document.getElementById('fTitulo').value   = det.title    || '';
+        document.getElementById('fPortada').value  = det.poster_path ? IMG_FULL + det.poster_path : '';
+        document.getElementById('fDirector').value = dir;
+        document.getElementById('fAnio').value     = (det.release_date || '').split('-')[0] || '';
+        document.getElementById('fDuracion').value = det.runtime   || '';
+        _selGeneros = (det.genres || []).map(function (g) { return g.name; });
+      } else {
+        var tv      = await tmdbFetch('/tv/' + tmdbId);
+        var creator = tv.created_by && tv.created_by.length ? tv.created_by[0].name : '';
+        var studio  = tv.networks   && tv.networks.length   ? tv.networks[0].name   : '';
+        document.getElementById('fTitulo').value          = tv.name  || '';
+        document.getElementById('fPortada').value         = tv.poster_path ? IMG_FULL + tv.poster_path : '';
+        document.getElementById('fDirector').value        = creator || studio || '';
+        document.getElementById('fAnio').value            = (tv.first_air_date || '').split('-')[0] || '';
+        document.getElementById('fNumTemporadas').value   = tv.number_of_seasons || '';
+        _selGeneros = (tv.genres || []).map(function (g) { return g.name; });
+      }
+
+      buildChips();
+
+      /* Colapsar búsqueda y mostrar confirmación */
+      document.getElementById('tmdbSearchSection').style.display = 'none';
+      document.getElementById('tmdbFillDone').style.display      = '';
+
+    } catch (e) {
+      console.error('tmdbFill error:', e);
+      list.innerHTML = '<div class="mt-tmdb-msg">❌ Error al obtener datos de TMDB</div>';
     }
   }
 

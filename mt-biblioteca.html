@@ -97,6 +97,22 @@
     </div>
     <div class="mt-modal__body">
       <input type="hidden" id="fId">
+
+      <!-- ── TMDB Quick Search ──────────────────────────── -->
+      <div id="tmdbSearchSection" class="mt-tmdb-section">
+        <div class="mt-tmdb-row">
+          <input type="text" class="mt-form-input" id="tmdbQuery"
+                 placeholder="🔍 Buscar en TMDB para autorellenar...">
+          <button class="mt-btn mt-btn--secondary mt-btn--sm" id="tmdbSearchBtn" type="button">Buscar</button>
+        </div>
+        <div id="tmdbResultsList" class="mt-tmdb-list"></div>
+        <div class="mt-tmdb-or">— o rellena manualmente —</div>
+      </div>
+      <div id="tmdbFillDone" class="mt-tmdb-done" style="display:none">
+        ✅ Datos rellenados desde TMDB
+        <button class="mt-btn mt-btn--ghost mt-btn--sm" id="tmdbRefill" type="button">🔄 Cambiar</button>
+      </div>
+
       <div class="mt-form-grid">
 
         <!-- Título -->
@@ -184,6 +200,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="mt-main.js?v=20260606a"         defer></script>
-<script src="mt-biblioteca.js?v=20260606a"   defer></script>
+<script src="mt-biblioteca.js?v=20260606c"   defer></script>
 </body>
 </html>
