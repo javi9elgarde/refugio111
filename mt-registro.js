@@ -1,9 +1,13 @@
 /* ============================================================
    MEDIA TRACKER — Registro (vista personal por jugador)
-   Version: 20260606f
+   Version: 20260607a
    ============================================================ */
 (function () {
   'use strict';
+
+  var TMDB_KEY  = '2a0181b8eb1bb888042a00f91e10681c';
+  var IMG_SMALL = 'https://image.tmdb.org/t/p/w92';
+  var IMG_FULL  = 'https://image.tmdb.org/t/p/w500';
 
   var _items        = [];
   var _unsub        = null;
@@ -11,6 +15,8 @@
   var _filterYear   = '';
   var _searchQuery  = '';
   var _editingId    = null;
+  var _addData      = null;   // resultado TMDB seleccionado para añadir
+  var _tmdbResults  = [];
 
   function waitForMT(cb) {
     if (window.MT && window.MT.getDb && window.MT.getDb()) return cb();
@@ -23,6 +29,7 @@
       updatePageMeta();
     });
 
+    /* Filtros de lista */
     document.getElementById('searchInput').addEventListener('input', function () {
       _searchQuery = this.value.toLowerCase(); renderGrid();
     });
@@ -34,12 +41,30 @@
     });
     document.getElementById('clearFilters').addEventListener('click', clearFilters);
 
-    /* Modal */
+    /* Modal editar */
     document.getElementById('regModalClose').addEventListener('click', closeRegModal);
     document.getElementById('regCancel').addEventListener('click', closeRegModal);
     document.getElementById('regSave').addEventListener('click', saveReg);
     document.getElementById('regModal').addEventListener('click', function (e) {
       if (e.target === this) closeRegModal();
+    });
+
+    /* Modal añadir */
+    document.getElementById('btnAddTitle').addEventListener('click', openAddModal);
+    document.getElementById('addModalClose').addEventListener('click', closeAddModal);
+    document.getElementById('addCancel').addEventListener('click', closeAddModal);
+    document.getElementById('addModal').addEventListener('click', function (e) {
+      if (e.target === this) closeAddModal();
+    });
+    document.getElementById('addSearchBtn').addEventListener('click', doSearchTMDB);
+    document.getElementById('addSearchInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') doSearchTMDB();
+    });
+    document.getElementById('addSave').addEventListener('click', saveAdd);
+    document.getElementById('addBackBtn').addEventListener('click', function () {
+      showAddStep(1);
+      _addData = null;
+      document.getElementById('addSave').style.display = 'none';
     });
 
     window.addEventListener('mt:catChange', function () {
@@ -50,6 +75,7 @@
     });
   }
 
+  /* ── CARGA DATOS ─────────────────────────────────────────── */
   function loadItems() {
     var db  = window.MT.getDb();
     var cat = window.MT.getCat();
@@ -59,12 +85,12 @@
       .onSnapshot(function (snap) {
         _items = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
         _items.sort(function (a, b) {
-          function n(s) { return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
-          var cmp = n(a.saga||a.titulo).localeCompare(n(b.saga||b.titulo),'es',{sensitivity:'base'});
+          function n(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+          var cmp = n(a.saga || a.titulo).localeCompare(n(b.saga || b.titulo), 'es', { sensitivity: 'base' });
           if (cmp !== 0) return cmp;
           var ya = a.anio || a.año || 9999, yb = b.anio || b.año || 9999;
           if (ya !== yb) return ya - yb;
-          return n(a.titulo).localeCompare(n(b.titulo),'es',{sensitivity:'base'});
+          return n(a.titulo).localeCompare(n(b.titulo), 'es', { sensitivity: 'base' });
         });
         renderGrid();
         buildYearFilter();
@@ -84,6 +110,7 @@
 
   function getPlayer() { return window.MT.getPlayer(); }
 
+  /* ── FILTRADO — solo ítems con estado registrado por el jugador ── */
   function filterItems() {
     var player = getPlayer();
     var U      = window.MT.Utils;
@@ -95,6 +122,9 @@
         var jInfo = item.jugadores && item.jugadores[player];
         estado = jInfo && jInfo.estado ? jInfo.estado : '';
       }
+
+      /* Solo mostrar si el jugador tiene un estado explícito */
+      if (!estado) return false;
 
       if (_filterStatus) {
         var sc = U.statusClass(estado);
@@ -119,14 +149,19 @@
   }
 
   function buildYearFilter() {
-    var years = [...new Set(_items.map(function (i) { return i.anio || i.año; }).filter(Boolean))].sort().reverse();
+    var player = getPlayer();
+    var registered = _items.filter(function (item) {
+      var jInfo = item.jugadores && item.jugadores[player];
+      return jInfo && jInfo.estado;
+    });
+    var years = Array.from(new Set(registered.map(function (i) { return i.anio || i.año; }).filter(Boolean))).sort().reverse();
     var sel   = document.getElementById('yearFilter');
     var cur   = sel.value;
     sel.innerHTML = '<option value="">📅 Año</option>' +
       years.map(function (y) { return '<option value="' + y + '"' + (String(y) === cur ? ' selected' : '') + '>' + y + '</option>'; }).join('');
   }
 
-  /* ── RENDER ─────────────────────────────────────────────── */
+  /* ── RENDER GRID ─────────────────────────────────────────── */
   function renderGrid() {
     var grid   = document.getElementById('mtGrid');
     var items  = filterItems();
@@ -136,11 +171,12 @@
     count.textContent = items.length + ' título' + (items.length !== 1 ? 's' : '') + ' · ' + player;
 
     if (items.length === 0) {
+      var emoji = window.MT.Utils.catEmoji(window.MT.getCat());
       grid.innerHTML =
         '<div class="mt-empty">' +
-          '<div class="mt-empty__icon">' + window.MT.Utils.catEmoji(window.MT.getCat()) + '</div>' +
-          '<div class="mt-empty__title">No se encontraron títulos</div>' +
-          '<p>Prueba a cambiar los filtros.</p>' +
+          '<div class="mt-empty__icon">' + emoji + '</div>' +
+          '<div class="mt-empty__title">Tu registro está vacío</div>' +
+          '<p>Pulsa <strong>+ Añadir</strong> para registrar tu primera entrada.</p>' +
         '</div>';
       return;
     }
@@ -178,8 +214,6 @@
       ? '<span class="mt-card__genre">' + U.escHtml(item.generos[0]) + '</span>'
       : '';
 
-    var statusLabel = estado || 'Sin registrar';
-
     return '<div class="mt-card" onclick="window.MTReg.openReg(\'' + id.replace(/'/g, "\\'") + '\')">' +
       '<div class="mt-card__cover">' + cover + scoreBadge + '</div>' +
       '<div class="mt-card__body">' +
@@ -188,28 +222,27 @@
           (item.anio || item.año ? '<span class="mt-card__year">' + (item.anio || item.año) + '</span>' : '') +
           genre +
         '</div>' +
-        '<div class="mt-card__reg-status mt-status--' + sc + '">' + U.escHtml(statusLabel) + '</div>' +
+        '<div class="mt-card__reg-status mt-status--' + sc + '">' + U.escHtml(estado || 'Sin registrar') + '</div>' +
       '</div>' +
     '</div>';
   }
 
-  /* ── MODAL REGISTRAR ─────────────────────────────────────── */
+  /* ── MODAL EDITAR REGISTRO ───────────────────────────────── */
   function openReg(id) {
     var item = _items.find(function (i) { return i.id === id; });
     if (!item) return;
     _editingId = id;
 
-    var player  = getPlayer();
-    var cat     = window.MT.getCat();
-    var estados = window.MT.ESTADOS[cat] || ['Visto', 'Viendo', 'Pendiente', 'Abandonado'];
-    var isFilm  = cat === 'peliculas';
+    var player   = getPlayer();
+    var cat      = window.MT.getCat();
+    var estados  = window.MT.ESTADOS[cat] || ['Visto', 'Viendo', 'Pendiente', 'Abandonado'];
+    var isFilm   = cat === 'peliculas';
     var hasTemps = !isFilm && item.temporadas && item.temporadas.length;
 
     document.getElementById('regModalTitle').textContent = item.titulo;
 
     var html = '';
     if (hasTemps) {
-      /* Modal por temporadas */
       html = item.temporadas.map(function (temp) {
         var sep = '<div class="mt-season-sep">Temporada ' + temp.num + '</div>';
         var rows = ['David', 'Javi', 'Mery'].map(function (p) {
@@ -230,7 +263,6 @@
         return sep + rows;
       }).join('');
     } else {
-      /* Modal clásico (películas o series legacy sin temporadas) */
       html = ['David', 'Javi', 'Mery'].map(function (p) {
         var info   = item.jugadores && item.jugadores[p] ? item.jugadores[p] : {};
         var estado = info.estado || '';
@@ -264,18 +296,17 @@
     var item = _items.find(function (i) { return i.id === _editingId; });
     if (!item) return;
 
-    var cat    = window.MT.getCat();
-    var isFilm = cat === 'peliculas';
+    var cat      = window.MT.getCat();
+    var isFilm   = cat === 'peliculas';
     var hasTemps = !isFilm && item.temporadas && item.temporadas.length;
 
     if (hasTemps) {
-      /* Guardar temporadas */
       var temporadas = item.temporadas.map(function (temp) {
         var newJug = {};
         ['David', 'Javi', 'Mery'].forEach(function (p) {
           var estEl  = document.getElementById('rT' + temp.num + 'Estado' + p);
           var notaEl = document.getElementById('rT' + temp.num + 'Nota' + p);
-          newJug[p]  = {
+          newJug[p] = {
             estado: estEl  ? estEl.value : (temp.jugadores && temp.jugadores[p] ? temp.jugadores[p].estado : ''),
             nota  : notaEl && notaEl.value !== '' ? parseFloat(notaEl.value) : null
           };
@@ -286,7 +317,6 @@
         .update({ temporadas: temporadas })
         .then(closeRegModal);
     } else {
-      /* Guardar jugadores clásico */
       var jugadores = {};
       ['David', 'Javi', 'Mery'].forEach(function (p) {
         var estado = document.getElementById('rEstado' + p).value;
@@ -303,7 +333,256 @@
     }
   }
 
-  window.MTReg = { openReg: openReg };
+  /* ── MODAL AÑADIR AL REGISTRO ────────────────────────────── */
+  function openAddModal() {
+    _addData = null;
+    _tmdbResults = [];
+    document.getElementById('addSearchInput').value = '';
+    document.getElementById('addSearchResults').innerHTML = '';
+    document.getElementById('addSave').style.display = 'none';
+    showAddStep(1);
+    document.getElementById('addModal').classList.add('open');
+    setTimeout(function () { document.getElementById('addSearchInput').focus(); }, 120);
+  }
+
+  function closeAddModal() {
+    document.getElementById('addModal').classList.remove('open');
+    _addData = null;
+  }
+
+  function showAddStep(n) {
+    [1, 2, 3, 4].forEach(function (i) {
+      var el = document.getElementById('addStep' + i);
+      if (el) el.style.display = (i === n) ? '' : 'none';
+    });
+    var backBtn = document.getElementById('addBackBtn');
+    if (backBtn) backBtn.style.display = (n === 2) ? 'block' : 'none';
+  }
+
+  function doSearchTMDB() {
+    var query = document.getElementById('addSearchInput').value.trim();
+    if (!query) return;
+
+    var cat      = window.MT.getCat();
+    var endpoint = cat === 'peliculas' ? '/search/movie' : '/search/tv';
+    var url      = 'https://api.themoviedb.org/3' + endpoint +
+      '?api_key=' + TMDB_KEY + '&language=es-ES&query=' + encodeURIComponent(query);
+
+    var resultsEl = document.getElementById('addSearchResults');
+    resultsEl.innerHTML = '<div style="color:var(--txt3);font-size:0.82rem;padding:0.5rem 0">Buscando...</div>';
+
+    fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        _tmdbResults = (data.results || []).slice(0, 7);
+        if (!_tmdbResults.length) {
+          resultsEl.innerHTML = '<div style="color:var(--txt3);font-size:0.82rem;padding:0.5rem 0">No se encontraron resultados.</div>';
+          return;
+        }
+        resultsEl.innerHTML = _tmdbResults.map(function (r, idx) {
+          var title  = r.title || r.name || '—';
+          var year   = (r.release_date || r.first_air_date || '').slice(0, 4);
+          var poster = r.poster_path ? IMG_SMALL + r.poster_path : null;
+          var ph     = poster
+            ? '<img src="' + escHtml(poster) + '" class="mt-add-result__poster" onerror="this.style.display=\'none\'">'
+            : '<div class="mt-add-result__poster"></div>';
+          return '<div class="mt-add-result" onclick="window.MTReg._pickResult(' + idx + ')">' +
+            ph +
+            '<div>' +
+              '<div class="mt-add-result__title">' + escHtml(title) + '</div>' +
+              '<div class="mt-add-result__meta">' + (year || '—') + '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      })
+      .catch(function () {
+        resultsEl.innerHTML = '<div style="color:#f87171;font-size:0.82rem;padding:0.5rem 0">Error al buscar. Comprueba la conexión.</div>';
+      });
+  }
+
+  function pickResult(idx) {
+    var r = _tmdbResults[idx];
+    if (!r) return;
+
+    var cat      = window.MT.getCat();
+    var isFilm   = cat === 'peliculas';
+    var detailUrl = 'https://api.themoviedb.org/3' +
+      (isFilm ? '/movie/' + r.id + '?append_to_response=credits' : '/tv/' + r.id) +
+      '&api_key=' + TMDB_KEY + '&language=es-ES';
+
+    document.getElementById('addSearchResults').innerHTML =
+      '<div style="color:var(--txt3);font-size:0.82rem;padding:0.5rem 0">Cargando detalles...</div>';
+
+    fetch(detailUrl)
+      .then(function (res) { return res.json(); })
+      .then(function (details) {
+        if (isFilm) {
+          var crew = (details.credits && details.credits.crew) || [];
+          var dir  = null;
+          for (var i = 0; i < crew.length; i++) {
+            if (crew[i].job === 'Director') { dir = crew[i].name; break; }
+          }
+          _addData = {
+            tipo      : cat,
+            titulo    : details.title || r.title,
+            anio      : r.release_date ? parseInt(r.release_date.slice(0, 4)) : null,
+            portadaUrl: r.poster_path ? IMG_FULL + r.poster_path : null,
+            director  : dir,
+            duracion  : details.runtime || null,
+            generos   : (details.genres || []).map(function (g) { return g.name; })
+          };
+        } else {
+          var created = details.created_by && details.created_by.length ? details.created_by[0].name : null;
+          var network = details.networks && details.networks.length ? details.networks[0].name : null;
+          var seasons = (details.seasons || []).filter(function (s) { return s.season_number > 0; });
+          _addData = {
+            tipo      : cat,
+            titulo    : details.name || r.name,
+            anio      : details.first_air_date ? parseInt(details.first_air_date.slice(0, 4)) : null,
+            portadaUrl: r.poster_path ? IMG_FULL + r.poster_path : null,
+            estudio   : created || network || null,
+            generos   : (details.genres || []).map(function (g) { return g.name; }),
+            temporadas: seasons.map(function (s) {
+              return {
+                num      : s.season_number,
+                episodios: s.episode_count || null,
+                jugadores: {
+                  David: { estado: '', nota: null },
+                  Javi : { estado: '', nota: null },
+                  Mery : { estado: '', nota: null }
+                }
+              };
+            })
+          };
+        }
+        showStep2Form();
+      })
+      .catch(function () {
+        document.getElementById('addSearchResults').innerHTML =
+          '<div style="color:#f87171;font-size:0.82rem;padding:0.5rem 0">Error al cargar los detalles.</div>';
+      });
+  }
+
+  function showStep2Form() {
+    if (!_addData) return;
+    var player  = getPlayer();
+    var cat     = window.MT.getCat();
+    var estados = window.MT.ESTADOS[cat] || ['Visto', 'Viendo', 'Pendiente', 'Abandonado'];
+
+    /* Preview del título seleccionado */
+    var previewEl = document.getElementById('addItemPreview');
+    previewEl.innerHTML =
+      (_addData.portadaUrl
+        ? '<img src="' + escHtml(_addData.portadaUrl) + '" class="mt-add-preview__poster" onerror="this.style.display=\'none\'">'
+        : '<div class="mt-add-preview__poster"></div>') +
+      '<div>' +
+        '<div class="mt-add-preview__title">' + escHtml(_addData.titulo) + '</div>' +
+        '<div class="mt-add-preview__meta">' +
+          (_addData.anio || '') +
+          (_addData.director ? ' · Dir. ' + escHtml(_addData.director) : (_addData.estudio ? ' · ' + escHtml(_addData.estudio) : '')) +
+        '</div>' +
+        (_addData.generos && _addData.generos.length
+          ? '<div class="mt-add-preview__meta" style="margin-top:0.25rem">' + escHtml(_addData.generos.slice(0, 3).join(' · ')) + '</div>'
+          : '') +
+      '</div>';
+
+    /* Formulario solo para el jugador actual */
+    var opts = '<option value="">— Elige estado</option>' +
+      estados.map(function (e) {
+        return '<option value="' + e + '"' + (e === 'Pendiente' ? ' selected' : '') + '>' + e + '</option>';
+      }).join('');
+
+    document.getElementById('addPlayerRow').innerHTML =
+      '<div class="mt-player-row mt-player-row--active">' +
+        '<div class="mt-player-row__avatar mt-player-row__avatar--' + player.toLowerCase() + '">' + player.charAt(0) + '</div>' +
+        '<select class="mt-form-select" id="addEstado">' + opts + '</select>' +
+        '<input type="number" class="mt-form-input" id="addNota" placeholder="Nota (0-10)" min="0" max="10" step="0.5">' +
+      '</div>';
+
+    showAddStep(2);
+    document.getElementById('addSave').style.display = '';
+  }
+
+  function saveAdd() {
+    if (!_addData) return;
+    var estadoEl = document.getElementById('addEstado');
+    var notaEl   = document.getElementById('addNota');
+    var estado   = estadoEl ? estadoEl.value : '';
+    var nota     = notaEl && notaEl.value !== '' ? parseFloat(notaEl.value) : null;
+
+    if (!estado) {
+      if (estadoEl) { estadoEl.style.borderColor = 'var(--accent)'; estadoEl.focus(); }
+      return;
+    }
+
+    showAddStep(3);
+    document.getElementById('addSave').style.display = 'none';
+    document.getElementById('addCancel').style.display = 'none';
+
+    var db      = window.MT.getDb();
+    var cat     = window.MT.getCat();
+    var player  = getPlayer();
+    var normNew = normTitle(_addData.titulo);
+
+    /* Comprobar si ya existe en Firestore (por título normalizado) */
+    db.collection('mt_items').where('tipo', '==', cat).get()
+      .then(function (snap) {
+        var existingDoc = null;
+        snap.docs.forEach(function (d) {
+          if (normTitle(d.data().titulo) === normNew) existingDoc = d;
+        });
+
+        if (existingDoc) {
+          /* Actualizar solo el campo jugadores[player] del doc existente */
+          var update = {};
+          update['jugadores.' + player] = { estado: estado, nota: nota };
+          return existingDoc.ref.update(update);
+        } else {
+          /* Crear doc nuevo con todos los metadatos */
+          var jugadores = {
+            David: { estado: '', nota: null },
+            Javi : { estado: '', nota: null },
+            Mery : { estado: '', nota: null }
+          };
+          jugadores[player] = { estado: estado, nota: nota };
+          var newDoc = Object.assign({}, _addData, { jugadores: jugadores, creadoEn: new Date() });
+          return db.collection('mt_items').add(newDoc);
+        }
+      })
+      .then(function () {
+        showAddStep(4);
+        document.getElementById('addDoneText').textContent =
+          '"' + _addData.titulo + '" añadido al registro de ' + player + ' · ' + estado + '.';
+        setTimeout(function () {
+          closeAddModal();
+          document.getElementById('addCancel').style.display = '';
+        }, 2400);
+      })
+      .catch(function (err) {
+        console.error('saveAdd error:', err);
+        showAddStep(2);
+        document.getElementById('addSave').style.display = '';
+        document.getElementById('addCancel').style.display = '';
+        alert('Error al guardar. Inténtalo de nuevo.');
+      });
+  }
+
+  /* ── UTILIDADES ──────────────────────────────────────────── */
+  function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function normTitle(s) {
+    return (s || '').toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]/g, '');
+  }
+
+  window.MTReg = {
+    openReg    : openReg,
+    _pickResult: pickResult
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

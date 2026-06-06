@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER — Pendientes (con selector de jugador)
-   Version: 20260606f
+   Version: 20260607a
    ============================================================ */
 (function () {
   'use strict';
@@ -115,8 +115,9 @@
       var jInfo = item.jugadores && item.jugadores[player];
       estado = jInfo && jInfo.estado ? jInfo.estado : '';
     }
+    /* Solo estado explícitamente "Pendiente", no ítems sin registrar */
     var norm = (estado || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
-    return !norm || norm === 'pendiente';
+    return norm === 'pendiente';
   }
 
   /* Cuenta pendientes por jugador para los badges */
