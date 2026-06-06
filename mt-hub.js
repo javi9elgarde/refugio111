@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER HUB — Lógica de selección
-   Version: 20260522a
+   Version: 20260607b
    ============================================================ */
 (function () {
   'use strict';
@@ -43,23 +43,32 @@
   document.querySelectorAll('.mth-pcard').forEach(function (card) {
     card.addEventListener('click', function () {
       var player = this.dataset.player;
-      try { localStorage.setItem('MT_player', player); } catch (e) {}
+      var self   = this;
 
+      /* Efecto visual "eligiendo" */
+      document.querySelectorAll('.mth-pcard').forEach(function (c) { c.classList.remove('choosing'); });
+      self.classList.add('choosing');
+
+      try { localStorage.setItem('MT_player', player); } catch (e) {}
       greetPlayer.textContent = 'Casa ' + player;
       playSelectSound(330, 415);
 
-      /* Salida de fase 1 */
-      phasePlayer.classList.add('mth-phase--exit');
+      /* Pequeño delay para que se vea el efecto choosing antes de salir */
       setTimeout(function () {
-        phasePlayer.classList.add('mth-phase--hidden');
-        phasePlayer.classList.remove('mth-phase--exit');
-        phasePlayer.style.display = 'none';
+        /* Salida de fase 1 */
+        phasePlayer.classList.add('mth-phase--exit');
+        setTimeout(function () {
+          phasePlayer.classList.add('mth-phase--hidden');
+          phasePlayer.classList.remove('mth-phase--exit');
+          phasePlayer.style.display = 'none';
+          self.classList.remove('choosing');
 
-        /* Entrada de fase 2 */
-        phaseCat.classList.remove('mth-phase--hidden');
-        phaseCat.style.display = '';
-        phaseCat.classList.add('mth-phase--enter');
-      }, 320);
+          /* Entrada de fase 2 */
+          phaseCat.classList.remove('mth-phase--hidden');
+          phaseCat.style.display = '';
+          phaseCat.classList.add('mth-phase--enter');
+        }, 320);
+      }, 180);
     });
   });
 

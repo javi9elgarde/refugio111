@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-hub.css?v=20260607b">
+  <link rel="stylesheet" href="mt-hub.css?v=20260607c">
 </head>
 <body>
 
@@ -22,37 +22,38 @@
 <!-- ── FASE 1: SELECCIÓN DE JUGADOR ────────────────────── -->
 <div class="mth-phase" id="phasePlayer">
 
-  <div class="mth-brand">
-    <div class="mth-brand__eyebrow">REFUGIO 111</div>
-    <div class="mth-brand__name">CINE · SERIES · ANIME</div>
-    <div class="mth-brand__tagline">Tu base de datos friki de pantalla grande y pequeña</div>
+  <div class="mth-header">
+    <div class="mth-header__eyebrow">REFUGIO 111 · CINE · SERIES · ANIME</div>
+    <h2 class="mth-header__title">¿DE QUÉ CASA ERES?</h2>
+    <p class="mth-header__sub">Selecciona tu perfil para continuar</p>
   </div>
-
-  <div class="mth-prompt">¿DE QUÉ CASA ERES?</div>
 
   <div class="mth-players">
     <div class="mth-pcard mth-pcard--david" data-player="David">
+      <div class="mth-pcard__glow"></div>
       <div class="mth-pcard__img-wrap">
         <img src="icondavidneutralpelis.png" class="mth-pcard__img" alt="Casa David" draggable="false"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-family:Orbitron,sans-serif;font-weight:900;color:#60a5fa\'>D</div>'">
+             onerror="this.style.display='none';this.parentNode.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;font-family:Orbitron,sans-serif;font-weight:900;color:#60a5fa\'>D</div>'">
       </div>
       <div class="mth-pcard__name">CASA DAVID</div>
       <div class="mth-pcard__fullname">David Garde</div>
     </div>
 
     <div class="mth-pcard mth-pcard--javi" data-player="Javi">
+      <div class="mth-pcard__glow"></div>
       <div class="mth-pcard__img-wrap">
         <img src="iconjavineutralcine.png" class="mth-pcard__img" alt="Casa Javi" draggable="false"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-family:Orbitron,sans-serif;font-weight:900;color:#f87171\'>J</div>'">
+             onerror="this.style.display='none';this.parentNode.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;font-family:Orbitron,sans-serif;font-weight:900;color:#f87171\'>J</div>'">
       </div>
       <div class="mth-pcard__name">CASA JAVI</div>
       <div class="mth-pcard__fullname">Javier Garde</div>
     </div>
 
     <div class="mth-pcard mth-pcard--mery" data-player="Mery">
+      <div class="mth-pcard__glow"></div>
       <div class="mth-pcard__img-wrap">
         <img src="iconmeryneutralcine.png" class="mth-pcard__img" alt="Casa Mery" draggable="false"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-family:Orbitron,sans-serif;font-weight:900;color:#c084fc\'>M</div>'">
+             onerror="this.style.display='none';this.parentNode.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;font-family:Orbitron,sans-serif;font-weight:900;color:#c084fc\'>M</div>'">
       </div>
       <div class="mth-pcard__name">CASA MERY</div>
       <div class="mth-pcard__fullname">Mariam Moreno</div>
@@ -100,6 +101,6 @@
 <!-- Flash de transición -->
 <div class="mth-flash" id="mthFlash"></div>
 
-<script src="mt-hub.js?v=20260607a"></script>
+<script src="mt-hub.js?v=20260607b"></script>
 </body>
 </html>
