@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER — Pendientes (con selector de jugador)
-   Version: 20260605d
+   Version: 20260606a
    ============================================================ */
 (function () {
   'use strict';
@@ -24,7 +24,6 @@
 
     waitForMT(function () {
       loadItems();
-      buildGenreFilter();
       updatePageMeta();
     });
 
@@ -60,7 +59,6 @@
       if (_unsub) _unsub();
       _filterGenre = ''; _filterYear = ''; _searchQuery = '';
       loadItems();
-      buildGenreFilter();
       updatePageMeta();
     });
 
@@ -84,6 +82,7 @@
         _allItems.sort(function (a, b) {
           return (a.titulo || '').localeCompare(b.titulo || '', 'es', { sensitivity: 'base' });
         });
+        buildGenreFilter();
         updateCounts();
         renderGrid();
         buildYearFilter();
@@ -101,14 +100,24 @@
     document.title = 'Refugio 111 — ' + (titles[cat] || 'Pendientes');
   }
 
+  /* ── ESTADO PENDIENTE para un jugador ─────────────────────── */
+  function isPendiente(item, player) {
+    var U = window.MT.Utils;
+    var estado;
+    if (item.temporadas && item.temporadas.length) {
+      estado = U.calcEstadoTemporadasPlayer(item.temporadas, player) || '';
+    } else {
+      var jInfo = item.jugadores && item.jugadores[player];
+      estado = jInfo && jInfo.estado ? jInfo.estado : '';
+    }
+    var norm = (estado || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
+    return !norm || norm === 'pendiente';
+  }
+
   /* Cuenta pendientes por jugador para los badges */
   function updateCounts() {
     ['David', 'Javi', 'Mery'].forEach(function (p) {
-      var n = _allItems.filter(function (item) {
-        var jInfo  = item.jugadores && item.jugadores[p];
-        var estado = jInfo && jInfo.estado ? jInfo.estado.toLowerCase() : '';
-        return !estado || estado === 'pendiente';
-      }).length;
+      var n  = _allItems.filter(function (item) { return isPendiente(item, p); }).length;
       var el = document.getElementById('pselCount-' + p);
       if (el) el.textContent = n + ' pendiente' + (n !== 1 ? 's' : '');
     });
@@ -116,10 +125,7 @@
 
   function filterItems() {
     return _allItems.filter(function (item) {
-      var jInfo  = item.jugadores && item.jugadores[_player];
-      var estado = jInfo && jInfo.estado ? jInfo.estado.toLowerCase() : '';
-      if (estado && estado !== 'pendiente') return false;
-
+      if (!isPendiente(item, _player)) return false;
       if (_filterGenre && !(item.generos || []).includes(_filterGenre)) return false;
       if (_filterYear && String(item.anio || item.año || '') !== _filterYear) return false;
       if (_searchQuery) {
@@ -140,11 +146,26 @@
   }
 
   function buildGenreFilter() {
-    var cat    = window.MT.getCat();
-    var genres = window.MT.GENEROS[cat] || [];
-    var sel    = document.getElementById('genreFilter');
+    var cat = window.MT.getCat();
+    var genres;
+    if (cat === 'peliculas') {
+      genres = (window.MT.GENEROS[cat] || []).slice();
+    } else {
+      genres = [];
+      _allItems.forEach(function (item) {
+        (item.generos || []).forEach(function (g) {
+          if (g && genres.indexOf(g) < 0) genres.push(g);
+        });
+      });
+      genres.sort();
+      if (!genres.length) genres = (window.MT.GENEROS[cat] || []).slice();
+    }
+    var sel = document.getElementById('genreFilter');
+    var cur = sel.value;
     sel.innerHTML = '<option value="">🏷 Géneros</option>' +
-      genres.map(function (g) { return '<option value="' + g + '">' + g + '</option>'; }).join('');
+      genres.map(function (g) {
+        return '<option value="' + g + '"' + (g === cur ? ' selected' : '') + '>' + g + '</option>';
+      }).join('');
   }
 
   function buildYearFilter() {
@@ -205,29 +226,56 @@
     var item = _allItems.find(function (i) { return i.id === id; });
     if (!item) return;
     _editingId = id;
+
     var cat     = window.MT.getCat();
     var estados = window.MT.ESTADOS[cat] || ['Visto', 'Viendo', 'Pendiente', 'Abandonado'];
     var isFilm  = cat === 'peliculas';
+    var hasTemps = !isFilm && item.temporadas && item.temporadas.length;
 
     document.getElementById('regModalTitle').textContent = item.titulo;
-    document.getElementById('regPlayerRows').innerHTML = ['David', 'Javi', 'Mery'].map(function (p) {
-      var info   = item.jugadores && item.jugadores[p] ? item.jugadores[p] : {};
-      var estado = info.estado || '';
-      var nota   = info.nota !== undefined && info.nota !== null ? info.nota : '';
-      var ep     = info.episodio || '';
-      var opts   = '<option value="">— Sin estado</option>' +
-        estados.map(function (e) {
-          return '<option value="' + e + '"' + (e === estado ? ' selected' : '') + '>' + e + '</option>';
-        }).join('');
-      var activeClass = p === _player ? ' mt-player-row--active' : '';
-      return '<div class="mt-player-row' + activeClass + '">' +
-        '<div class="mt-player-row__avatar mt-player-row__avatar--' + p.toLowerCase() + '">' + p.charAt(0) + '</div>' +
-        '<select class="mt-form-select" id="rEstado' + p + '">' + opts + '</select>' +
-        '<input type="number" class="mt-form-input" id="rNota' + p + '" value="' + nota + '" placeholder="Nota" min="0" max="10" step="0.5">' +
-        (!isFilm ? '<input type="number" class="mt-form-input" id="rEp' + p + '" value="' + ep + '" placeholder="Ep." min="0">' : '') +
-      '</div>';
-    }).join('');
 
+    var html = '';
+    if (hasTemps) {
+      html = item.temporadas.map(function (temp) {
+        var sep  = '<div class="mt-season-sep">Temporada ' + temp.num + '</div>';
+        var rows = ['David', 'Javi', 'Mery'].map(function (p) {
+          var info   = temp.jugadores && temp.jugadores[p] ? temp.jugadores[p] : {};
+          var estado = info.estado || '';
+          var nota   = info.nota !== null && info.nota !== undefined && info.nota !== '' ? info.nota : '';
+          var opts   = '<option value="">— Sin estado</option>' +
+            estados.map(function (e) {
+              return '<option value="' + e + '"' + (e === estado ? ' selected' : '') + '>' + e + '</option>';
+            }).join('');
+          var activeClass = p === _player ? ' mt-player-row--active' : '';
+          return '<div class="mt-player-row' + activeClass + '">' +
+            '<div class="mt-player-row__avatar mt-player-row__avatar--' + p.toLowerCase() + '">' + p.charAt(0) + '</div>' +
+            '<select class="mt-form-select" id="rT' + temp.num + 'Estado' + p + '">' + opts + '</select>' +
+            '<input type="number" class="mt-form-input" id="rT' + temp.num + 'Nota' + p + '" value="' + nota + '" placeholder="Nota" min="0" max="10" step="0.5">' +
+          '</div>';
+        }).join('');
+        return sep + rows;
+      }).join('');
+    } else {
+      html = ['David', 'Javi', 'Mery'].map(function (p) {
+        var info   = item.jugadores && item.jugadores[p] ? item.jugadores[p] : {};
+        var estado = info.estado || '';
+        var nota   = info.nota !== null && info.nota !== undefined && info.nota !== '' ? info.nota : '';
+        var ep     = info.episodio || '';
+        var opts   = '<option value="">— Sin estado</option>' +
+          estados.map(function (e) {
+            return '<option value="' + e + '"' + (e === estado ? ' selected' : '') + '>' + e + '</option>';
+          }).join('');
+        var activeClass = p === _player ? ' mt-player-row--active' : '';
+        return '<div class="mt-player-row' + activeClass + '">' +
+          '<div class="mt-player-row__avatar mt-player-row__avatar--' + p.toLowerCase() + '">' + p.charAt(0) + '</div>' +
+          '<select class="mt-form-select" id="rEstado' + p + '">' + opts + '</select>' +
+          '<input type="number" class="mt-form-input" id="rNota' + p + '" value="' + nota + '" placeholder="Nota" min="0" max="10" step="0.5">' +
+          (!isFilm ? '<input type="number" class="mt-form-input" id="rEp' + p + '" value="' + ep + '" placeholder="Ep." min="0">' : '') +
+        '</div>';
+      }).join('');
+    }
+
+    document.getElementById('regPlayerRows').innerHTML = html;
     document.getElementById('regModal').classList.add('open');
   }
 
@@ -238,21 +286,44 @@
 
   function saveReg() {
     if (!_editingId) return;
+    var item = _allItems.find(function (i) { return i.id === _editingId; });
+    if (!item) return;
+
     var cat    = window.MT.getCat();
     var isFilm = cat === 'peliculas';
-    var jugadores = {};
-    ['David', 'Javi', 'Mery'].forEach(function (p) {
-      var estado = document.getElementById('rEstado' + p).value;
-      var notaEl = document.getElementById('rNota' + p);
-      var nota   = notaEl && notaEl.value !== '' ? parseFloat(notaEl.value) : null;
-      var epEl   = document.getElementById('rEp' + p);
-      var ep     = epEl && epEl.value !== '' ? parseInt(epEl.value) : null;
-      jugadores[p] = { estado: estado, nota: nota };
-      if (!isFilm) jugadores[p].episodio = ep;
-    });
-    window.MT.getDb().collection('mt_items').doc(_editingId)
-      .update({ jugadores: jugadores })
-      .then(closeRegModal);
+    var hasTemps = !isFilm && item.temporadas && item.temporadas.length;
+
+    if (hasTemps) {
+      var temporadas = item.temporadas.map(function (temp) {
+        var newJug = {};
+        ['David', 'Javi', 'Mery'].forEach(function (p) {
+          var estEl  = document.getElementById('rT' + temp.num + 'Estado' + p);
+          var notaEl = document.getElementById('rT' + temp.num + 'Nota' + p);
+          newJug[p]  = {
+            estado: estEl  ? estEl.value : (temp.jugadores && temp.jugadores[p] ? temp.jugadores[p].estado : ''),
+            nota  : notaEl && notaEl.value !== '' ? parseFloat(notaEl.value) : null
+          };
+        });
+        return Object.assign({}, temp, { jugadores: newJug });
+      });
+      window.MT.getDb().collection('mt_items').doc(_editingId)
+        .update({ temporadas: temporadas })
+        .then(closeRegModal);
+    } else {
+      var jugadores = {};
+      ['David', 'Javi', 'Mery'].forEach(function (p) {
+        var estado = document.getElementById('rEstado' + p).value;
+        var notaEl = document.getElementById('rNota' + p);
+        var nota   = notaEl && notaEl.value !== '' ? parseFloat(notaEl.value) : null;
+        var epEl   = document.getElementById('rEp' + p);
+        var ep     = epEl && epEl.value !== '' ? parseInt(epEl.value) : null;
+        jugadores[p] = { estado: estado, nota: nota };
+        if (!isFilm) jugadores[p].episodio = ep;
+      });
+      window.MT.getDb().collection('mt_items').doc(_editingId)
+        .update({ jugadores: jugadores })
+        .then(closeRegModal);
+    }
   }
 
   window.MTPend = { openReg: openReg };

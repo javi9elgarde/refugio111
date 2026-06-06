@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20260605d">
+  <link rel="stylesheet" href="mt-styles.css?v=20260606a">
   <style>
     /* ── IMPORTAR ───────────────────────────────────────────── */
     .imp-page { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
@@ -65,7 +65,7 @@
     .imp-result-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
 
     .imp-row {
-      display: grid; grid-template-columns: 28px 70px 1fr auto;
+      display: grid; grid-template-columns: 28px 70px 1fr;
       gap: 0.85rem; align-items: center;
       background: rgba(255,255,255,0.03); border: 1px solid var(--border);
       border-radius: 12px; padding: 0.6rem 0.85rem;
@@ -107,9 +107,11 @@
     }
     .imp-dir { font-size: 0.72rem; color: var(--txt3); }
 
-    .imp-row__genre { display: flex; flex-direction: column; gap: 0.3rem; min-width: 130px; }
-    .imp-sel { width: 100%; }
-    .imp-g2 { font-size: 0.65rem; color: var(--txt3); padding-left: 0.3rem; }
+    .imp-tag--genre {
+      background: rgba(var(--accent-rgb, 230,57,70),0.12);
+      color: var(--accent); border-color: rgba(var(--accent-rgb, 230,57,70),0.25);
+    }
+    .imp-row__genres { display: flex; flex-wrap: wrap; gap: 0.3rem; }
 
     /* Step 4 — Done */
     .imp-done { text-align: center; padding: 4rem 1rem; }
@@ -165,9 +167,9 @@
   <!-- ── STEP 1: INPUT ──────────────────────────────────────── -->
   <div id="step1">
     <div class="imp-header">
-      <div class="imp-header__title">📥 Importar Películas</div>
-      <div class="imp-header__sub">
-        Pega la lista de títulos (uno por línea) y buscaremos automáticamente el póster, año, director y géneros en TMDB.
+      <div class="imp-header__title" id="impHeaderTitle">📥 Importar 🎬 Películas</div>
+      <div class="imp-header__sub" id="impHeaderSub">
+        Pega la lista de películas (una por línea). Buscaremos póster, año, director y géneros en TMDB.
       </div>
     </div>
     <textarea class="imp-textarea" id="titleInput"
@@ -220,7 +222,7 @@
     <div class="imp-done">
       <div class="imp-done__icon">✅</div>
       <div class="imp-done__title">¡Importación completada!</div>
-      <div class="imp-done__sub"><span id="doneCount">0</span> películas añadidas a la biblioteca.</div>
+      <div class="imp-done__sub"><span id="doneCount">0</span> <span id="doneLabel">películas</span> añadidas a la biblioteca.</div>
       <div class="imp-actions">
         <a href="mt-biblioteca.html" class="mt-btn mt-btn--primary">Ver Biblioteca</a>
         <button class="mt-btn mt-btn--secondary" id="btnReset">Importar más</button>
@@ -233,7 +235,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
-<script src="mt-main.js?v=20260605b"         defer></script>
-<script src="mt-importar.js?v=20260605e"     defer></script>
+<script src="mt-main.js?v=20260606a"         defer></script>
+<script src="mt-importar.js?v=20260606a"     defer></script>
 </body>
 </html>

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20260605d">
+  <link rel="stylesheet" href="mt-styles.css?v=20260606a">
 </head>
 <body>
 
@@ -124,13 +124,19 @@
           <input type="number" class="mt-form-input" id="fAnio" placeholder="2024" min="1888" max="2099">
         </div>
 
-        <!-- Duración / Temporadas -->
+        <!-- Duración (solo películas) -->
         <div class="mt-form-group" id="groupDuracion">
-          <label class="mt-form-label" id="labelDuracion">Duración (min)</label>
+          <label class="mt-form-label">Duración (min)</label>
           <input type="number" class="mt-form-input" id="fDuracion" placeholder="120" min="0">
         </div>
 
-        <!-- Episodios (solo series/anime) -->
+        <!-- Nº de temporadas (solo series/anime) -->
+        <div class="mt-form-group" id="groupNumTemporadas" style="display:none">
+          <label class="mt-form-label">Nº de temporadas</label>
+          <input type="number" class="mt-form-input" id="fNumTemporadas" placeholder="1" min="1">
+        </div>
+
+        <!-- Episodios totales (solo series/anime) -->
         <div class="mt-form-group" id="groupEpisodios" style="display:none">
           <label class="mt-form-label">Episodios totales</label>
           <input type="number" class="mt-form-input" id="fEpisodios" placeholder="24" min="0">
@@ -177,7 +183,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
-<script src="mt-main.js?v=20260605b"         defer></script>
-<script src="mt-biblioteca.js?v=20260605a"   defer></script>
+<script src="mt-main.js?v=20260606a"         defer></script>
+<script src="mt-biblioteca.js?v=20260606a"   defer></script>
 </body>
 </html>

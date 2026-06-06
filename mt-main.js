@@ -143,6 +143,49 @@ window.MT = window.MT || {};
     return vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
   }
 
+  /* ── UTILIDADES TEMPORADAS (series/anime) ─────────────────── */
+  function calcNotaTemporadasPlayer(temporadas, player) {
+    if (!temporadas || !temporadas.length) return null;
+    var notas = [];
+    for (var i = 0; i < temporadas.length; i++) {
+      var jd = temporadas[i].jugadores && temporadas[i].jugadores[player];
+      if (jd && jd.nota !== null && jd.nota !== undefined && jd.nota !== '') {
+        var n = parseFloat(jd.nota);
+        if (!isNaN(n)) notas.push(n);
+      }
+    }
+    if (!notas.length) return null;
+    return notas.reduce(function (a, b) { return a + b; }, 0) / notas.length;
+  }
+
+  function calcNotaTemporadasGlobal(temporadas) {
+    if (!temporadas || !temporadas.length) return null;
+    var all = [];
+    ['David', 'Javi', 'Mery'].forEach(function (p) {
+      var n = calcNotaTemporadasPlayer(temporadas, p);
+      if (n !== null) all.push(n);
+    });
+    if (!all.length) return null;
+    return all.reduce(function (a, b) { return a + b; }, 0) / all.length;
+  }
+
+  function calcEstadoTemporadasPlayer(temporadas, player) {
+    if (!temporadas || !temporadas.length) return '';
+    var estados = temporadas.map(function (t) {
+      return t.jugadores && t.jugadores[player] ? (t.jugadores[player].estado || '') : '';
+    }).filter(Boolean);
+    if (!estados.length) return '';
+    function n(e) { return (e || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, ''); }
+    if (estados.some(function (e) { return n(e) === 'viendo'; })) return 'Viendo';
+    if (estados.every(function (e) { return n(e) === 'terminado' || n(e) === 'terminada'; })) return estados[0];
+    if (estados.some(function (e) { return n(e) === 'terminado' || n(e) === 'terminada'; })) return 'Viendo';
+    var paus = estados.find(function (e) { return n(e) === 'pausado' || n(e) === 'pausada'; });
+    if (paus) return paus;
+    var aband = estados.find(function (e) { return n(e) === 'abandonado' || n(e) === 'abandonada'; });
+    if (aband) return aband;
+    return estados[0];
+  }
+
   function playerDotClass(estado) {
     if (!estado) return 'mt-card__dot--none';
     var e = estado.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
@@ -206,14 +249,17 @@ window.MT = window.MT || {};
     PLATAFORMAS : PLATAFORMAS,
     ESTADOS     : ESTADOS,
     Utils: {
-      escHtml      : escHtml,
-      formatNota   : formatNota,
-      notaColor    : notaColor,
-      statusClass  : statusClass,
-      calcNotaMedia: calcNotaMedia,
-      playerDotClass: playerDotClass,
-      catLabel     : catLabel,
-      catEmoji     : catEmoji
+      escHtml                  : escHtml,
+      formatNota               : formatNota,
+      notaColor                : notaColor,
+      statusClass              : statusClass,
+      calcNotaMedia            : calcNotaMedia,
+      calcNotaTemporadasPlayer : calcNotaTemporadasPlayer,
+      calcNotaTemporadasGlobal : calcNotaTemporadasGlobal,
+      calcEstadoTemporadasPlayer: calcEstadoTemporadasPlayer,
+      playerDotClass           : playerDotClass,
+      catLabel                 : catLabel,
+      catEmoji                 : catEmoji
     }
   };
 
