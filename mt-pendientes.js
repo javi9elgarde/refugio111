@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER — Pendientes (con selector de jugador)
-   Version: 20260606e
+   Version: 20260606f
    ============================================================ */
 (function () {
   'use strict';
@@ -80,10 +80,12 @@
       .onSnapshot(function (snap) {
         _allItems = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
         _allItems.sort(function (a, b) {
-          var ya = a.anio || a.año || 9999;
-          var yb = b.anio || b.año || 9999;
+          function n(s) { return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+          var cmp = n(a.saga||a.titulo).localeCompare(n(b.saga||b.titulo),'es',{sensitivity:'base'});
+          if (cmp !== 0) return cmp;
+          var ya = a.anio || a.año || 9999, yb = b.anio || b.año || 9999;
           if (ya !== yb) return ya - yb;
-          return (a.titulo || '').localeCompare(b.titulo || '', 'es', { sensitivity: 'base' });
+          return n(a.titulo).localeCompare(n(b.titulo),'es',{sensitivity:'base'});
         });
         buildGenreFilter();
         updateCounts();

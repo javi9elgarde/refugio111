@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER — Biblioteca
-   Version: 20260606e
+   Version: 20260606f
    ============================================================ */
 (function () {
   'use strict';
@@ -13,6 +13,24 @@
   var _filterGenre  = '';
   var _filterYear   = '';
   var _searchQuery  = '';
+
+  /* ── SORT ───────────────────────────────────────────────── */
+  /* Orden: alfabético por saga (o título si no hay saga),
+     y dentro de la misma saga, cronológico por año.       */
+  function sortItems(a, b) {
+    function norm(s) {
+      return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    }
+    var ka = norm(a.saga || a.titulo);
+    var kb = norm(b.saga || b.titulo);
+    var cmp = ka.localeCompare(kb, 'es', { sensitivity: 'base' });
+    if (cmp !== 0) return cmp;
+    /* Misma saga: cronológico */
+    var ya = a.anio || a.año || 9999;
+    var yb = b.anio || b.año || 9999;
+    if (ya !== yb) return ya - yb;
+    return norm(a.titulo).localeCompare(norm(b.titulo), 'es', { sensitivity: 'base' });
+  }
 
   /* ── TMDB ───────────────────────────────────────────────── */
   var TMDB_KEY  = '2a0181b8eb1bb888042a00f91e10681c';
@@ -97,12 +115,7 @@
       .where('tipo', '==', cat)
       .onSnapshot(function (snap) {
         _items = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
-        _items.sort(function (a, b) {
-          var ya = a.anio || a.año || 9999;
-          var yb = b.anio || b.año || 9999;
-          if (ya !== yb) return ya - yb;
-          return (a.titulo || '').localeCompare(b.titulo || '', 'es', { sensitivity: 'base' });
-        });
+        _items.sort(sortItems);
         buildFilters();
         renderGrid();
         buildYearFilter();
