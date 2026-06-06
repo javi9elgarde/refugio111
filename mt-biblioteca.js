@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER — Biblioteca
-   Version: 20260606h
+   Version: 20260606i
    ============================================================ */
 (function () {
   'use strict';
@@ -337,17 +337,16 @@
 
     /* ── LAYOUT FINAL ── */
     document.getElementById('detailBody').innerHTML =
-      /* Fila superior: póster + info */
+      /* Fila superior: póster + (info + géneros + jugadores) */
       '<div class="mt-detail-top">' +
         '<div class="mt-detail-poster">' + posterHtml + '</div>' +
         '<div class="mt-detail-right">' +
           scoreBadge +
-          (stats ? '<div class="mt-detail-stats">' + stats + '</div>' : '') +
-          (badges ? '<div class="mt-detail-badges">' + badges + '</div>' : '') +
+          (stats  ? '<div class="mt-detail-stats">'  + stats       + '</div>' : '') +
+          (badges ? '<div class="mt-detail-badges">'  + badges      + '</div>' : '') +
+          '<div class="mt-detail-players">'           + playersHtml + '</div>' +
         '</div>' +
-      '</div>' +
-      /* Jugadores */
-      '<div class="mt-detail-players">' + playersHtml + '</div>';
+      '</div>';
 
     document.getElementById('detailModal').classList.add('open');
   }
