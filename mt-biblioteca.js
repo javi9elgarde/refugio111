@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER — Biblioteca
-   Version: 20260606j
+   Version: 20260606k
    ============================================================ */
 (function () {
   'use strict';
@@ -341,19 +341,14 @@
       '<span class="mt-detail-meta-val"' + (style ? ' style="' + style + '"' : '') + '>' + val + '</span>' +
     '</div>';
   }
-  function detailStars(nota) {
-    var filled = nota !== null && nota !== undefined ? Math.round(nota / 2) : 0;
-    var s = '';
-    for (var i = 1; i <= 5; i++) {
-      s += '<span class="mt-star ' + (i <= filled ? 'mt-star--on' : 'mt-star--off') + '">★</span>';
-    }
-    return '<div class="mt-stars">' + s + '</div>';
-  }
   function detailPlayerCard(p, estadoText, sc, notaP, U) {
+    var notaHtml = notaP !== null && notaP !== undefined
+      ? '<div class="mt-detail-player-card__nota" style="color:' + U.notaColor(notaP) + '">' + U.formatNota(notaP) + '</div>'
+      : '<div class="mt-detail-player-card__nota--empty">—</div>';
     return '<div class="mt-detail-player-card">' +
       '<div class="mt-detail-player-card__avatar mt-detail-player__avatar--' + p.toLowerCase() + '">' + p.charAt(0) + '</div>' +
       '<div class="mt-detail-player-card__name">' + p + '</div>' +
-      detailStars(notaP) +
+      notaHtml +
       '<span class="mt-detail-player__status mt-status--' + sc + '">' + U.escHtml(estadoText) + '</span>' +
     '</div>';
   }

@@ -598,26 +598,26 @@ body {
   display: flex; flex-direction: column; gap: 0.55rem; min-width: 0;
 }
 
-/* Tabla de metadatos */
+/* Tabla de metadatos — más grande */
 .mt-detail-meta {
   display: flex; flex-direction: column;
   border: 1px solid var(--border); border-radius: 9px; overflow: hidden;
 }
 .mt-detail-meta-item {
-  display: flex; align-items: baseline; gap: 0.55rem;
-  padding: 0.35rem 0.65rem;
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.55rem 0.85rem;
   border-bottom: 1px solid var(--border);
 }
 .mt-detail-meta-item:last-child { border-bottom: none; }
 .mt-detail-meta-lbl {
-  font-size: 0.57rem; color: var(--txt3); text-transform: uppercase;
-  letter-spacing: 0.07em; flex-shrink: 0; min-width: 55px;
+  font-size: 0.6rem; color: var(--txt3); text-transform: uppercase;
+  letter-spacing: 0.07em; flex-shrink: 0; min-width: 62px;
 }
-.mt-detail-meta-val { font-size: 0.82rem; font-weight: 600; color: var(--txt1); }
+.mt-detail-meta-val { font-size: 1rem; font-weight: 700; color: var(--txt1); }
 
-/* Badges de géneros */
-.mt-detail-badges { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-.mt-badge { padding: 0.18rem 0.55rem; border-radius: 6px; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.02em; }
+/* Badges de géneros — más grandes */
+.mt-detail-badges { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.mt-badge { padding: 0.32rem 0.85rem; border-radius: 7px; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.02em; }
 .mt-badge--genre { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(var(--accent-rgb),0.3); }
 .mt-badge--year  { background: rgba(255,255,255,0.06); color: var(--txt2); border: 1px solid var(--border); }
 
@@ -633,10 +633,10 @@ body {
   display: grid; grid-template-columns: repeat(3,1fr); gap: 0.4rem;
 }
 .mt-detail-player-card {
-  display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+  display: flex; flex-direction: column; align-items: center; gap: 0.28rem;
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--border); border-radius: 9px;
-  padding: 0.6rem 0.3rem; text-align: center;
+  padding: 0.65rem 0.3rem; text-align: center;
 }
 .mt-detail-player-card__avatar {
   width: 32px; height: 32px; border-radius: 50%;
@@ -649,10 +649,11 @@ body {
 .mt-detail-player__avatar--mery  { background: rgba(192,132,252,0.2); color: #c084fc; }
 .mt-detail-player-card__name { font-size: 0.72rem; font-weight: 700; color: var(--txt1); }
 
-/* Estrellas */
-.mt-stars { font-size: 0.68rem; letter-spacing: 0.04em; line-height: 1; }
-.mt-star--on  { color: var(--accent); }
-.mt-star--off { color: var(--txt3); opacity: 0.4; }
+/* Nota numérica en tarjeta */
+.mt-detail-player-card__nota {
+  font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 900; line-height: 1;
+}
+.mt-detail-player-card__nota--empty { font-size: 0.7rem; color: var(--txt3); font-family: inherit; font-weight: 400; }
 
 /* Estado en las tarjetas */
 .mt-detail-player__status {
