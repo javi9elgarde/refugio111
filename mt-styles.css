@@ -565,121 +565,106 @@ body {
 .mt-season-sep:first-child { border-top: none; margin-top: 0; padding-top: 0; }
 
 /* ── DETAIL MODAL ────────────────────────────────────────── */
-/* Sección superior: póster izquierda + info derecha */
 .mt-detail-top {
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 185px 1fr;
   gap: 1.1rem;
-  margin-bottom: 0.85rem;
   align-items: start;
 }
 @media (max-width: 600px) {
-  .mt-detail-top { grid-template-columns: 130px 1fr; gap: 0.8rem; }
+  .mt-detail-top { grid-template-columns: 120px 1fr; gap: 0.8rem; }
 }
 @media (max-width: 420px) {
-  .mt-detail-top { grid-template-columns: 100px 1fr; gap: 0.6rem; }
+  .mt-detail-top { grid-template-columns: 90px 1fr; gap: 0.6rem; }
 }
 
-/* Póster vertical (2:3) */
+/* Póster vertical 2:3 */
 .mt-detail-poster {
   position: relative;
   width: 100%; aspect-ratio: 2/3;
   background: var(--bg3); border-radius: 10px;
   overflow: hidden; flex-shrink: 0;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  box-shadow: 0 6px 28px rgba(0,0,0,0.55);
 }
-.mt-detail-poster img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-}
+.mt-detail-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .mt-detail-poster__ph {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 2.5rem; color: rgba(var(--accent-rgb), 0.3);
 }
 
-/* Columna derecha: nota + stats + géneros */
+/* Columna derecha */
 .mt-detail-right {
   display: flex; flex-direction: column; gap: 0.55rem; min-width: 0;
 }
 
-/* Nota media — compacta, alineada a la izquierda */
-.mt-detail-score {
-  display: inline-flex; align-items: baseline; gap: 0.4rem;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07); border-radius: 8px;
-  padding: 0.35rem 0.7rem; align-self: flex-start;
-}
-.mt-detail-score__val {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1.25rem; font-weight: 900; line-height: 1;
-}
-.mt-detail-score__lbl {
-  font-size: 0.52rem; color: var(--txt3); letter-spacing: 0.07em;
-}
-
-/* Stats: una tabla compacta con borde unificado */
-.mt-detail-stats {
+/* Tabla de metadatos */
+.mt-detail-meta {
   display: flex; flex-direction: column;
-  border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--border); border-radius: 9px; overflow: hidden;
 }
-.mt-detail-stat {
-  display: flex; align-items: baseline; gap: 0.6rem;
-  padding: 0.38rem 0.7rem;
+.mt-detail-meta-item {
+  display: flex; align-items: baseline; gap: 0.55rem;
+  padding: 0.35rem 0.65rem;
   border-bottom: 1px solid var(--border);
 }
-.mt-detail-stat:last-child { border-bottom: none; }
-.mt-detail-stat__lbl {
-  font-size: 0.58rem; color: var(--txt3); letter-spacing: 0.06em;
-  text-transform: uppercase; flex-shrink: 0; min-width: 58px;
+.mt-detail-meta-item:last-child { border-bottom: none; }
+.mt-detail-meta-lbl {
+  font-size: 0.57rem; color: var(--txt3); text-transform: uppercase;
+  letter-spacing: 0.07em; flex-shrink: 0; min-width: 55px;
 }
-.mt-detail-stat__val { font-size: 0.83rem; font-weight: 600; color: var(--txt1); }
+.mt-detail-meta-val { font-size: 0.82rem; font-weight: 600; color: var(--txt1); }
 
 /* Badges de géneros */
-.mt-detail-badges {
-  display: flex; flex-wrap: wrap; gap: 0.35rem;
-}
-.mt-badge {
-  padding: 0.18rem 0.55rem; border-radius: 6px;
-  font-size: 0.68rem; font-weight: 600; letter-spacing: 0.02em;
-}
-.mt-badge--genre {
-  background: var(--accent-dim); color: var(--accent);
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
-}
-.mt-badge--year { background: rgba(255,255,255,0.06); color: var(--txt2); border: 1px solid var(--border); }
+.mt-detail-badges { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.mt-badge { padding: 0.18rem 0.55rem; border-radius: 6px; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.02em; }
+.mt-badge--genre { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(var(--accent-rgb),0.3); }
+.mt-badge--year  { background: rgba(255,255,255,0.06); color: var(--txt2); border: 1px solid var(--border); }
 
-/* Player rows */
-.mt-detail-players {
-  display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0;
+/* Sección "REGISTRO DE USUARIOS" */
+.mt-detail-players-section { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+.mt-detail-players-header {
+  font-size: 0.57rem; color: var(--txt3); text-transform: uppercase; letter-spacing: 0.1em;
+  padding-bottom: 0.3rem; border-bottom: 1px solid var(--border);
 }
-.mt-detail-player {
-  display: flex; align-items: center; gap: 0.55rem;
-  padding: 0.45rem 0.75rem;
-  background: rgba(255,255,255,0.02);
+
+/* 3 tarjetas de jugador en fila */
+.mt-detail-player-cards {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 0.4rem;
+}
+.mt-detail-player-card {
+  display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+  background: rgba(255,255,255,0.03);
   border: 1px solid var(--border); border-radius: 9px;
+  padding: 0.6rem 0.3rem; text-align: center;
 }
-.mt-detail-player__avatar {
-  width: 26px; height: 26px; border-radius: 50%;
+.mt-detail-player-card__avatar {
+  width: 32px; height: 32px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Orbitron', sans-serif; font-size: 0.65rem; font-weight: 900;
+  font-family: 'Orbitron', sans-serif; font-size: 0.75rem; font-weight: 900;
   flex-shrink: 0;
 }
 .mt-detail-player__avatar--david { background: rgba(59,130,246,0.2); color: #60a5fa; }
 .mt-detail-player__avatar--javi  { background: rgba(248,113,113,0.2); color: #f87171; }
 .mt-detail-player__avatar--mery  { background: rgba(192,132,252,0.2); color: #c084fc; }
-.mt-detail-player__name { font-size: 0.78rem; font-weight: 600; min-width: 46px; }
+.mt-detail-player-card__name { font-size: 0.72rem; font-weight: 700; color: var(--txt1); }
+
+/* Estrellas */
+.mt-stars { font-size: 0.68rem; letter-spacing: 0.04em; line-height: 1; }
+.mt-star--on  { color: var(--accent); }
+.mt-star--off { color: var(--txt3); opacity: 0.4; }
+
+/* Estado en las tarjetas */
 .mt-detail-player__status {
-  font-size: 0.7rem; padding: 0.15rem 0.5rem;
-  border-radius: 5px; font-weight: 600;
+  font-size: 0.62rem; padding: 0.12rem 0.45rem;
+  border-radius: 4px; font-weight: 600;
 }
-.mt-status--visto      { background: rgba(67,233,123,0.12); color: #43e97b; }
-.mt-status--viendo     { background: rgba(245,158,11,0.12); color: #f59e0b; }
+.mt-status--visto      { background: rgba(67,233,123,0.12);  color: #43e97b; }
+.mt-status--viendo     { background: rgba(245,158,11,0.12);  color: #f59e0b; }
 .mt-status--pendiente  { background: rgba(255,255,255,0.06); color: var(--txt3); }
 .mt-status--abandonado { background: rgba(107,114,128,0.12); color: #6b7280; }
 .mt-status--pausado    { background: rgba(148,163,184,0.12); color: #94a3b8; }
 .mt-status--sinregistrar { background: rgba(255,255,255,0.04); color: var(--txt3); }
-.mt-detail-player__nota { margin-left: auto; font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 900; }
-.mt-detail-player__ep { font-size: 0.7rem; color: var(--txt3); }
 
 /* ── LOADING OVERLAY ─────────────────────────────────────── */
 #mtLoading {
