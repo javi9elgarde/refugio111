@@ -565,66 +565,78 @@ body {
 .mt-season-sep:first-child { border-top: none; margin-top: 0; padding-top: 0; }
 
 /* ── DETAIL MODAL ────────────────────────────────────────── */
-.mt-detail-cover {
-  position: relative;
-  width: 100%; aspect-ratio: 16/9;
-  background: var(--bg3); border-radius: 12px;
-  overflow: hidden; margin-bottom: 1.25rem;
+/* Sección superior: póster izquierda + info derecha */
+.mt-detail-top {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.1rem;
+  align-items: start;
 }
-.mt-detail-cover img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-}
-.mt-detail-cover__ph {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Orbitron', sans-serif; font-size: 4rem; font-weight: 900;
-  color: rgba(var(--accent-rgb), 0.25);
+@media (max-width: 520px) {
+  .mt-detail-top { grid-template-columns: 100px 1fr; gap: 0.75rem; }
 }
 
+/* Póster vertical (2:3) */
+.mt-detail-poster {
+  position: relative;
+  width: 100%; aspect-ratio: 2/3;
+  background: var(--bg3); border-radius: 12px;
+  overflow: hidden; flex-shrink: 0;
+}
+.mt-detail-poster img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.mt-detail-poster__ph {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.8rem; color: rgba(var(--accent-rgb), 0.3);
+}
+
+/* Columna derecha: nota + stats */
+.mt-detail-right {
+  display: flex; flex-direction: column; gap: 0.6rem; min-width: 0;
+}
 .mt-detail-score {
-  position: absolute; top: 0.75rem; right: 0.75rem;
-  background: rgba(7,7,15,0.85); backdrop-filter: blur(8px);
-  border-radius: 12px; padding: 0.5rem 0.85rem;
-  text-align: center;
-  border: 1px solid rgba(255,255,255,0.08);
+  display: inline-flex; flex-direction: column; align-items: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+  padding: 0.5rem 0.85rem; align-self: flex-start;
 }
 .mt-detail-score__val {
   font-family: 'Orbitron', sans-serif;
-  font-size: 1.4rem; font-weight: 900;
-  line-height: 1;
+  font-size: 1.4rem; font-weight: 900; line-height: 1;
 }
 .mt-detail-score__lbl {
-  font-size: 0.55rem; color: var(--txt3); letter-spacing: 0.08em;
-  margin-top: 0.2rem;
+  font-size: 0.55rem; color: var(--txt3); letter-spacing: 0.08em; margin-top: 0.2rem;
 }
+/* Stats apilados verticalmente en la columna derecha */
+.mt-detail-stats {
+  display: flex; flex-direction: column; gap: 0.45rem;
+}
+.mt-detail-stat {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+}
+.mt-detail-stat__lbl { font-size: 0.6rem; color: var(--txt3); letter-spacing: 0.07em; margin-bottom: 0.15rem; text-transform: uppercase; }
+.mt-detail-stat__val { font-size: 0.85rem; font-weight: 600; color: var(--txt1); }
 
+/* Badges de géneros + año */
 .mt-detail-badges {
-  display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;
+  display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.9rem;
 }
 .mt-badge {
   padding: 0.22rem 0.6rem; border-radius: 6px;
   font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em;
 }
 .mt-badge--genre {
-  background: var(--accent-dim);
-  color: var(--accent);
+  background: var(--accent-dim); color: var(--accent);
   border: 1px solid rgba(var(--accent-rgb), 0.3);
 }
 .mt-badge--year { background: rgba(255,255,255,0.06); color: var(--txt2); border: 1px solid var(--border); }
 
-.mt-detail-stats {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 0.65rem; margin-bottom: 1rem;
-}
-.mt-detail-stat {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid var(--border); border-radius: 10px;
-  padding: 0.65rem 0.85rem;
-}
-.mt-detail-stat__lbl { font-size: 0.62rem; color: var(--txt3); letter-spacing: 0.07em; margin-bottom: 0.2rem; }
-.mt-detail-stat__val { font-size: 0.88rem; font-weight: 600; color: var(--txt1); }
-
-/* Player status en detalle */
+/* Player rows */
 .mt-detail-players {
   display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;
 }
@@ -648,11 +660,12 @@ body {
   font-size: 0.72rem; padding: 0.18rem 0.55rem;
   border-radius: 5px; font-weight: 600;
 }
-.mt-status--visto     { background: rgba(67,233,123,0.12); color: #43e97b; }
-.mt-status--viendo    { background: rgba(245,158,11,0.12); color: #f59e0b; }
-.mt-status--pendiente { background: rgba(255,255,255,0.06); color: var(--txt3); }
-.mt-status--abandonado{ background: rgba(107,114,128,0.12); color: #6b7280; }
-.mt-status--pausado   { background: rgba(148,163,184,0.12); color: #94a3b8; }
+.mt-status--visto      { background: rgba(67,233,123,0.12); color: #43e97b; }
+.mt-status--viendo     { background: rgba(245,158,11,0.12); color: #f59e0b; }
+.mt-status--pendiente  { background: rgba(255,255,255,0.06); color: var(--txt3); }
+.mt-status--abandonado { background: rgba(107,114,128,0.12); color: #6b7280; }
+.mt-status--pausado    { background: rgba(148,163,184,0.12); color: #94a3b8; }
+.mt-status--sinregistrar { background: rgba(255,255,255,0.04); color: var(--txt3); }
 .mt-detail-player__nota { margin-left: auto; font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 900; }
 .mt-detail-player__ep { font-size: 0.7rem; color: var(--txt3); }
 

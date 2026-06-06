@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER — Biblioteca
-   Version: 20260606f
+   Version: 20260606g
    ============================================================ */
 (function () {
   'use strict';
@@ -277,36 +277,37 @@
 
     document.getElementById('detailTitle').textContent = item.titulo;
 
-    var coverHtml = item.portadaUrl
+    /* ── PÓSTER (columna izquierda) ── */
+    var posterHtml = item.portadaUrl
       ? '<img src="' + U.escHtml(item.portadaUrl) + '" onerror="this.style.display=\'none\'">'
-      : '<div class="mt-detail-cover__ph">' + U.catEmoji(item.tipo) + '</div>';
+      : '<div class="mt-detail-poster__ph">' + U.catEmoji(item.tipo) + '</div>';
 
+    /* ── NOTA MEDIA ── */
     var scoreBadge = nota !== null
-      ? '<div class="mt-detail-score" style="--sc:' + color + '">' +
+      ? '<div class="mt-detail-score">' +
           '<div class="mt-detail-score__val" style="color:' + color + '">' + U.formatNota(nota) + '</div>' +
           '<div class="mt-detail-score__lbl">NOTA MEDIA</div>' +
         '</div>'
       : '';
 
+    /* ── STATS (columna derecha) ── */
+    var stats = '';
+    if (item.saga)     stats += stat('SAGA',      '⛓ ' + U.escHtml(item.saga),      'color:var(--accent)');
+    if (item.director) stats += stat('DIRECTOR',  U.escHtml(item.director));
+    if (item.estudio)  stats += stat('ESTUDIO',   U.escHtml(item.estudio));
+    if (item.anio || item.año) stats += stat('AÑO', String(item.anio || item.año));
+    var numTemp = item.numTemporadas || (item.temporadas ? item.temporadas.length : 0);
+    if (numTemp && item.tipo !== 'peliculas') stats += stat('TEMPORADAS', String(numTemp));
+    if (item.duracion && item.tipo === 'peliculas') stats += stat('DURACIÓN', item.duracion + ' min');
+    if (item.episodios)  stats += stat('EPISODIOS',  String(item.episodios));
+    if (item.plataforma) stats += stat('PLATAFORMA', U.escHtml(item.plataforma));
+
+    /* ── GÉNEROS ── */
     var badges = (item.generos || []).map(function (g) {
       return '<span class="mt-badge mt-badge--genre">' + U.escHtml(g) + '</span>';
     }).join('');
-    if (item.anio || item.año) badges += '<span class="mt-badge mt-badge--year">📅 ' + (item.anio || item.año) + '</span>';
 
-    var stats = '';
-    if (item.saga)         stats += '<div class="mt-detail-stat"><div class="mt-detail-stat__lbl">SAGA</div><div class="mt-detail-stat__val" style="color:var(--accent)">⛓ ' + U.escHtml(item.saga) + '</div></div>';
-    if (item.director)     stats += '<div class="mt-detail-stat"><div class="mt-detail-stat__lbl">DIRECTOR</div><div class="mt-detail-stat__val">' + U.escHtml(item.director) + '</div></div>';
-    if (item.estudio)      stats += '<div class="mt-detail-stat"><div class="mt-detail-stat__lbl">ESTUDIO</div><div class="mt-detail-stat__val">' + U.escHtml(item.estudio) + '</div></div>';
-    var numTemp = item.numTemporadas || (item.temporadas ? item.temporadas.length : null) || item.duracion;
-    if (numTemp && item.tipo !== 'peliculas') {
-      stats += '<div class="mt-detail-stat"><div class="mt-detail-stat__lbl">TEMPORADAS</div><div class="mt-detail-stat__val">' + numTemp + '</div></div>';
-    } else if (item.duracion && item.tipo === 'peliculas') {
-      stats += '<div class="mt-detail-stat"><div class="mt-detail-stat__lbl">DURACIÓN</div><div class="mt-detail-stat__val">' + item.duracion + ' min</div></div>';
-    }
-    if (item.episodios)    stats += '<div class="mt-detail-stat"><div class="mt-detail-stat__lbl">EPISODIOS</div><div class="mt-detail-stat__val">' + item.episodios + '</div></div>';
-    if (item.plataforma)   stats += '<div class="mt-detail-stat"><div class="mt-detail-stat__lbl">PLATAFORMA</div><div class="mt-detail-stat__val">' + U.escHtml(item.plataforma) + '</div></div>';
-
-    /* Player rows: temporadas o jugadores clásico */
+    /* ── JUGADORES ── */
     var playersHtml;
     if (item.temporadas && item.temporadas.length) {
       playersHtml = ['David', 'Javi', 'Mery'].map(function (p) {
@@ -315,42 +316,57 @@
         var notaP   = U.calcNotaTemporadasPlayer(item.temporadas, p);
         var nc      = notaP !== null ? U.notaColor(notaP) : 'var(--txt3)';
         var nVistas = item.temporadas.filter(function (t) {
-          var e = (t.jugadores && t.jugadores[p] && t.jugadores[p].estado) || '';
+          var e  = (t.jugadores && t.jugadores[p] && t.jugadores[p].estado) || '';
           var en = e.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
           return en === 'terminado' || en === 'terminada';
         }).length;
         var tempInfo = nVistas > 0 ? ' · ' + nVistas + '/' + item.temporadas.length + ' T' : '';
-        return '<div class="mt-detail-player">' +
-          '<div class="mt-detail-player__avatar mt-detail-player__avatar--' + p.toLowerCase() + '">' + p.charAt(0) + '</div>' +
-          '<div class="mt-detail-player__name">' + p + '</div>' +
-          '<span class="mt-detail-player__status mt-status--' + sc + '">' + U.escHtml(estadoP) + tempInfo + '</span>' +
-          (notaP !== null ? '<div class="mt-detail-player__nota" style="color:' + nc + '">' + U.formatNota(notaP) + '</div>' : '') +
-        '</div>';
+        return playerRow(p, estadoP + tempInfo, sc, notaP, nc);
       }).join('');
     } else {
       playersHtml = ['David', 'Javi', 'Mery'].map(function (p) {
-        var jInfo  = item.jugadores && item.jugadores[p];
+        var jInfo   = item.jugadores && item.jugadores[p];
         var estadoP = jInfo && jInfo.estado ? jInfo.estado : 'Sin estado';
         var sc      = U.statusClass(estadoP);
         var notaP   = jInfo && jInfo.nota !== null && jInfo.nota !== undefined && jInfo.nota !== '' ? jInfo.nota : null;
         var nc      = notaP !== null ? U.notaColor(notaP) : 'var(--txt3)';
         var ep      = jInfo && jInfo.episodio ? ' · Ep. ' + jInfo.episodio : '';
-        return '<div class="mt-detail-player">' +
-          '<div class="mt-detail-player__avatar mt-detail-player__avatar--' + p.toLowerCase() + '">' + p.charAt(0) + '</div>' +
-          '<div class="mt-detail-player__name">' + p + '</div>' +
-          '<span class="mt-detail-player__status mt-status--' + sc + '">' + U.escHtml(estadoP) + ep + '</span>' +
-          (notaP !== null ? '<div class="mt-detail-player__nota" style="color:' + nc + '">' + U.formatNota(notaP) + '</div>' : '') +
-        '</div>';
+        return playerRow(p, estadoP + ep, sc, notaP, nc);
       }).join('');
     }
 
+    /* ── LAYOUT FINAL ── */
     document.getElementById('detailBody').innerHTML =
-      '<div class="mt-detail-cover">' + coverHtml + scoreBadge + '</div>' +
+      /* Fila superior: póster + info */
+      '<div class="mt-detail-top">' +
+        '<div class="mt-detail-poster">' + posterHtml + '</div>' +
+        '<div class="mt-detail-right">' +
+          scoreBadge +
+          (stats ? '<div class="mt-detail-stats">' + stats + '</div>' : '') +
+        '</div>' +
+      '</div>' +
+      /* Géneros */
       (badges ? '<div class="mt-detail-badges">' + badges + '</div>' : '') +
-      (stats  ? '<div class="mt-detail-stats">'  + stats  + '</div>' : '') +
+      /* Jugadores */
       '<div class="mt-detail-players">' + playersHtml + '</div>';
 
     document.getElementById('detailModal').classList.add('open');
+  }
+
+  /* Helpers HTML para openDetail */
+  function stat(lbl, val, style) {
+    return '<div class="mt-detail-stat">' +
+      '<div class="mt-detail-stat__lbl">' + lbl + '</div>' +
+      '<div class="mt-detail-stat__val"' + (style ? ' style="' + style + '"' : '') + '>' + val + '</div>' +
+    '</div>';
+  }
+  function playerRow(p, statusText, sc, notaP, nc) {
+    return '<div class="mt-detail-player">' +
+      '<div class="mt-detail-player__avatar mt-detail-player__avatar--' + p.toLowerCase() + '">' + p.charAt(0) + '</div>' +
+      '<div class="mt-detail-player__name">' + p + '</div>' +
+      '<span class="mt-detail-player__status mt-status--' + sc + '">' + window.MT.Utils.escHtml(statusText) + '</span>' +
+      (notaP !== null ? '<div class="mt-detail-player__nota" style="color:' + nc + '">' + window.MT.Utils.formatNota(notaP) + '</div>' : '') +
+    '</div>';
   }
 
   function closeDetailModal() {
