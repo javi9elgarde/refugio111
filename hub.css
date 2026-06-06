@@ -45,14 +45,14 @@ html, body {
   filter: brightness(0.72) saturate(0.88);
 }
 
-/* Línea totalmente vertical al 52% — alineada con el título central */
+/* Línea vertical perfecta al 50% — imágenes sin zona blanca, corte libre */
 .hub__split-img--left  {
-  clip-path: inset(0 48% 0 0);
+  clip-path: inset(0 50% 0 0);
   transform-origin: left center;
   object-position: left center;
 }
 .hub__split-img--right {
-  clip-path: inset(0 0 0 52%);
+  clip-path: inset(0 0 0 50%);
   transform-origin: right center;
   object-position: right center;
 }
@@ -182,12 +182,12 @@ html, body {
   inset: 0;
   pointer-events: none;
   z-index: 8;
-  /* Línea vertical perfecta al 52% */
+  /* Línea vertical perfecta al 50% */
   clip-path: polygon(
-    calc(52% - 2px) 0%,
-    calc(52% + 2px) 0%,
-    calc(52% + 2px) 100%,
-    calc(52% - 2px) 100%
+    calc(50% - 2px) 0%,
+    calc(50% + 2px) 0%,
+    calc(50% + 2px) 100%,
+    calc(50% - 2px) 100%
   );
   background: linear-gradient(
     to bottom,
@@ -209,7 +209,7 @@ html, body {
 /* ── TÍTULO CENTRAL — centrado sobre la diagonal ───── */
 .hub__title {
   position: absolute;
-  left: 52%;
+  left: 50%;
   top: 6%;
   transform: translateX(-50%);
   z-index: 20;
@@ -296,7 +296,7 @@ html, body {
 }
 
 .hub__label--left {
-  left: 27%;
+  left: 25%;
   border: 1px solid rgba(0, 255, 136, 0.18);
   border-top: 2px solid rgba(0, 255, 136, 0.55);
   box-shadow:
