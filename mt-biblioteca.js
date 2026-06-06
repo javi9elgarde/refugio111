@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER — Biblioteca
-   Version: 20260606g
+   Version: 20260606h
    ============================================================ */
 (function () {
   'use strict';
@@ -343,10 +343,9 @@
         '<div class="mt-detail-right">' +
           scoreBadge +
           (stats ? '<div class="mt-detail-stats">' + stats + '</div>' : '') +
+          (badges ? '<div class="mt-detail-badges">' + badges + '</div>' : '') +
         '</div>' +
       '</div>' +
-      /* Géneros */
-      (badges ? '<div class="mt-detail-badges">' + badges + '</div>' : '') +
       /* Jugadores */
       '<div class="mt-detail-players">' + playersHtml + '</div>';
 
