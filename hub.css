@@ -45,13 +45,13 @@ html, body {
   filter: brightness(0.72) saturate(0.88);
 }
 
-/* Corte diagonal: izquierda gaming, derecha cine */
+/* Corte diagonal: izquierda gaming, derecha cine — sigue la diagonal de la imagen */
 .hub__split-img--left  {
-  clip-path: polygon(0 0, 51.5% 0, 49.5% 100%, 0 100%);
+  clip-path: polygon(0 0, 54% 0, 46% 100%, 0 100%);
   transform-origin: left center;
 }
 .hub__split-img--right {
-  clip-path: polygon(50.5% 0, 100% 0, 100% 100%, 48.5% 100%);
+  clip-path: polygon(54% 0, 100% 0, 100% 100%, 46% 100%);
   transform-origin: right center;
 }
 
@@ -173,55 +173,37 @@ html, body {
 .hub__zone--left  { left: 0; }
 .hub__zone--right { right: 0; }
 
-/* Línea neon en el borde interior al hover */
-.hub__zone--left::after,
-.hub__zone--right::after {
-  content: '';
-  position: absolute;
-  top: 10%;
-  height: 80%;
-  width: 2px;
-  transition: opacity 0.4s, box-shadow 0.4s;
-  opacity: 0;
-}
-.hub__zone--left::after  { right: 0; background: #00ff88; }
-.hub__zone--right::after { left: 0;  background: #4facfe; }
+/* Las líneas de borde de zona se omiten — el divisor diagonal central lo sustituye */
 
-#hub.hover-left  .hub__zone--left::after  {
-  opacity: 1;
-  box-shadow: 0 0 12px #00ff88, 0 0 28px rgba(0,255,136,0.5);
-}
-#hub.hover-right .hub__zone--right::after {
-  opacity: 1;
-  box-shadow: 0 0 12px #4facfe, 0 0 28px rgba(79,172,254,0.5);
-}
-
-/* ── DIVISOR CENTRAL — línea dorada diagonal ───────── */
+/* ── DIVISOR CENTRAL — banda diagonal dorada ───────── */
 .hub__divider {
   position: absolute;
-  left: 50%;
-  top: 0;
-  height: 100%;
-  width: 2px;
-  transform: translateX(-50%) skewX(-1.5deg);
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(255, 190, 60, 0.55) 18%,
-    rgba(255, 210, 90, 0.85) 50%,
-    rgba(255, 190, 60, 0.55) 82%,
-    transparent 100%
-  );
-  box-shadow:
-    0 0 8px  rgba(255, 190, 60, 0.5),
-    0 0 22px rgba(255, 160, 30, 0.3),
-    0 0 50px rgba(255, 140, 0,  0.15);
+  inset: 0;
   pointer-events: none;
   z-index: 8;
+  /* Banda de ~10px que sigue exactamente la diagonal del clip-path (54% top → 46% bottom) */
+  clip-path: polygon(
+    calc(54% - 5px) 0%,
+    calc(54% + 5px) 0%,
+    calc(46% + 5px) 100%,
+    calc(46% - 5px) 100%
+  );
+  background: linear-gradient(
+    to bottom,
+    transparent          0%,
+    rgba(255,200,55,.80) 12%,
+    rgba(255,220,90,1)   50%,
+    rgba(255,200,55,.80) 88%,
+    transparent          100%
+  );
+  filter:
+    drop-shadow(0 0  6px rgba(255,190,50,.95))
+    drop-shadow(0 0 22px rgba(255,155,20,.65))
+    drop-shadow(0 0 50px rgba(255,130, 0,.30));
   transition: opacity 0.4s;
 }
-#hub.hover-left  .hub__divider { opacity: 0.6; }
-#hub.hover-right .hub__divider { opacity: 0.6; }
+#hub.hover-left  .hub__divider { opacity: 0.55; }
+#hub.hover-right .hub__divider { opacity: 0.55; }
 
 /* ── TÍTULO CENTRAL ────────────────────────────────── */
 .hub__title {
@@ -292,66 +274,109 @@ html, body {
   50%       { opacity: 1;   transform: scale(1.3); }
 }
 
-/* ── LABELS LATERALES ──────────────────────────────── */
+/* ── LABELS LATERALES — glass card ─────────────────── */
 .hub__label {
   position: absolute;
-  bottom: 5vh;
+  top: 55%;
   z-index: 15;
   pointer-events: none;
   text-align: center;
   opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.45s ease, transform 0.45s ease;
-}
-.hub__label--left  { left: 2vw;  width: calc(50% - 2vw - 3rem); }
-.hub__label--right { right: 2vw; width: calc(50% - 2vw - 3rem); }
+  width: clamp(180px, 34%, 340px);
+  transform: translateX(-50%) translateY(calc(-50% + 18px));
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.34,1.3,0.64,1);
 
-#hub.hover-left  .hub__label--left  { opacity: 1; transform: translateY(0); }
-#hub.hover-right .hub__label--right { opacity: 1; transform: translateY(0); }
+  /* Glass card */
+  background: rgba(5, 5, 14, 0.68);
+  backdrop-filter: blur(22px) saturate(1.6);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  border-radius: 22px;
+  padding: 1.75rem 1.75rem 1.5rem;
+}
+
+.hub__label--left {
+  left: 25%;
+  border: 1px solid rgba(0, 255, 136, 0.18);
+  border-top: 2px solid rgba(0, 255, 136, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 136, 0.04),
+    0 24px 60px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(0, 255, 136, 0.09);
+}
+
+.hub__label--right {
+  left: 75%;
+  border: 1px solid rgba(79, 172, 254, 0.18);
+  border-top: 2px solid rgba(79, 172, 254, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(79, 172, 254, 0.04),
+    0 24px 60px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(79, 172, 254, 0.09);
+}
+
+#hub.hover-left  .hub__label--left  { opacity: 1; transform: translateX(-50%) translateY(-50%); }
+#hub.hover-right .hub__label--right { opacity: 1; transform: translateX(-50%) translateY(-50%); }
 
 .hub__label-icon-row {
   display: flex;
-  gap: 0.6rem;
+  gap: 0.65rem;
   justify-content: center;
-  margin-bottom: 0.5rem;
-  font-size: 1.6rem;
+  margin-bottom: 0.9rem;
+  font-size: 2.2rem;
 }
 
-.hub__label-icon--pixel {
-  image-rendering: pixelated;
-}
+.hub__label-icon--pixel { image-rendering: pixelated; }
 
 .hub__label-name {
-  font-size: clamp(0.65rem, 1.3vw, 0.9rem);
+  font-size: clamp(0.95rem, 2vw, 1.45rem);
   font-weight: 900;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.35rem;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.55rem;
+  line-height: 1.2;
 }
-.hub__label--left  .hub__label-name { color: #00ff88; }
-.hub__label--right .hub__label-name { color: #4facfe; }
+.hub__label--left  .hub__label-name {
+  color: #00ff88;
+  text-shadow: 0 0 22px rgba(0,255,136,0.65);
+}
+.hub__label--right .hub__label-name {
+  color: #4facfe;
+  text-shadow: 0 0 22px rgba(79,172,254,0.65);
+}
 
 .hub__label-sub {
-  font-size: clamp(0.52rem, 0.85vw, 0.68rem);
-  color: rgba(232,232,248,0.55);
-  letter-spacing: 0.06em;
+  font-size: clamp(0.6rem, 0.95vw, 0.75rem);
+  color: rgba(232,232,248,0.52);
+  letter-spacing: 0.07em;
   font-family: sans-serif;
-  margin-bottom: 0.6rem;
+  margin-bottom: 1.1rem;
+  line-height: 1.5;
 }
 
+/* Botón ENTRAR */
 .hub__label-enter {
-  font-size: clamp(0.55rem, 0.9vw, 0.72rem);
-  font-weight: 700;
-  letter-spacing: 0.25em;
-  opacity: 0;
-  transform: translateY(5px);
-  transition: opacity 0.3s 0.15s, transform 0.3s 0.15s;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
+  font-size: clamp(0.62rem, 0.95vw, 0.78rem);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  padding: 0.52rem 1.35rem;
+  border-radius: 30px;
+  opacity: 1;
+  transform: none;
+  transition: none;
 }
-.hub__label--left  .hub__label-enter { color: #00ff88; }
-.hub__label--right .hub__label-enter { color: #4facfe; }
+.hub__label--left  .hub__label-enter {
+  color: #00ff88;
+  background: rgba(0, 255, 136, 0.10);
+  border: 1px solid rgba(0, 255, 136, 0.32);
+}
+.hub__label--right .hub__label-enter {
+  color: #4facfe;
+  background: rgba(79, 172, 254, 0.10);
+  border: 1px solid rgba(79, 172, 254, 0.32);
+}
 
 .hub__label-arrow {
   display: inline-block;
@@ -360,12 +385,6 @@ html, body {
 @keyframes arrowPulse {
   0%, 100% { transform: translateX(0); }
   50%       { transform: translateX(4px); }
-}
-
-#hub.hover-left  .hub__label--left  .hub__label-enter,
-#hub.hover-right .hub__label--right .hub__label-enter {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* ── FLASH DE CLICK ────────────────────────────────── */
@@ -443,16 +462,17 @@ html, body {
 
 /* ── RESPONSIVE ────────────────────────────────────── */
 @media (max-width: 860px) {
-  .hub__img { height: auto; width: 100vw; }
-  .hub__label { bottom: 3vh; }
+  .hub__label { width: clamp(150px, 40%, 280px); padding: 1.25rem 1.25rem 1rem; }
+  .hub__label-icon-row { font-size: 1.7rem; margin-bottom: 0.65rem; }
+  .hub__label-name  { font-size: clamp(0.8rem, 3.5vw, 1.1rem); }
+  .hub__label-sub   { display: none; }
 }
 @media (max-width: 540px) {
-  .hub__label { bottom: 2vh; }
-  .hub__label--left  { left: 1vw; width: calc(50% - 2rem); }
-  .hub__label--right { right: 1vw; width: calc(50% - 2rem); }
-  .hub__label-icon-row { font-size: 1.1rem; }
-  .hub__label-sub { display: none; }
-  .hub__title-el { font-size: 0.85rem; }
+  .hub__label { width: clamp(130px, 42%, 230px); padding: 1rem 0.9rem 0.85rem; border-radius: 16px; }
+  .hub__label-icon-row { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .hub__label-name  { font-size: clamp(0.7rem, 3.8vw, 0.95rem); letter-spacing: 0.08em; }
+  .hub__label-enter { font-size: 0.6rem; padding: 0.4rem 0.9rem; }
+  .hub__title-el    { font-size: 0.85rem; }
   .hub__title-friki { font-size: 1.5rem; }
 }
 
