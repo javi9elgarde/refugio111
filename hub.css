@@ -45,15 +45,15 @@ html, body {
   filter: brightness(0.72) saturate(0.88);
 }
 
-/* Diagonal medida al píxel en hub-right.png actualizado (1920×1080):
-   y=2 → 55.2%  |  y=540 → 50.4%  |  y=1077 → 45.7%   avg ≈ 50% */
+/* Diagonal menos inclinada: top fijo en 55.2% (límite físico hub-right.png),
+   bottom subido a 50% → pendiente 5.2% en vez de 9.5% */
 .hub__split-img--left  {
-  clip-path: polygon(0 0, 55.2% 0, 45.7% 100%, 0 100%);
+  clip-path: polygon(0 0, 55.2% 0, 50% 100%, 0 100%);
   transform-origin: left center;
   object-position: left center;
 }
 .hub__split-img--right {
-  clip-path: polygon(55.2% 0, 100% 0, 100% 100%, 45.7% 100%);
+  clip-path: polygon(55.2% 0, 100% 0, 100% 100%, 50% 100%);
   transform-origin: right center;
   object-position: right center;
 }
@@ -183,12 +183,12 @@ html, body {
   inset: 0;
   pointer-events: none;
   z-index: 8;
-  /* Banda de ~10px — diagonal 55.2% top → 45.7% bottom (medida al píxel) */
+  /* Banda de ~10px — diagonal menos inclinada: 55.2% top → 50% bottom */
   clip-path: polygon(
     calc(55.2% - 5px) 0%,
     calc(55.2% + 5px) 0%,
-    calc(45.7% + 5px) 100%,
-    calc(45.7% - 5px) 100%
+    calc(50% + 5px) 100%,
+    calc(50% - 5px) 100%
   );
   background: linear-gradient(
     to bottom,
