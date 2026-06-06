@@ -1,6 +1,6 @@
 /* ============================================================
    MEDIA TRACKER — Biblioteca
-   Version: 20260606c
+   Version: 20260606d
    ============================================================ */
 (function () {
   'use strict';
@@ -444,6 +444,12 @@
   }
 
   /* ── TMDB QUICK SEARCH ──────────────────────────────────── */
+  function normTitle(s) {
+    return (s || '').toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]/g, '');
+  }
+
   function tmdbFetch(path) {
     var sep = path.indexOf('?') >= 0 ? '&' : '?';
     var url = 'https://api.themoviedb.org/3' + path + sep + 'api_key=' + TMDB_KEY + '&language=es-ES';
@@ -470,16 +476,23 @@
           list.innerHTML = '<div class="mt-tmdb-msg">Sin resultados para "' + escHtml(query) + '"</div>';
           return;
         }
+
+        /* Títulos ya en biblioteca (normalizados) */
+        var inLib = new Set(_items.map(function (i) { return normTitle(i.titulo); }));
+
         list.innerHTML = results.map(function (r) {
-          var title = escHtml(r.title || r.name || '');
-          var year  = (r.release_date || r.first_air_date || '').split('-')[0] || '—';
-          var cover = r.poster_path
+          var rawTitle = r.title || r.name || '';
+          var title    = escHtml(rawTitle);
+          var year     = (r.release_date || r.first_air_date || '').split('-')[0] || '—';
+          var isDup    = inLib.has(normTitle(rawTitle));
+          var cover    = r.poster_path
             ? '<img src="' + IMG_THUMB + r.poster_path + '" loading="lazy">'
             : '<div class="mt-tmdb-item__ph">' + window.MT.Utils.catEmoji(cat) + '</div>';
-          return '<div class="mt-tmdb-item" data-tmdb-id="' + r.id + '">' +
+          var dupBadge = isDup ? ' <span class="mt-tmdb-dup">Ya en biblioteca</span>' : '';
+          return '<div class="mt-tmdb-item' + (isDup ? ' mt-tmdb-item--dup' : '') + '" data-tmdb-id="' + r.id + '">' +
             '<div class="mt-tmdb-item__cover">' + cover + '</div>' +
             '<div class="mt-tmdb-item__info">' +
-              '<div class="mt-tmdb-item__title">' + title + '</div>' +
+              '<div class="mt-tmdb-item__title">' + title + dupBadge + '</div>' +
               '<div class="mt-tmdb-item__meta">' + year + '</div>' +
             '</div>' +
           '</div>';
