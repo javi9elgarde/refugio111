@@ -45,7 +45,7 @@
       var player = this.dataset.player;
       try { localStorage.setItem('MT_player', player); } catch (e) {}
 
-      greetPlayer.textContent = player;
+      greetPlayer.textContent = 'Casa ' + player;
       playSelectSound(330, 415);
 
       /* Salida de fase 1 */
@@ -94,7 +94,7 @@
   try {
     var savedPlayer = localStorage.getItem('MT_player');
     if (savedPlayer) {
-      greetPlayer.textContent = savedPlayer;
+      greetPlayer.textContent = 'Casa ' + savedPlayer;
     }
   } catch (e) {}
 
