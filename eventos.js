@@ -147,10 +147,10 @@
 
   /* ── Tamaños de bingo disponibles ── */
   var BINGO_SIZES = [
-    { cols: 4, rows: 3, label: '4×3', desc: 'Normal',  hint: 'Nintendo Direct, State of Play…' },
-    { cols: 5, rows: 4, label: '5×4', desc: 'Grande',  hint: 'Summer Game Fest, The Game Awards…' },
+    { cols: 3, rows: 4, label: '3×4', desc: 'Normal',  hint: 'Nintendo Direct, State of Play…' },
+    { cols: 4, rows: 4, label: '4×4', desc: 'Grande',  hint: 'Summer Game Fest, The Game Awards…' },
   ];
-  var _bingoSize = BINGO_SIZES[0]; /* default 4×3 */
+  var _bingoSize = BINGO_SIZES[0]; /* default 3×4 */
 
   function getLines(cols, rows) {
     var lines = [];
@@ -779,6 +779,8 @@
   function renderBoard(card) {
     var cols     = card.cols || 5;
     var rows     = card.rows || 4;
+    /* Migración visual: bingos legacy 4×3 se muestran como 3×4 */
+    if (cols === 4 && rows === 3) { cols = 3; rows = 4; }
     var cells    = card.cells || [];
     var winLines = getWinLines(cells, cols, rows);
     var winSet   = new Set();
@@ -1069,7 +1071,7 @@
   /* ── MODAL CREAR / EDITAR BINGO ─────────────────────────────── */
   function openNewCardModal() {
     _editingCardId = null;
-    _bingoSize = BINGO_SIZES[3]; /* reset a 5×4 */
+    _bingoSize = BINGO_SIZES[0]; /* reset a 3×4 — era BINGO_SIZES[3] (índice inexistente → crash!) */
     var ev = _events[_currentEvtIdx] || {};
     document.getElementById('bingoModalHeading').textContent = 'Nuevo Bingo — ' + (ev.nombre || '');
     document.getElementById('bingoModalName').value = ev.nombre || '';
@@ -1090,7 +1092,10 @@
       document.getElementById('bingoModalName').value = data.titulo || '';
       document.getElementById('bingoModalDelete').style.display = 'inline-flex';
       buildSizePicker(false);
-      buildModalGrid(data.cells || null, data.cols || 5, data.rows || 4);
+      var eCols = data.cols || 5, eRows = data.rows || 4;
+      /* Migración: bingos legacy 4×3 se editan como 3×4 */
+      if (eCols === 4 && eRows === 3) { eCols = 3; eRows = 4; }
+      buildModalGrid(data.cells || null, eCols, eRows);
       document.getElementById('bingoModalOverlay').classList.add('open');
     });
   }
