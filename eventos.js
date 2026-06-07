@@ -147,10 +147,10 @@
 
   /* ── Tamaños de bingo disponibles ── */
   var BINGO_SIZES = [
-    { cols: 3, rows: 4, label: '3×4', desc: 'Normal',  hint: 'Nintendo Direct, State of Play…' },
+    { cols: 4, rows: 3, label: '4×3', desc: 'Normal',  hint: 'Nintendo Direct, State of Play…' },
     { cols: 4, rows: 4, label: '4×4', desc: 'Grande',  hint: 'Summer Game Fest, The Game Awards…' },
   ];
-  var _bingoSize = BINGO_SIZES[0]; /* default 3×4 */
+  var _bingoSize = BINGO_SIZES[0]; /* default 4×3 */
 
   function getLines(cols, rows) {
     var lines = [];
@@ -701,20 +701,21 @@
     }).join('');
   }
 
-  /* ── MIGRACIÓN ÚNICA: convierte bingos 4×3 → 3×4 en Firestore ── */
+  /* ── MIGRACIÓN: normaliza todos los bingos a 4×3 o 4×4 ── */
   var _migrationDone = false;
   function migrateLegacyBingos() {
     if (_migrationDone) return;
     _migrationDone = true;
-    db.collection('bingo_cards').where('cols', '==', 4).where('rows', '==', 3).get()
+    /* Revierte los que quedaron en 3×4 (migración anterior errónea) → 4×3 */
+    db.collection('bingo_cards').where('cols', '==', 3).where('rows', '==', 4).get()
       .then(function (snap) {
         if (snap.empty) return;
         var batch = db.batch();
         snap.docs.forEach(function (doc) {
-          batch.update(doc.ref, { cols: 3, rows: 4 });
+          batch.update(doc.ref, { cols: 4, rows: 3 });
         });
         return batch.commit().then(function () {
-          console.log('[bingo] migración 4×3→3×4: ' + snap.size + ' tarjeta(s) actualizadas');
+          console.log('[bingo] migración 3×4→4×3: ' + snap.size + ' tarjeta(s) restauradas');
         });
       })
       .catch(function (e) { console.warn('[bingo] migración fallida:', e); });
@@ -797,10 +798,8 @@
 
   /* ── RENDER TABLERO ─────────────────────────────────────────── */
   function renderBoard(card) {
-    var cols     = card.cols || 5;
-    var rows     = card.rows || 4;
-    /* Migración visual: bingos legacy 4×3 se muestran como 3×4 */
-    if (cols === 4 && rows === 3) { cols = 3; rows = 4; }
+    var cols     = card.cols || 4;
+    var rows     = card.rows || 3;
     var cells    = card.cells || [];
     var winLines = getWinLines(cells, cols, rows);
     var winSet   = new Set();
@@ -1112,9 +1111,7 @@
       document.getElementById('bingoModalName').value = data.titulo || '';
       document.getElementById('bingoModalDelete').style.display = 'inline-flex';
       buildSizePicker(false);
-      var eCols = data.cols || 5, eRows = data.rows || 4;
-      /* Migración: bingos legacy 4×3 se editan como 3×4 */
-      if (eCols === 4 && eRows === 3) { eCols = 3; eRows = 4; }
+      var eCols = data.cols || 4, eRows = data.rows || 3;
       buildModalGrid(data.cells || null, eCols, eRows);
       document.getElementById('bingoModalOverlay').classList.add('open');
     });

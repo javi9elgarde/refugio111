@@ -4543,7 +4543,7 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
 /* Grid — columnas fijadas por JS vía inline style */
 .bingo-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* fallback; JS sobreescribe siempre */
+  grid-template-columns: repeat(4, 1fr); /* fallback; JS sobreescribe siempre */
   gap: 0.35rem;
 }
 
@@ -4760,7 +4760,7 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
 /* Modal grid — columnas fijadas por JS vía inline style */
 #bingoModalGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* fallback; JS sobreescribe siempre */
+  grid-template-columns: repeat(4, 1fr); /* fallback; JS sobreescribe siempre */
   gap: 0.3rem;
   margin-top: 0.75rem;
 }
