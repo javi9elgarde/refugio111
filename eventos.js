@@ -701,8 +701,28 @@
     }).join('');
   }
 
+  /* ── MIGRACIÓN ÚNICA: convierte bingos 4×3 → 3×4 en Firestore ── */
+  var _migrationDone = false;
+  function migrateLegacyBingos() {
+    if (_migrationDone) return;
+    _migrationDone = true;
+    db.collection('bingo_cards').where('cols', '==', 4).where('rows', '==', 3).get()
+      .then(function (snap) {
+        if (snap.empty) return;
+        var batch = db.batch();
+        snap.docs.forEach(function (doc) {
+          batch.update(doc.ref, { cols: 3, rows: 4 });
+        });
+        return batch.commit().then(function () {
+          console.log('[bingo] migración 4×3→3×4: ' + snap.size + ' tarjeta(s) actualizadas');
+        });
+      })
+      .catch(function (e) { console.warn('[bingo] migración fallida:', e); });
+  }
+
   /* ── CARGAR TARJETAS ────────────────────────────────────────── */
   function loadCards() {
+    migrateLegacyBingos(); /* migra bingos legacy 4×3→3×4 al cargar */
     db.collection('bingo_cards').orderBy('createdAt', 'desc')
       .onSnapshot(function (snap) {
         _cards = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });

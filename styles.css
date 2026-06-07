@@ -4540,10 +4540,10 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
 .bingo-letter--g { color: #f5c842; text-shadow: 0 0 16px rgba(245,200,66,0.65); }
 .bingo-letter--o { color: #f97316; text-shadow: 0 0 16px rgba(249,115,22,0.65); }
 
-/* Grid 5×4 */
+/* Grid — columnas fijadas por JS vía inline style */
 .bingo-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr); /* fallback; JS sobreescribe siempre */
   gap: 0.35rem;
 }
 
@@ -4757,10 +4757,10 @@ tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
   letter-spacing: 0.04em;
 }
 
-/* Modal grid 5×4 */
+/* Modal grid — columnas fijadas por JS vía inline style */
 #bingoModalGrid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr); /* fallback; JS sobreescribe siempre */
   gap: 0.3rem;
   margin-top: 0.75rem;
 }
