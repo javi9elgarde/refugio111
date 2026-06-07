@@ -242,6 +242,14 @@
       if (e.target === this) closeCardModal();
     });
 
+    /* Modal nota evento */
+    document.getElementById('evtNotaClose').addEventListener('click', closeNotaModal);
+    document.getElementById('evtNotaCancel').addEventListener('click', closeNotaModal);
+    document.getElementById('evtNotaSave').addEventListener('click', saveNota);
+    document.getElementById('evtNotaOverlay').addEventListener('click', function (e) {
+      if (e.target === this) closeNotaModal();
+    });
+
     /* Modal editar/crear evento */
     document.getElementById('evtEditSave').addEventListener('click', saveEditEventModal);
     document.getElementById('evtEditCancel').addEventListener('click', closeEditEventModal);
@@ -461,6 +469,14 @@
     };
     var cdSep = '<span class="evt-cd-sep" style="color:' + hexToRgba(accent, 0.4) + '">:</span>';
 
+    /* Badge de nota (solo si está definida) */
+    var notaBadgeHtml = (ev.nota !== undefined && ev.nota !== null && ev.nota !== '')
+      ? '<div class="evt-nota-badge" style="color:' + accent + ';border-color:' + hexToRgba(accent, 0.35) + ';background:' + hexToRgba(accent, 0.1) + '">' +
+          '⭐ <span class="evt-nota-badge__val">' + ev.nota + '</span>' +
+          '<span class="evt-nota-badge__max"> / 10</span>' +
+        '</div>'
+      : '';
+
     var container = document.getElementById('evtFeaturedCard');
     container.innerHTML =
       '<div class="evt-featured__visual">' +
@@ -476,8 +492,12 @@
             '<div>' +
               '<div class="evt-featured__tag">' + escHtml(ev.tag) + '</div>' +
               '<h2 class="evt-featured__name">' + escHtml(ev.nombre) + '</h2>' +
+              notaBadgeHtml +
             '</div>' +
-            '<button class="evt-edit-btn" onclick="window.GT_Bingo.openEditEventModal(\'' + escId(ev.id) + '\')" title="Editar evento">✏️</button>' +
+            '<div style="display:flex;gap:0.35rem;flex-shrink:0">' +
+              '<button class="evt-nota-btn" onclick="window.GT_Bingo.openNotaModal(\'' + escId(ev.id) + '\')" title="Añadir / editar nota">⭐</button>' +
+              '<button class="evt-edit-btn" onclick="window.GT_Bingo.openEditEventModal(\'' + escId(ev.id) + '\')" title="Editar evento">✏️</button>' +
+            '</div>' +
           '</div>' +
         '</div>' +
         '<div class="evt-schedule">' +
@@ -1418,6 +1438,41 @@
   }
   function escId(s) { return String(s).replace(/'/g,"\\'"); }
 
+  /* ── NOTA DEL EVENTO ───────────────────────────────────────── */
+  var _editingNotaEvtId = null;
+
+  function openNotaModal(evId) {
+    var ev = _events.find(function (e) { return e.id === evId; });
+    if (!ev) return;
+    _editingNotaEvtId = evId;
+    document.getElementById('evtNotaEventName').textContent = ev.nombre;
+    var cur = (ev.nota !== undefined && ev.nota !== null && ev.nota !== '') ? ev.nota : '';
+    document.getElementById('evtNotaInput').value = cur;
+    document.getElementById('evtNotaOverlay').classList.add('open');
+    setTimeout(function () { document.getElementById('evtNotaInput').focus(); }, 80);
+  }
+
+  function closeNotaModal() {
+    document.getElementById('evtNotaOverlay').classList.remove('open');
+    _editingNotaEvtId = null;
+  }
+
+  function saveNota() {
+    if (!_editingNotaEvtId) return;
+    var raw = document.getElementById('evtNotaInput').value.trim();
+    var val;
+    if (raw === '') {
+      val = null; /* quitar nota */
+    } else {
+      val = parseFloat(raw);
+      if (isNaN(val)) return;
+      val = Math.round(Math.min(10, Math.max(0, val)) * 2) / 2; /* redondear a 0.5 */
+    }
+    db.collection('events').doc(_editingNotaEvtId).update({ nota: val })
+      .then(closeNotaModal)
+      .catch(function (e) { console.error('[saveNota]', e); });
+  }
+
   /* ── EXPOSE ─────────────────────────────────────────────────── */
   window.GT_Bingo = {
     goToEvent        : goToEvent,
@@ -1435,7 +1490,9 @@
     saveEditEventModal : saveEditEventModal,
     deleteEventModal   : deleteEventModal,
     openTop5Modal    : openTop5Modal,
-    closeTop5Modal   : closeTop5Modal
+    closeTop5Modal   : closeTop5Modal,
+    openNotaModal    : openNotaModal,
+    closeNotaModal   : closeNotaModal
   };
 
   if (document.readyState === 'loading') {

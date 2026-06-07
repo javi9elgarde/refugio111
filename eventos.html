@@ -199,6 +199,35 @@
     .evt-featured__name { font-family:'Orbitron',sans-serif;font-size:clamp(1.1rem,2.5vw,1.5rem);font-weight:700;line-height:1.2;color:var(--txt); }
     .evt-featured__desc { font-size:0.82rem;color:var(--txt3);line-height:1.55;margin-top:0.35rem; }
 
+    /* Nota del evento */
+    .evt-nota-badge {
+      display: inline-flex; align-items: baseline; gap: 0.3rem;
+      font-family: 'Orbitron', sans-serif; font-weight: 700;
+      font-size: 0.68rem; letter-spacing: 0.04em;
+      padding: 0.2rem 0.7rem 0.2rem 0.5rem;
+      border-radius: 20px; border: 1px solid; margin-top: 0.5rem;
+    }
+    .evt-nota-badge__val { font-size: 1.05rem; font-weight: 900; line-height: 1; }
+    .evt-nota-badge__max { font-size: 0.58rem; color: var(--txt3); font-family: monospace; letter-spacing: 0; }
+    .evt-nota-btn {
+      flex-shrink: 0; width: 30px; height: 30px; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--txt3); font-size: 0.8rem;
+      cursor: pointer; transition: background 0.18s, color 0.18s, border-color 0.18s;
+    }
+    .evt-nota-btn:hover {
+      background: rgba(245,200,66,0.12); border-color: rgba(245,200,66,0.4); color: #f5c842;
+    }
+    /* Input nota en el modal */
+    .evt-nota-input {
+      width: 100px; text-align: center; font-size: 2rem;
+      font-family: 'Orbitron', sans-serif; font-weight: 900;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: 12px; color: var(--txt); padding: 0.4rem 0.5rem;
+    }
+    .evt-nota-input:focus { outline: none; border-color: rgba(245,200,66,0.5); background: rgba(245,200,66,0.05); }
+
     /* Schedule */
     .evt-schedule { display:flex;flex-direction:column;gap:0.6rem; }
     .evt-schedule__row {
@@ -486,6 +515,28 @@
 
 </div>
 
+<!-- MODAL NOTA EVENTO -->
+<div class="modal-overlay" id="evtNotaOverlay">
+  <div class="modal" style="max-width:320px">
+    <div class="modal__header">
+      <h2 class="modal__title">⭐ Nota del evento</h2>
+      <button class="modal__close" id="evtNotaClose">✕</button>
+    </div>
+    <div class="modal__body" style="text-align:center;padding:1.75rem 1.5rem 1.25rem">
+      <div id="evtNotaEventName" style="font-size:0.75rem;color:var(--txt3);letter-spacing:0.05em;margin-bottom:1.25rem;line-height:1.4"></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem">
+        <input type="number" id="evtNotaInput" class="evt-nota-input" min="0" max="10" step="0.5" placeholder="—">
+        <span style="font-size:1rem;color:var(--txt3);font-family:monospace">/ 10</span>
+      </div>
+      <p style="font-size:0.65rem;color:var(--txt3);margin-top:0.85rem">Deja vacío para quitar la nota</p>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn-secondary" id="evtNotaCancel">Cancelar</button>
+      <button class="btn btn-primary"   id="evtNotaSave">⭐ Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL EDITAR / CREAR EVENTO -->
 <div class="modal-overlay" id="evtEditOverlay">
   <div class="modal" style="max-width:640px">
@@ -620,7 +671,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260529l"            defer></script>
-<script src="eventos.js?v=20260607c"         defer></script>
+<script src="eventos.js?v=20260607d"         defer></script>
 
 <!-- ══ SHOW DECORATION CSS ══ -->
 <style>
