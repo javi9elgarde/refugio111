@@ -559,11 +559,21 @@
   waitForDb(function (db) {
 
     /* ── 1. Próximo Evento ────────────────────────────────── */
-    db.collection('events').orderBy('order').get().then(function (snap) {
+    db.collection('events').get().then(function (snap) {
       var now    = Date.now();
       var events = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+      /* Ordenar por fecha antes de buscar el próximo */
+      events.sort(function (a, b) { return new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime(); });
       var next   = events.find(function (ev) { return new Date(ev.isoDate).getTime() > now; });
-      if (!next) return;
+      if (!next) {
+        var _ne = document.getElementById('nextEvtName');
+        var _de = document.getElementById('nextEvtDate');
+        var _cd = document.querySelector('#nextEvtPanel .sp-countdown');
+        if (_ne) _ne.textContent = 'No hay eventos próximamente';
+        if (_de) _de.textContent = '';
+        if (_cd) _cd.style.display = 'none';
+        return;
+      }
 
       var nameEl = document.getElementById('nextEvtName');
       var dateEl = document.getElementById('nextEvtDate');

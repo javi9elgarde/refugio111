@@ -353,6 +353,10 @@
           return;
         }
         _events = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+        /* Ordenar siempre por fecha, ignorando el campo `order` */
+        _events.sort(function (a, b) {
+          return new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime();
+        });
 
         /* Índice inicial: en directo > próximo más cercano > más reciente pasado */
         var bestIdx = _currentEvtIdx;
