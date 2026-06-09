@@ -1874,9 +1874,11 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
   transition: opacity 0.65s ease;
   cursor: pointer;
   overflow: hidden;
+  pointer-events: none; /* inactiva: no recibe clicks */
 }
 .cal-slide--active {
   opacity: 1;
+  pointer-events: auto; /* solo la visible recibe clicks */
 }
 /* Ken-burns zoom suave mientras el slide está activo */
 @keyframes calKenBurns {
