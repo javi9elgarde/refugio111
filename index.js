@@ -8,7 +8,8 @@
   var Biblioteca = window.GT.Biblioteca;
   var Registro = window.GT.Registro;
 
-  var calState = { year: 0, month: 0 };
+  var calState     = { year: 0, month: 0 };
+  var _calIntervals = []; /* intervalos del slideshow — se limpian al cambiar mes */
 
   function safe(fn, name) {
     try { fn(); } catch (e) { console.warn('index.js ' + name + ':', e); }
@@ -178,6 +179,10 @@
                      'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
   function renderCalendar() {
+    /* Limpiar slideshows del mes anterior */
+    _calIntervals.forEach(clearInterval);
+    _calIntervals = [];
+
     var y = calState.year, m = calState.month;
     document.getElementById('calTitle').textContent = MONTH_NAMES[m] + ' ' + y;
 
@@ -244,31 +249,42 @@
           '</div>';
 
       } else {
-        /* ── 2+ games: diagonal split ── */
-        var g1 = games[0], g2 = games[1];
-        var extra = games.length > 2 ? games.length - 2 : 0;
-        var s1 = g1.id.replace(/'/g, "\\'");
-        var s2 = g2.id.replace(/'/g, "\\'");
-        cell.className = 'cal-day cal-day--cover cal-day--split' + todayCls;
-        cell.innerHTML =
-          '<div class="cal-day__num' + numCls + '">' + d + '</div>' +
-          (extra ? '<div class="cal-more">+' + extra + '</div>' : '') +
-          '<div class="cal-covers-split">' +
-            '<div class="cal-cover cal-cover--diag-left" onclick="window.GT.GameDetailModal.open(\'' + s1 + '\')" title="' + Utils.escapeHtml(g1.titulo) + '">' +
-              (g1.portadaUrl
-                ? '<img src="' + Utils.escapeHtml(g1.portadaUrl) + '" class="cal-cover__img" loading="lazy" onerror="this.style.display=\'none\'">'
-                : '<div class="cal-cover__ph">' + Utils.escapeHtml(g1.titulo.charAt(0)) + '</div>') +
-              '<div class="cal-cover__grad cal-cover__grad--left"></div>' +
-              '<div class="cal-cover__label cal-cover__label--left">' + Utils.escapeHtml(g1.titulo) + '</div>' +
-            '</div>' +
-            '<div class="cal-cover cal-cover--diag-right" onclick="window.GT.GameDetailModal.open(\'' + s2 + '\')" title="' + Utils.escapeHtml(g2.titulo) + '">' +
-              (g2.portadaUrl
-                ? '<img src="' + Utils.escapeHtml(g2.portadaUrl) + '" class="cal-cover__img" loading="lazy" onerror="this.style.display=\'none\'">'
-                : '<div class="cal-cover__ph">' + Utils.escapeHtml(g2.titulo.charAt(0)) + '</div>') +
-              '<div class="cal-cover__grad cal-cover__grad--right"></div>' +
-              '<div class="cal-cover__label cal-cover__label--right">' + Utils.escapeHtml(g2.titulo) + '</div>' +
+        /* ── 2+ games: slideshow automático ── */
+        var slidesHtml = games.map(function (g, i) {
+          var sid = g.id.replace(/'/g, "\\'");
+          var activeCls = i === 0 ? ' cal-slide--active' : '';
+          return '<div class="cal-slide' + activeCls + '" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" title="' + Utils.escapeHtml(g.titulo) + '">' +
+            (g.portadaUrl
+              ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" class="cal-cover__img" loading="lazy" onerror="this.style.display=\'none\'">'
+              : '<div class="cal-cover__ph">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>') +
+            '<div class="cal-cover__overlay">' +
+              '<span class="cal-cover__num' + numCls + '">' + d + '</span>' +
+              '<span class="cal-cover__title">' + Utils.escapeHtml(g.titulo) + '</span>' +
             '</div>' +
           '</div>';
+        }).join('');
+        var dotsHtml = '<div class="cal-slide-dots">' +
+          games.map(function (_, i) {
+            return '<span class="cal-slide-dot' + (i === 0 ? ' cal-slide-dot--active' : '') + '"></span>';
+          }).join('') +
+          '</div>';
+        cell.className = 'cal-day cal-day--cover cal-day--slideshow' + todayCls;
+        cell.innerHTML = '<div class="cal-slideshow">' + slidesHtml + dotsHtml + '</div>';
+
+        /* Arrancar el carrusel (captura cell+games con IIFE) */
+        (function (el, n) {
+          var cur = 0;
+          var iv = setInterval(function () {
+            var slides = el.querySelectorAll('.cal-slide');
+            var dots   = el.querySelectorAll('.cal-slide-dot');
+            slides[cur].classList.remove('cal-slide--active');
+            if (dots[cur]) dots[cur].classList.remove('cal-slide-dot--active');
+            cur = (cur + 1) % n;
+            slides[cur].classList.add('cal-slide--active');
+            if (dots[cur]) dots[cur].classList.add('cal-slide-dot--active');
+          }, 3000);
+          _calIntervals.push(iv);
+        })(cell, games.length);
       }
       grid.appendChild(cell);
     }

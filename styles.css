@@ -1856,6 +1856,58 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
   background: rgba(12,10,3,0.8);
 }
 
+/* ── Slideshow: 2+ games ── */
+.cal-day--slideshow {
+  padding: 0;
+  overflow: hidden;
+}
+.cal-slideshow {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.cal-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.65s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+.cal-slide--active {
+  opacity: 1;
+}
+/* Ken-burns zoom suave mientras el slide está activo */
+@keyframes calKenBurns {
+  from { transform: scale(1);    }
+  to   { transform: scale(1.09); }
+}
+.cal-slide--active .cal-cover__img {
+  animation: calKenBurns 3.2s ease-in-out forwards;
+}
+/* Dots indicadores */
+.cal-slide-dots {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 3px;
+  z-index: 10;
+  pointer-events: none;
+}
+.cal-slide-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.28);
+  transition: background 0.3s, transform 0.3s;
+}
+.cal-slide-dot--active {
+  background: rgba(255,255,255,0.92);
+  transform: scale(1.4);
+}
+
 /* ── Diagonal split: 2+ games ── */
 .cal-day--split .cal-day__num {
   position: absolute;
