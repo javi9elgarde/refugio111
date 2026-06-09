@@ -1890,8 +1890,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 .cal-slide-dots {
   position: absolute;
   bottom: 5px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 6px;
   display: flex;
   gap: 3px;
   z-index: 10;
