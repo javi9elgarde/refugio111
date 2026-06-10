@@ -5438,4 +5438,237 @@ html {
   .bib-filter-selects .form-select--sm:last-of-type { display: none; } /* ocultar Año en pantallas muy pequeñas */
 }
 
+/* ══ SALA NUKA TOP ══════════════════════════════════════════════════ */
+.nuka-section {
+  position: relative;
+  padding-top: 2.8rem;
+  padding-bottom: 3rem;
+  background: linear-gradient(180deg,
+    rgba(38,22,0,0.55) 0%,
+    rgba(18,11,0,0.28) 45%,
+    rgba(18,11,0,0.28) 55%,
+    rgba(38,22,0,0.55) 100%);
+}
+.nuka-section::before,
+.nuka-section::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%, rgba(245,197,24,0.55) 25%,
+    #f5c518 50%,
+    rgba(245,197,24,0.55) 75%, transparent 100%);
+  pointer-events: none;
+}
+.nuka-section::before { top: 0; }
+.nuka-section::after  { bottom: 0; }
+
+/* Header */
+.nuka-header {
+  text-align: center;
+  margin-bottom: 1.8rem;
+}
+.nuka-header__eyebrow {
+  display: inline-block;
+  border: 1px solid rgba(245,197,24,0.3);
+  border-radius: 3px;
+  color: rgba(245,197,24,0.52);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.56rem;
+  letter-spacing: 0.22em;
+  padding: 0.18rem 0.75rem;
+  margin-bottom: 0.7rem;
+  text-transform: uppercase;
+  background: rgba(245,197,24,0.05);
+}
+.nuka-header__title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.5rem, 5vw, 2.4rem);
+  font-weight: 900;
+  color: #f5c518;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 0 32px rgba(245,197,24,0.52), 0 0 80px rgba(245,197,24,0.15);
+  margin: 0;
+  line-height: 1.1;
+}
+.nuka-atom {
+  opacity: 0.5;
+  font-size: 0.68em;
+  vertical-align: middle;
+  margin: 0 0.28em;
+}
+.nuka-header__sub {
+  font-size: 0.65rem;
+  color: rgba(245,197,24,0.36);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-top: 0.55rem;
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* Grid */
+.nuka-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.9rem;
+}
+
+/* Card */
+.nuka-card {
+  position: relative;
+  background: rgba(5,3,0,0.9);
+  border: 1px solid rgba(245,197,24,0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.55);
+}
+.nuka-card:hover {
+  transform: translateY(-5px) scale(1.025);
+  border-color: rgba(245,197,24,0.65);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.65), 0 0 22px rgba(245,197,24,0.2);
+}
+.nuka-card--rank1 {
+  border-color: rgba(245,197,24,0.52);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 18px rgba(245,197,24,0.16);
+}
+.nuka-card--rank1:hover {
+  box-shadow: 0 10px 32px rgba(0,0,0,0.7), 0 0 36px rgba(245,197,24,0.32);
+}
+
+/* Rank badge */
+.nuka-card__rank {
+  position: absolute;
+  top: 6px; left: 6px;
+  z-index: 10;
+  background: rgba(0,0,0,0.72);
+  border: 1px solid rgba(245,197,24,0.42);
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #f5c518;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+.nuka-card--rank1 .nuka-card__rank {
+  background: rgba(245,197,24,0.14);
+  border-color: #f5c518;
+  text-shadow: 0 0 8px rgba(245,197,24,0.65);
+}
+
+/* Cover */
+.nuka-card__cover {
+  position: relative;
+  width: 100%;
+  padding-top: 133%;
+  overflow: hidden;
+  background: rgba(22,13,0,0.9);
+}
+.nuka-card__cover img {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.35s ease;
+}
+.nuka-card:hover .nuka-card__cover img { transform: scale(1.06); }
+.nuka-card__cover-ph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  color: rgba(245,197,24,0.3);
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+}
+/* Glass glare */
+.nuka-card__glass {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(148deg,
+    rgba(255,255,255,0.065) 0%,
+    transparent 38%,
+    rgba(0,0,0,0.15) 100%);
+  pointer-events: none;
+}
+/* Score overlay at bottom of cover */
+.nuka-card__score-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 1.4rem 0.5rem 0.35rem;
+  background: linear-gradient(0deg, rgba(0,0,0,0.92) 55%, transparent);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.2rem;
+}
+.nuka-card__score-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.nuka-card__score-star {
+  font-size: 0.62rem;
+  color: rgba(245,197,24,0.48);
+  align-self: flex-end;
+  padding-bottom: 0.12rem;
+}
+
+/* Info footer */
+.nuka-card__info {
+  padding: 0.45rem 0.55rem 0.5rem;
+}
+.nuka-card__title {
+  font-size: 0.69rem;
+  color: rgba(232,232,248,0.88);
+  font-weight: 600;
+  line-height: 1.35;
+  margin-bottom: 0.22rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 1.85em;
+}
+.nuka-card__players {
+  font-size: 0.56rem;
+  color: rgba(245,197,24,0.4);
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+/* Empty state */
+.nuka-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: rgba(245,197,24,0.28);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  padding: 3rem 1rem;
+  text-transform: uppercase;
+}
+.nuka-empty__icon { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; opacity: 0.35; }
+
+@media (max-width: 900px) {
+  .nuka-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 640px) {
+  .nuka-grid { grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+  .nuka-card__score-num { font-size: 1.15rem; }
+}
+@media (max-width: 420px) {
+  .nuka-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 

@@ -840,6 +840,83 @@
     setInterval(tick, 1000);
   }
 
+  /* ── SALA NUKA TOP ──────────────────────────────────────── */
+  function renderSalaNukaTop() {
+    var el = document.getElementById('salaNukaGrid');
+    if (!el) return;
+
+    var all = Registro.getAll().filter(function(r) {
+      return r.nota !== null && r.nota !== undefined && r.nota !== '';
+    });
+
+    // Group notas by game, track unique players
+    var byGame = {};
+    all.forEach(function(r) {
+      if (!byGame[r.juegoId]) byGame[r.juegoId] = { notas: [], players: {} };
+      byGame[r.juegoId].notas.push(parseFloat(r.nota));
+      byGame[r.juegoId].players[r.jugador] = true;
+    });
+
+    // Per-player best nota for display in footer
+    var bestPerPlayer = {};
+    all.forEach(function(r) {
+      var k = r.juegoId + '|' + r.jugador;
+      var v = parseFloat(r.nota);
+      if (bestPerPlayer[k] === undefined || v > bestPerPlayer[k]) bestPerPlayer[k] = v;
+    });
+
+    // Require min 2 players rated; calculate avg; sort desc
+    var ranked = Object.keys(byGame).filter(function(id) {
+      return Object.keys(byGame[id].players).length >= 2;
+    }).map(function(id) {
+      var notas = byGame[id].notas;
+      var avg = notas.reduce(function(a, b) { return a + b; }, 0) / notas.length;
+      return { juegoId: id, avg: Math.round(avg * 100) / 100, players: byGame[id].players };
+    }).sort(function(a, b) {
+      if (b.avg !== a.avg) return b.avg - a.avg;
+      return Object.keys(b.players).length - Object.keys(a.players).length;
+    }).slice(0, 10);
+
+    if (!ranked.length) {
+      el.innerHTML = '<div class="nuka-empty"><span class="nuka-empty__icon">⚛</span>SIN DATOS · AÑADE NOTAS EN EL REGISTRO</div>';
+      return;
+    }
+
+    var lbls = { David: 'D', Javi: 'J', Mery: 'M' };
+    el.innerHTML = ranked.map(function(item, idx) {
+      var game = Biblioteca.getById(item.juegoId);
+      if (!game) return '';
+      var sc     = Utils.scoreColor(item.avg);
+      var sid    = game.id.replace(/'/g, "\\'");
+      var objPos = Utils.escapeHtml(game.portadaPos || 'center top');
+      var r1cls  = idx === 0 ? ' nuka-card--rank1' : '';
+      var avgStr = parseFloat(item.avg).toFixed(1).replace('.', ',');
+      var plStr  = ['David', 'Javi', 'Mery'].map(function(p) {
+        var k = item.juegoId + '|' + p;
+        var v = bestPerPlayer[k];
+        return v !== undefined ? lbls[p] + ':' + parseFloat(v).toFixed(1).replace('.', ',') : null;
+      }).filter(Boolean).join(' · ');
+
+      return '<div class="nuka-card' + r1cls + '" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" title="' + Utils.escapeHtml(game.titulo) + '">' +
+        '<div class="nuka-card__rank">#' + (idx + 1) + '</div>' +
+        '<div class="nuka-card__cover">' +
+          (game.portadaUrl
+            ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+            : '<div class="nuka-card__cover-ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>') +
+          '<div class="nuka-card__glass"></div>' +
+          '<div class="nuka-card__score-overlay">' +
+            '<span class="nuka-card__score-num" style="color:' + sc + '">' + avgStr + '</span>' +
+            '<span class="nuka-card__score-star">★</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="nuka-card__info">' +
+          '<div class="nuka-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
+          '<div class="nuka-card__players">' + plStr + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
   /* ── BOOT ────────────────────────────────────────────────── */
   document.addEventListener('DOMContentLoaded', function () {
     safe(initCountdowns, 'initCountdowns');
@@ -852,11 +929,13 @@
       safe(initCalendar,          'initCalendar');
       safe(initRanking,           'initRanking');
       safe(renderUpcomingCards,   'renderUpcomingCards');
+      safe(renderSalaNukaTop,     'renderSalaNukaTop');
       // Re-render when another user changes data in real time
       window.GT.onDataChange(function () {
         safe(initStats,             'initStats');
         safe(initHeroPlayerStats,   'initHeroPlayerStats');
         safe(renderUpcomingCards,   'renderUpcomingCards');
+        safe(renderSalaNukaTop,     'renderSalaNukaTop');
         var sel = document.getElementById('rankingYear');
         if (sel) safe(function(){ renderRanking(parseInt(sel.value)); }, 'renderRanking');
       });
