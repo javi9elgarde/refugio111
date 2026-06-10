@@ -713,7 +713,7 @@
       var imgHtml = ev.img
         ? '<img src="' + escHtml(ev.img) + '" class="evt-hist-card__img" alt="' + escHtml(ev.nombre) + '">'
         : '<div class="evt-hist-card__noimg">🎮</div>';
-      return '<div class="evt-hist-card">' +
+      return '<div class="evt-hist-card" onclick="window.GT_Bingo.viewHistoricEvent(' + evIdx + ')">' +
         '<div class="evt-hist-card__thumb">' + imgHtml + '</div>' +
         '<div class="evt-hist-card__body">' +
           '<div class="evt-hist-card__tag">' + escHtml(ev.tag) + '</div>' +
@@ -1442,6 +1442,13 @@
   }
   function escId(s) { return String(s).replace(/'/g,"\\'"); }
 
+  /* ── NAVEGAR A EVENTO HISTÓRICO ────────────────────────────── */
+  function viewHistoricEvent(idx) {
+    goToEvent(idx);
+    var target = document.querySelector('.evt-featured-section') || document.querySelector('.evt-carousel-wrap');
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   /* ── NOTA DEL EVENTO ───────────────────────────────────────── */
   var _editingNotaEvtId = null;
 
@@ -1495,8 +1502,9 @@
     deleteEventModal   : deleteEventModal,
     openTop5Modal    : openTop5Modal,
     closeTop5Modal   : closeTop5Modal,
-    openNotaModal    : openNotaModal,
-    closeNotaModal   : closeNotaModal
+    openNotaModal      : openNotaModal,
+    closeNotaModal     : closeNotaModal,
+    viewHistoricEvent  : viewHistoricEvent
   };
 
   if (document.readyState === 'loading') {

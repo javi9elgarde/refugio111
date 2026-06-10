@@ -283,7 +283,15 @@
       background: rgba(255,255,255,0.025);
       border: 1px solid var(--border);
       border-radius: var(--radius); overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
     }
+    .evt-hist-card:hover {
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+    }
+    .evt-hist-card:hover .evt-hist-card__name { color: var(--cyan); }
     .evt-hist-card__thumb { position: relative; }
     .evt-hist-card__img { width:100%;height:100%;object-fit:cover;display:block; }
     .evt-hist-card__noimg {
@@ -671,7 +679,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260529l"            defer></script>
-<script src="eventos.js?v=20260607e"         defer></script>
+<script src="eventos.js?v=20260607f"         defer></script>
 
 <!-- ══ SHOW DECORATION CSS ══ -->
 <style>
