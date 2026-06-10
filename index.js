@@ -857,14 +857,6 @@
       byGame[r.juegoId].players[r.jugador] = true;
     });
 
-    // Per-player best nota for display in footer
-    var bestPerPlayer = {};
-    all.forEach(function(r) {
-      var k = r.juegoId + '|' + r.jugador;
-      var v = parseFloat(r.nota);
-      if (bestPerPlayer[k] === undefined || v > bestPerPlayer[k]) bestPerPlayer[k] = v;
-    });
-
     // Require min 2 players rated; calculate avg; sort desc
     var ranked = Object.keys(byGame).filter(function(id) {
       return Object.keys(byGame[id].players).length >= 2;
@@ -882,7 +874,6 @@
       return;
     }
 
-    var lbls = { David: 'D', Javi: 'J', Mery: 'M' };
     el.innerHTML = ranked.map(function(item, idx) {
       var game = Biblioteca.getById(item.juegoId);
       if (!game) return '';
@@ -891,11 +882,6 @@
       var objPos = Utils.escapeHtml(game.portadaPos || 'center top');
       var r1cls  = idx === 0 ? ' nuka-card--rank1' : '';
       var avgStr = parseFloat(item.avg).toFixed(1).replace('.', ',');
-      var plStr  = ['David', 'Javi', 'Mery'].map(function(p) {
-        var k = item.juegoId + '|' + p;
-        var v = bestPerPlayer[k];
-        return v !== undefined ? lbls[p] + ':' + parseFloat(v).toFixed(1).replace('.', ',') : null;
-      }).filter(Boolean).join(' · ');
 
       return '<div class="nuka-card' + r1cls + '" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" title="' + Utils.escapeHtml(game.titulo) + '">' +
         '<div class="nuka-card__rank">#' + (idx + 1) + '</div>' +
@@ -911,7 +897,6 @@
         '</div>' +
         '<div class="nuka-card__info">' +
           '<div class="nuka-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
-          '<div class="nuka-card__players">' + plStr + '</div>' +
         '</div>' +
       '</div>';
     }).join('');
