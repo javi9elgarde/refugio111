@@ -74,6 +74,7 @@
         <div class="sp-bg__overlay"></div>
       </div>
       <div class="sp-label">📰 Noticia Destacada</div>
+      <span class="sp-chevron" aria-hidden="true">▾</span>
       <div class="sp-bottom">
         <div class="sp-title" id="newsPanelTitle">Últimas Noticias Gaming</div>
         <div class="sp-meta" id="newsPanelSub">Pulsa para ver todas las noticias</div>
@@ -87,6 +88,7 @@
         <div class="sp-bg__overlay"></div>
       </div>
       <div class="sp-label">🎮 Próximo Evento</div>
+      <span class="sp-chevron" aria-hidden="true">▾</span>
       <div class="sp-bottom">
         <div class="sp-title" id="nextEvtName">Cargando...</div>
         <div class="sp-date" id="nextEvtDate"></div>
@@ -109,6 +111,7 @@
         <div class="sp-bg__overlay"></div>
       </div>
       <div class="sp-label">⭐ Juego Más Esperado</div>
+      <span class="sp-chevron" aria-hidden="true">▾</span>
       <button id="btnPickGame" class="sp-pick-btn"
         onclick="event.preventDefault();event.stopPropagation();window.openPickGameModal()"
         title="Cambiar juego más esperado">✏️</button>
@@ -342,6 +345,102 @@
       cursor:pointer; transition:background 0.15s, border-color 0.15s;
     }
     .pg-item:hover { background:rgba(251,146,60,0.1); border-color:rgba(251,146,60,0.3); }
+
+    /* ══ DESKTOP: paneles colapsables ════════════════════════════ */
+    @media (min-width: 901px) {
+      /* Spotlight se solapa solo la altura del tab colapsado */
+      .hero__spotlight {
+        margin-top: -50px !important;
+        padding-bottom: 0 !important;
+      }
+
+      /* ── COLAPSADO (default) ── */
+      .spotlight-panel {
+        min-height: 0 !important;
+        height: 50px !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        padding: 0 1rem !important;
+        gap: 0.65rem;
+        background: rgba(7,7,15,0.9) !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        overflow: hidden !important;
+        transition: height 0.38s cubic-bezier(0.4,0,0.2,1),
+                    border-color 0.22s, box-shadow 0.22s !important;
+        transform: none !important;
+      }
+
+      /* Fondo: invisible cuando colapsado */
+      .sp-bg { transition: opacity 0.28s ease; }
+      .spotlight-panel:not(.sp-expanded) .sp-bg { opacity: 0; }
+
+      /* Etiqueta: inline en la fila cuando colapsado */
+      .spotlight-panel:not(.sp-expanded) .sp-label {
+        position: static !important;
+        background: none !important;
+        border: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        padding: 0 !important;
+        font-size: 0.75rem !important;
+        color: var(--sp-accent, #4facfe) !important;
+        letter-spacing: 0.05em !important;
+        flex: 1;
+      }
+
+      /* Contenido inferior y botón editar: ocultos cuando colapsado */
+      .spotlight-panel:not(.sp-expanded) .sp-bottom,
+      .spotlight-panel:not(.sp-expanded) .sp-pick-btn { display: none !important; }
+
+      /* Chevron: visible solo en colapsado */
+      .sp-chevron {
+        font-size: 0.7rem;
+        color: var(--sp-accent, #4facfe);
+        opacity: 0.55;
+        transition: transform 0.38s ease;
+        flex-shrink: 0;
+        line-height: 1;
+      }
+      .spotlight-panel.sp-expanded .sp-chevron { display: none !important; }
+
+      /* Hover en colapsado */
+      .spotlight-panel:not(.sp-expanded):hover {
+        background: rgba(12,9,3,0.97) !important;
+        border-color: var(--sp-accent, #4facfe) !important;
+        box-shadow: 0 0 16px rgba(0,0,0,0.4) !important;
+        transform: none !important;
+      }
+
+      /* ── EXPANDIDO ── */
+      .spotlight-panel.sp-expanded {
+        height: 195px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-end !important;
+        padding: 0.75rem 0.9rem 0.8rem !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
+      .spotlight-panel.sp-expanded:hover {
+        transform: translateY(-4px) !important;
+      }
+      .spotlight-panel.sp-expanded .sp-label {
+        position: absolute !important;
+        top: 0.55rem !important; right: 0.65rem !important;
+        background: rgba(7,7,15,0.62) !important;
+        border: 1px solid rgba(255,255,255,0.07) !important;
+        backdrop-filter: blur(4px) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
+        padding: 0.18rem 0.48rem !important;
+        font-size: 0.5rem !important;
+        color: var(--sp-accent, #4facfe) !important;
+        flex: none !important;
+        letter-spacing: 0.1em !important;
+      }
+    }
   </style>
 
   <script>
@@ -353,6 +452,34 @@
       var spotlight = document.querySelector('.hero__spotlight');
       var open = spotlight.classList.toggle('sp-open');
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  })();
+
+  // Acordeón colapsable en desktop (≥901px)
+  (function() {
+    var panels = Array.prototype.slice.call(document.querySelectorAll('.spotlight-panel'));
+
+    function isDesktop() { return window.innerWidth >= 901; }
+
+    panels.forEach(function(panel) {
+      panel.addEventListener('click', function(e) {
+        if (!isDesktop()) return;
+        if (!panel.classList.contains('sp-expanded')) {
+          e.preventDefault();
+          panels.forEach(function(p) { p.classList.remove('sp-expanded'); });
+          panel.classList.add('sp-expanded');
+        }
+        // Si ya está expandido: el <a> navega normalmente al hacer click
+      });
+    });
+
+    // Click fuera de cualquier panel: colapsar todos
+    document.addEventListener('click', function(e) {
+      if (!isDesktop()) return;
+      var inside = panels.some(function(p) { return p.contains(e.target); });
+      if (!inside) {
+        panels.forEach(function(p) { p.classList.remove('sp-expanded'); });
+      }
     });
   })();
   </script>
@@ -425,7 +552,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260519n" defer></script>
 <script src="main.js?v=20260529l"            defer></script>
-<script src="index.js?v=20260610b"           defer></script>
+<script src="index.js?v=20260610c"           defer></script>
 
 <script>
 (function () {
