@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es" data-mt-cat="peliculas">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="logonavegador.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#e63946">
+  <title>Refugio 111 — General</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="mt-styles.css?v=20260711a">
+  <style>
+    /* ── LAYOUT GENERAL ─────────────────────────────────── */
+    .gen-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.5rem; align-items: start; }
+    @media (max-width: 900px) { .gen-grid { grid-template-columns: 1fr; } }
+
+    .gen-panel {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.25rem;
+    }
+    .gen-panel__head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .gen-panel__title {
+      font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 900;
+      letter-spacing: 0.06em; color: var(--txt1);
+    }
+
+    /* ── CALENDARIO ─────────────────────────────────────── */
+    .mt-cal__nav { display: flex; align-items: center; gap: 0.5rem; }
+    .mt-cal__navbtn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--txt2); border-radius: 8px; width: 30px; height: 30px;
+      cursor: pointer; font-size: 0.85rem; transition: all 0.15s;
+    }
+    .mt-cal__navbtn:hover { background: var(--accent-dim); color: var(--accent); border-color: rgba(var(--accent-rgb),0.4); }
+    .mt-cal__monthlabel {
+      font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700;
+      color: var(--accent); min-width: 130px; text-align: center; letter-spacing: 0.04em;
+    }
+    .mt-cal__today {
+      font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--txt2); border-radius: 7px; padding: 0.3rem 0.6rem; cursor: pointer;
+      font-family: 'Orbitron', sans-serif; transition: all 0.15s;
+    }
+    .mt-cal__today:hover { color: var(--accent); border-color: rgba(var(--accent-rgb),0.4); }
+
+    .mt-cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .mt-cal__grid--head { margin-bottom: 5px; }
+    .mt-cal__dow {
+      text-align: center; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em;
+      color: var(--txt3); padding: 0.2rem 0;
+    }
+    .mt-cal__cell {
+      min-height: 62px; border-radius: 8px;
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      padding: 0.28rem; display: flex; flex-direction: column; gap: 2px; overflow: hidden;
+    }
+    .mt-cal__cell--empty { background: none; border: none; }
+    .mt-cal__cell--today { border-color: rgba(var(--accent-rgb),0.6); box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb),0.3); }
+    .mt-cal__cell--has { background: rgba(var(--accent-rgb),0.04); }
+    .mt-cal__daynum { font-size: 0.62rem; font-weight: 700; color: var(--txt3); }
+    .mt-cal__cell--today .mt-cal__daynum { color: var(--accent); }
+    .mt-cal__rels { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+    .mt-cal__rel {
+      font-size: 0.56rem; font-weight: 600; line-height: 1.15;
+      padding: 1px 4px; border-radius: 3px; cursor: pointer;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mt-cal__rel--peliculas { background: rgba(230,57,70,0.18);  color: #ff8b93; }
+    .mt-cal__rel--series    { background: rgba(67,97,238,0.18);  color: #93a7ff; }
+    .mt-cal__rel--anime     { background: rgba(181,23,158,0.18); color: #e77ad4; }
+
+    /* ── PRÓXIMOS ESTRENOS ──────────────────────────────── */
+    .mt-upcoming { display: flex; flex-direction: column; gap: 0.5rem; }
+    .mt-upcoming__empty { font-size: 0.8rem; color: var(--txt3); text-align: center; padding: 1.5rem 0.5rem; line-height: 1.5; }
+    .mt-upcoming__item {
+      display: flex; align-items: center; gap: 0.7rem;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-left: 3px solid var(--border);
+      border-radius: 9px; padding: 0.45rem 0.6rem;
+    }
+    .mt-upcoming__item--peliculas { border-left-color: #e63946; }
+    .mt-upcoming__item--series    { border-left-color: #4361ee; }
+    .mt-upcoming__item--anime     { border-left-color: #b5179e; }
+    .mt-upcoming__poster {
+      width: 34px; height: 50px; border-radius: 5px; overflow: hidden; flex-shrink: 0;
+      background: rgba(255,255,255,0.05);
+    }
+    .mt-upcoming__poster img { width: 100%; height: 100%; object-fit: cover; }
+    .mt-upcoming__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+    .mt-upcoming__info { flex: 1; min-width: 0; }
+    .mt-upcoming__title { font-size: 0.8rem; font-weight: 700; color: var(--txt1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mt-upcoming__meta { font-size: 0.68rem; color: var(--txt3); margin-top: 0.1rem; }
+    .mt-upcoming__del {
+      background: none; border: none; color: var(--txt3); cursor: pointer;
+      font-size: 0.75rem; padding: 0.25rem; border-radius: 5px; flex-shrink: 0; transition: all 0.15s;
+    }
+    .mt-upcoming__del:hover { color: #f87171; background: rgba(239,68,68,0.12); }
+
+    /* ── TOP 10 ─────────────────────────────────────────── */
+    .gen-tops { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 1.5rem; }
+    @media (max-width: 900px) { .gen-tops { grid-template-columns: 1fr; } }
+    .gen-top {
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.1rem;
+    }
+    .gen-top__title {
+      font-family: 'Orbitron', sans-serif; font-size: 0.82rem; font-weight: 900;
+      letter-spacing: 0.05em; margin-bottom: 0.85rem; text-align: center;
+    }
+    .gen-top--peliculas .gen-top__title { color: #ff6b78; }
+    .gen-top--series    .gen-top__title { color: #7d92ff; }
+    .gen-top--anime     .gen-top__title { color: #e77ad4; }
+    .mt-top__list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .mt-top__empty { font-size: 0.78rem; color: var(--txt3); text-align: center; padding: 1.5rem 0.5rem; }
+    .mt-top-row {
+      display: grid; grid-template-columns: 24px 34px 1fr auto; gap: 0.6rem;
+      align-items: center;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 9px; padding: 0.35rem 0.55rem;
+    }
+    .mt-top-row__rank {
+      font-family: 'Orbitron', sans-serif; font-size: 0.8rem; font-weight: 900;
+      color: var(--txt3); text-align: center;
+    }
+    .mt-top-row--gold   .mt-top-row__rank { color: #fbbf24; }
+    .mt-top-row--silver .mt-top-row__rank { color: #d1d5db; }
+    .mt-top-row--bronze .mt-top-row__rank { color: #d97706; }
+    .mt-top-row--gold   { border-color: rgba(251,191,36,0.35); }
+    .mt-top-row__poster { width: 34px; height: 48px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.05); }
+    .mt-top-row__poster img { width: 100%; height: 100%; object-fit: cover; }
+    .mt-top-row__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+    .mt-top-row__info { min-width: 0; }
+    .mt-top-row__title { font-size: 0.75rem; font-weight: 700; color: var(--txt1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mt-top-row__meta { font-size: 0.65rem; color: var(--txt3); }
+    .mt-top-row__nota { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 900; }
+
+    /* ── MODAL AÑADIR ESTRENO ───────────────────────────── */
+    .estreno-cat-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.9rem; }
+    .estreno-cat-tab {
+      flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      color: var(--txt2); border-radius: 9px; padding: 0.5rem; cursor: pointer;
+      font-family: 'Orbitron', sans-serif; font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.05em; transition: all 0.15s;
+    }
+    .estreno-cat-tab--active { background: var(--accent-dim); border-color: rgba(var(--accent-rgb),0.5); color: var(--accent); }
+    .estreno-search-row { display: flex; gap: 0.5rem; margin-bottom: 0.9rem; }
+    .estreno-search-row .mt-search { flex: 1; }
+    #estrenoResults { display: flex; flex-direction: column; gap: 0.4rem; max-height: 320px; overflow-y: auto; }
+    #estrenoPreview { display: flex; gap: 1rem; align-items: flex-start; background: rgba(255,255,255,0.025); border-radius: 12px; padding: 0.85rem; margin-bottom: 1rem; }
+    .mt-add-preview__poster { width: 58px; height: 82px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: rgba(255,255,255,0.05); }
+    .mt-add-preview__title { font-weight: 700; font-size: 0.95rem; color: var(--txt1); margin-bottom: 0.3rem; }
+    .mt-add-preview__meta { font-size: 0.78rem; color: var(--txt2); }
+    .mt-add-result { display: flex; gap: 0.75rem; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 0.55rem 0.8rem; cursor: pointer; transition: background 0.14s, border-color 0.14s; }
+    .mt-add-result:hover { background: rgba(255,255,255,0.07); border-color: var(--accent); }
+    .mt-add-result__poster { width: 42px; height: 60px; border-radius: 5px; object-fit: cover; flex-shrink: 0; background: rgba(255,255,255,0.05); }
+    .mt-add-result__title { font-weight: 700; font-size: 0.9rem; color: var(--txt1); margin-bottom: 0.15rem; }
+    .mt-add-result__meta { font-size: 0.73rem; color: var(--txt3); }
+    .estreno-back { background: none; border: none; color: var(--txt3); font-size: 0.78rem; cursor: pointer; padding: 0.25rem 0; margin-bottom: 0.75rem; }
+    .estreno-back:hover { color: var(--txt1); }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="mtLoading">
+  <div class="mt-loading__brand">🎬 REFUGIO 111</div>
+  <div class="mt-loading__dots">
+    <div class="mt-loading__dot"></div>
+    <div class="mt-loading__dot"></div>
+    <div class="mt-loading__dot"></div>
+  </div>
+  <div class="mt-loading__sub">Cargando general...</div>
+</div>
+
+<!-- ── NAVEGACIÓN ─────────────────────────────────────────── -->
+<nav class="mt-nav">
+  <a href="hub.html" class="mt-nav__hub">🏠 Hub</a>
+
+  <div class="mt-cat-tabs">
+    <button class="mt-cat-tab mt-cat-tab--active" data-cat="peliculas">🎬 <span class="label">Películas</span></button>
+    <button class="mt-cat-tab" data-cat="series">📺 <span class="label">Series</span></button>
+    <button class="mt-cat-tab" data-cat="anime">🌸 <span class="label">Anime</span></button>
+  </div>
+
+  <div class="mt-nav__links">
+    <a href="mt-general.html"     class="mt-nav__link mt-nav__link--active">General</a>
+    <a href="mt-biblioteca.html"  class="mt-nav__link">Biblioteca</a>
+    <a href="mt-registro.html"    class="mt-nav__link">Registro</a>
+    <a href="mt-pendientes.html"  class="mt-nav__link">Pendientes</a>
+  </div>
+
+  <a href="mt-hub.html" class="mt-nav__player-pill" id="mtPlayerPill" title="Cambiar jugador">
+    <div class="mt-nav__player-avatar mt-nav__player-avatar--javi">J</div>
+    <span class="mt-player-pill-name">Javi</span>
+  </a>
+
+  <button class="mt-nav__hamburger" id="mtHamburger" aria-label="Menú">☰</button>
+</nav>
+<div class="mt-accent-bar" id="mtAccentBar"></div>
+
+<!-- ── CONTENIDO ──────────────────────────────────────────── -->
+<div class="mt-page">
+
+  <div class="mt-page-header">
+    <div>
+      <h1 class="mt-page-header__title">📅 General</h1>
+      <p class="mt-page-header__sub">Calendario de estrenos y los mejores de cada categoría</p>
+    </div>
+    <button class="mt-btn mt-btn--primary" id="btnAddEstreno" style="flex-shrink:0;white-space:nowrap">+ Añadir estreno</button>
+  </div>
+
+  <!-- Calendario + Próximos -->
+  <div class="gen-grid">
+    <div class="gen-panel">
+      <div class="gen-panel__head">
+        <div class="gen-panel__title">Calendario de estrenos</div>
+        <div class="mt-cal__nav">
+          <button class="mt-cal__navbtn" id="calPrev" aria-label="Mes anterior">◀</button>
+          <div class="mt-cal__monthlabel" id="calMonthLabel">—</div>
+          <button class="mt-cal__navbtn" id="calNext" aria-label="Mes siguiente">▶</button>
+          <button class="mt-cal__today" id="calToday">HOY</button>
+        </div>
+      </div>
+      <div id="mtCalendar"></div>
+    </div>
+
+    <div class="gen-panel">
+      <div class="gen-panel__head">
+        <div class="gen-panel__title">Próximos estrenos</div>
+      </div>
+      <div class="mt-upcoming" id="mtUpcoming"></div>
+    </div>
+  </div>
+
+  <!-- TOP 10 -->
+  <div class="gen-tops">
+    <div class="gen-top gen-top--peliculas">
+      <div class="gen-top__title">🎬 TOP 10 PELÍCULAS</div>
+      <div class="mt-top__list" id="top-peliculas"></div>
+    </div>
+    <div class="gen-top gen-top--series">
+      <div class="gen-top__title">📺 TOP 10 SERIES</div>
+      <div class="mt-top__list" id="top-series"></div>
+    </div>
+    <div class="gen-top gen-top--anime">
+      <div class="gen-top__title">🌸 TOP 10 ANIME</div>
+      <div class="mt-top__list" id="top-anime"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════
+     MODAL: AÑADIR ESTRENO
+═══════════════════════════════════════════════ -->
+<div class="mt-modal-overlay" id="estrenoModal">
+  <div class="mt-modal" style="max-width:520px">
+    <div class="mt-modal__header">
+      <h2 class="mt-modal__title">Añadir estreno</h2>
+      <button class="mt-modal__close" id="estrenoModalClose">✕</button>
+    </div>
+    <div class="mt-modal__body">
+
+      <!-- Paso 1: categoría + búsqueda TMDB -->
+      <div id="estrenoStep1">
+        <div class="estreno-cat-tabs">
+          <button class="estreno-cat-tab estreno-cat-tab--active" data-cat="peliculas">🎬 Película</button>
+          <button class="estreno-cat-tab" data-cat="series">📺 Serie</button>
+          <button class="estreno-cat-tab" data-cat="anime">🌸 Anime</button>
+        </div>
+        <div class="estreno-search-row">
+          <input type="text" class="mt-search" id="estrenoSearchInput" placeholder="Buscar título en TMDB...">
+          <button class="mt-btn mt-btn--primary mt-btn--sm" id="estrenoSearchBtn">🔍</button>
+        </div>
+        <div id="estrenoResults"></div>
+      </div>
+
+      <!-- Paso 2: confirmar fecha -->
+      <div id="estrenoStep2" style="display:none">
+        <button class="estreno-back" id="estrenoBack">← Cambiar selección</button>
+        <div id="estrenoPreview"></div>
+        <div class="mt-form-group">
+          <label class="mt-form-label" for="estrenoFecha">Fecha de estreno</label>
+          <input type="date" class="mt-form-input" id="estrenoFecha">
+        </div>
+      </div>
+
+    </div>
+    <div class="mt-modal__footer">
+      <button class="mt-btn mt-btn--secondary" id="estrenoCancel">Cancelar</button>
+      <button class="mt-btn mt-btn--primary" id="estrenoSave" style="display:none">✔ Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js?v=20260521c" defer></script>
+<script src="mt-main.js?v=20260711a"         defer></script>
+<script src="mt-general.js?v=20260711a"      defer></script>
+</body>
+</html>

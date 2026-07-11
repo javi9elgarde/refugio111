@@ -186,12 +186,20 @@
     renderGrid();
   }
 
+  /* ── NOTA GLOBAL (media de los 3, nivel título) ──────────── */
+  function globalNota(item) {
+    var U = window.MT.Utils;
+    var vals = ['David', 'Javi', 'Mery']
+      .map(function (p) { return U.resolvePlayerNota(item, p); })
+      .filter(function (v) { return v !== null && v !== undefined && !isNaN(v); });
+    if (!vals.length) return null;
+    return vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
+  }
+
   /* ── RENDER CARD ─────────────────────────────────────────── */
   function renderCard(item) {
     var U    = window.MT.Utils;
-    var nota = item.temporadas && item.temporadas.length
-      ? U.calcNotaTemporadasGlobal(item.temporadas)
-      : U.calcNotaMedia(item.jugadores);
+    var nota = globalNota(item);
     var color = nota !== null ? U.notaColor(nota) : null;
     var id    = item.id;
 
@@ -205,9 +213,7 @@
 
     /* Player status dots */
     var dots = ['David', 'Javi', 'Mery'].map(function (p) {
-      var est = item.temporadas && item.temporadas.length
-        ? U.calcEstadoTemporadasPlayer(item.temporadas, p)
-        : (item.jugadores && item.jugadores[p] && item.jugadores[p].estado);
+      var est = U.resolvePlayerEstado(item, p);
       return '<div class="mt-card__dot ' + U.playerDotClass(est) + '" title="' + p + ': ' + U.escHtml(est || 'sin estado') + '"></div>';
     }).join('');
 
@@ -294,28 +300,14 @@
       return '<span class="mt-badge mt-badge--genre">' + U.escHtml(g) + '</span>';
     }).join('');
 
-    /* Tarjetas de jugadores (3 en fila) */
-    var cardsHtml;
-    if (item.temporadas && item.temporadas.length) {
-      cardsHtml = ['David', 'Javi', 'Mery'].map(function (p) {
-        var estadoP = U.calcEstadoTemporadasPlayer(item.temporadas, p) || 'Sin estado';
-        var notaP   = U.calcNotaTemporadasPlayer(item.temporadas, p);
-        var nVistas = item.temporadas.filter(function (t) {
-          var en = ((t.jugadores && t.jugadores[p] && t.jugadores[p].estado) || '')
-            .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]/g,'');
-          return en === 'terminado' || en === 'terminada';
-        }).length;
-        var extra = nVistas > 0 ? ' ' + nVistas + '/' + item.temporadas.length + 'T' : '';
-        return detailPlayerCard(p, estadoP + extra, U.statusClass(estadoP), notaP, U);
-      }).join('');
-    } else {
-      cardsHtml = ['David', 'Javi', 'Mery'].map(function (p) {
-        var jInfo   = item.jugadores && item.jugadores[p];
-        var estadoP = jInfo && jInfo.estado ? jInfo.estado : 'Sin estado';
-        var notaP   = jInfo && jInfo.nota !== null && jInfo.nota !== undefined && jInfo.nota !== '' ? parseFloat(jInfo.nota) : null;
-        return detailPlayerCard(p, estadoP, U.statusClass(estadoP), notaP, U);
-      }).join('');
-    }
+    /* Tarjetas de jugadores (3 en fila) — nivel título.
+       En películas la casilla es clicable para marcar Pendiente. */
+    var isFilm = item.tipo === 'peliculas';
+    var cardsHtml = ['David', 'Javi', 'Mery'].map(function (p) {
+      var estadoP = U.resolvePlayerEstado(item, p);
+      var notaP   = U.resolvePlayerNota(item, p);
+      return detailPlayerCard(p, estadoP, notaP, U, id, isFilm);
+    }).join('');
 
     /* Layout final */
     document.getElementById('detailBody').innerHTML =
@@ -341,16 +333,55 @@
       '<span class="mt-detail-meta-val"' + (style ? ' style="' + style + '"' : '') + '>' + val + '</span>' +
     '</div>';
   }
-  function detailPlayerCard(p, estadoText, sc, notaP, U) {
-    var notaHtml = notaP !== null && notaP !== undefined
+  function detailPlayerCard(p, estado, notaP, U, id, isFilm) {
+    var estadoText = estado || 'Sin estado';
+    var sc         = estado ? U.statusClass(estado) : 'sinregistrar';
+    var norm       = U.normEstado(estado);
+    var isVista    = norm === 'visto' || norm === 'vista';
+    var notaHtml   = notaP !== null && notaP !== undefined
       ? '<div class="mt-detail-player-card__nota" style="color:' + U.notaColor(notaP) + '">' + U.formatNota(notaP) + '</div>'
       : '<div class="mt-detail-player-card__nota--empty">—</div>';
-    return '<div class="mt-detail-player-card">' +
+
+    /* Clicable solo en películas y si no está ya vista */
+    var clickable = isFilm && !isVista;
+    var cls  = 'mt-detail-player-card' + (clickable ? ' mt-detail-player-card--clickable' : '');
+    var tip  = !clickable
+      ? (isVista ? 'Ya vista' : '')
+      : (norm === 'pendiente' ? 'Quitar de pendientes' : 'Marcar como pendiente');
+    var onclick = clickable
+      ? ' onclick="window.MT_Bib._togglePendiente(\'' + id.replace(/'/g, "\\'") + '\',\'' + p + '\')"'
+      : '';
+
+    return '<div class="' + cls + '"' + onclick + (tip ? ' title="' + tip + '"' : '') + '>' +
       '<div class="mt-detail-player-card__avatar mt-detail-player__avatar--' + p.toLowerCase() + '">' + p.charAt(0) + '</div>' +
       '<div class="mt-detail-player-card__name">' + p + '</div>' +
       notaHtml +
       '<span class="mt-detail-player__status mt-status--' + sc + '">' + U.escHtml(estadoText) + '</span>' +
     '</div>';
+  }
+
+  /* ── Toggle pendiente desde el detalle (películas) ───────── */
+  function togglePendiente(id, player) {
+    var item = _items.find(function (i) { return i.id === id; });
+    if (!item) return;
+    var U    = window.MT.Utils;
+    var curN = U.normEstado(U.resolvePlayerEstado(item, player));
+    if (curN === 'visto' || curN === 'vista') return;   /* ya vista → no tocar */
+
+    var nuevo    = (curN === 'pendiente') ? '' : 'Pendiente';
+    var existing = (item.jugadores && item.jugadores[player]) || {};
+    var notaKeep = (existing.nota !== undefined) ? existing.nota : null;
+    var payload  = { estado: nuevo, nota: notaKeep };
+
+    if (!item.jugadores) item.jugadores = {};
+    item.jugadores[player] = payload;   /* optimista */
+
+    var upd = {};
+    upd['jugadores.' + player] = payload;
+    window.MT.getDb().collection('mt_items').doc(id).update(upd)
+      .catch(function (e) { console.error('togglePendiente:', e); });
+
+    openDetail(id);   /* refrescar modal */
   }
 
   function closeDetailModal() {
@@ -666,9 +697,10 @@
 
   /* ── EXPOSE ──────────────────────────────────────────────── */
   window.MT_Bib = {
-    openDetail   : openDetail,
-    openEditModal: openEditModal,
-    _toggleChip  : _toggleChip
+    openDetail      : openDetail,
+    openEditModal   : openEditModal,
+    _toggleChip     : _toggleChip,
+    _togglePendiente: togglePendiente
   };
 
   if (document.readyState === 'loading') {

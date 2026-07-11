@@ -39,9 +39,9 @@ window.MT = window.MT || {};
 
   /* ── ESTADOS ─────────────────────────────────────────────── */
   var ESTADOS = {
-    peliculas: ['Visto', 'Viendo', 'Pendiente', 'Abandonado'],
-    series:    ['Terminada', 'Viendo', 'Pendiente', 'Pausada', 'Abandonada'],
-    anime:     ['Terminado', 'Viendo', 'Pendiente', 'Pausado', 'Abandonado']
+    peliculas: ['Vista', 'Pendiente'],
+    series:    ['Viendo', 'Visto', 'Pendiente'],
+    anime:     ['Viendo', 'Visto', 'Pendiente']
   };
 
   /* ── ESTADO ACTUAL ───────────────────────────────────────── */
@@ -128,10 +128,49 @@ window.MT = window.MT || {};
   }
 
   function statusClass(estado) {
-    if (!estado) return 'pendiente';
-    return estado.toLowerCase()
+    if (!estado) return 'sinregistrar';
+    var e = estado.toLowerCase()
       .normalize('NFD').replace(/[̀-ͯ]/g, '')  /* quitar tildes */
       .replace(/[^a-z]/g, '');
+    /* Canonicalizar a las clases CSS existentes */
+    if (e === 'visto' || e === 'vista' || e === 'terminado' || e === 'terminada') return 'visto';
+    if (e === 'viendo') return 'viendo';
+    if (e === 'pendiente') return 'pendiente';
+    if (e === 'abandonado' || e === 'abandonada') return 'abandonado';
+    if (e === 'pausado' || e === 'pausada') return 'pausado';
+    return e;
+  }
+
+  /* ── RESOLUCIÓN DE ESTADO/NOTA POR JUGADOR (nivel título) ──
+     Prioridad al estado/nota de título (jugadores.{p}); si no existe,
+     se cae al cálculo por temporadas (compatibilidad datos antiguos). */
+  function resolvePlayerEstado(item, player) {
+    if (!item) return '';
+    var j = item.jugadores && item.jugadores[player];
+    if (j && j.estado) return j.estado;
+    if (item.temporadas && item.temporadas.length) {
+      return calcEstadoTemporadasPlayer(item.temporadas, player) || '';
+    }
+    return '';
+  }
+
+  function resolvePlayerNota(item, player) {
+    if (!item) return null;
+    var j = item.jugadores && item.jugadores[player];
+    if (j && j.nota !== null && j.nota !== undefined && j.nota !== '') {
+      var n = parseFloat(j.nota);
+      if (!isNaN(n)) return n;
+    }
+    if (item.temporadas && item.temporadas.length) {
+      return calcNotaTemporadasPlayer(item.temporadas, player);
+    }
+    return null;
+  }
+
+  /* Estado "canónico" normalizado (visto/viendo/pendiente/…) para comparaciones */
+  function normEstado(estado) {
+    return (estado || '').toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
   }
 
   function calcNotaMedia(jugadores) {
@@ -189,7 +228,7 @@ window.MT = window.MT || {};
   function playerDotClass(estado) {
     if (!estado) return 'mt-card__dot--none';
     var e = estado.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
-    if (e === 'visto' || e === 'terminado' || e === 'terminada') return 'mt-card__dot--visto';
+    if (e === 'visto' || e === 'vista' || e === 'terminado' || e === 'terminada') return 'mt-card__dot--visto';
     if (e === 'viendo') return 'mt-card__dot--viendo';
     if (e === 'abandonado' || e === 'abandonada') return 'mt-card__dot--abandonado';
     if (e === 'pausado' || e === 'pausada') return 'mt-card__dot--abandonado';
@@ -203,6 +242,49 @@ window.MT = window.MT || {};
   function catEmoji(cat) {
     return { peliculas: '🎬', series: '📺', anime: '🌸' }[cat] || '🎬';
   }
+
+  /* ══════════════════════════════════════════════════════════
+     NOTA VISUAL — picker con degradado (rojo 0 → verde 10)
+     Compartido por Registro, Pendientes y Biblioteca.
+  ══════════════════════════════════════════════════════════ */
+  var Nota = {
+    html: function (base, value) {
+      var has  = value !== null && value !== undefined && value !== '';
+      var v    = has ? parseFloat(value) : 5;
+      var col  = has ? notaColor(v) : 'var(--txt3)';
+      var disp = has ? formatNota(v) : '—';
+      return '<div class="mt-nota-picker" id="' + base + 'Wrap" data-set="' + (has ? '1' : '0') + '">' +
+        '<input type="range" min="0" max="10" step="0.5" value="' + v + '" class="mt-nota-picker__range" id="' + base + 'Range" ' +
+          'oninput="window.MT.Nota.input(\'' + base + '\')">' +
+        '<span class="mt-nota-picker__val" id="' + base + 'Val" style="color:' + col + '">' + disp + '</span>' +
+        '<button type="button" class="mt-nota-picker__clear" title="Quitar nota" onclick="window.MT.Nota.clear(\'' + base + '\')">✕</button>' +
+      '</div>';
+    },
+    input: function (base) {
+      var wrap = document.getElementById(base + 'Wrap');
+      var r    = document.getElementById(base + 'Range');
+      var val  = document.getElementById(base + 'Val');
+      if (!wrap || !r || !val) return;
+      wrap.dataset.set = '1';
+      var v = parseFloat(r.value);
+      val.textContent = formatNota(v);
+      val.style.color = notaColor(v);
+    },
+    clear: function (base) {
+      var wrap = document.getElementById(base + 'Wrap');
+      var val  = document.getElementById(base + 'Val');
+      if (!wrap || !val) return;
+      wrap.dataset.set = '0';
+      val.textContent = '—';
+      val.style.color = 'var(--txt3)';
+    },
+    read: function (base) {
+      var wrap = document.getElementById(base + 'Wrap');
+      if (!wrap || wrap.dataset.set !== '1') return null;
+      var r = document.getElementById(base + 'Range');
+      return r ? parseFloat(r.value) : null;
+    }
+  };
 
   /* ── HIDE LOADING ────────────────────────────────────────── */
   function hideLoading() {
@@ -248,15 +330,19 @@ window.MT = window.MT || {};
     GENEROS     : GENEROS,
     PLATAFORMAS : PLATAFORMAS,
     ESTADOS     : ESTADOS,
+    Nota        : Nota,
     Utils: {
       escHtml                  : escHtml,
       formatNota               : formatNota,
       notaColor                : notaColor,
       statusClass              : statusClass,
+      normEstado               : normEstado,
       calcNotaMedia            : calcNotaMedia,
       calcNotaTemporadasPlayer : calcNotaTemporadasPlayer,
       calcNotaTemporadasGlobal : calcNotaTemporadasGlobal,
       calcEstadoTemporadasPlayer: calcEstadoTemporadasPlayer,
+      resolvePlayerEstado      : resolvePlayerEstado,
+      resolvePlayerNota        : resolvePlayerNota,
       playerDotClass           : playerDotClass,
       catLabel                 : catLabel,
       catEmoji                 : catEmoji

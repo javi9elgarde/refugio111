@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20260606h">
+  <link rel="stylesheet" href="mt-styles.css?v=20260711a">
   <style>
     /* ── MODAL AÑADIR AL REGISTRO ──────────────────────── */
     .mt-add-search-row { display:flex; gap:0.6rem; margin-bottom:1rem; }
@@ -66,6 +66,7 @@
   </div>
 
   <div class="mt-nav__links">
+    <a href="mt-general.html"     class="mt-nav__link">General</a>
     <a href="mt-biblioteca.html"  class="mt-nav__link">Biblioteca</a>
     <a href="mt-registro.html"    class="mt-nav__link mt-nav__link--active">Registro</a>
     <a href="mt-pendientes.html"  class="mt-nav__link">Pendientes</a>
@@ -97,20 +98,12 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" class="mt-search" id="searchInput" placeholder="Buscar título, director, estudio...">
     </div>
-    <select class="mt-select" id="statusFilter">
-      <option value="">▶ Estado</option>
-      <option value="visto">Visto / Terminado</option>
-      <option value="viendo">Viendo</option>
-      <option value="pendiente">Pendiente</option>
-      <option value="pausado">Pausado</option>
-      <option value="abandonado">Abandonado</option>
-    </select>
     <select class="mt-select" id="yearFilter"><option value="">📅 Año</option></select>
     <button class="mt-btn mt-btn--ghost mt-btn--sm" id="clearFilters" title="Limpiar filtros">✕</button>
   </div>
 
-  <!-- Grid de tarjetas -->
-  <div class="mt-grid" id="mtGrid"></div>
+  <!-- Secciones (VISTAS · VIENDO/VISTO) -->
+  <div class="mt-sections" id="mtGrid"></div>
 
 </div>
 
@@ -125,11 +118,10 @@
     </div>
     <div class="mt-modal__body">
 
-      <!-- Paso 1: Buscar -->
+      <!-- Paso 1: Buscar en la biblioteca -->
       <div id="addStep1">
         <div class="mt-add-search-row">
-          <input type="text" class="mt-search" id="addSearchInput" placeholder="Buscar título...">
-          <button class="mt-btn mt-btn--primary mt-btn--sm" id="addSearchBtn">🔍 Buscar</button>
+          <input type="text" class="mt-search" id="addSearchInput" placeholder="Buscar en tu biblioteca...">
         </div>
         <div id="addSearchResults" class="mt-add-results"></div>
       </div>
@@ -184,7 +176,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
-<script src="mt-main.js?v=20260606a"         defer></script>
-<script src="mt-registro.js?v=20260607a"     defer></script>
+<script src="mt-main.js?v=20260711a"         defer></script>
+<script src="mt-registro.js?v=20260711a"     defer></script>
 </body>
 </html>

@@ -804,6 +804,97 @@ body {
   white-space: nowrap; font-size: 0.72rem;
 }
 
+/* ── ESTADO "VISTA" (canónico → visto) ───────────────────── */
+.mt-status--vista { background: rgba(67,233,123,0.12); color: #43e97b; }
+
+/* ── DETALLE: casilla de jugador clicable (marcar pendiente) ── */
+.mt-detail-player-card--clickable { cursor: pointer; transition: border-color 0.16s, background 0.16s, transform 0.16s; }
+.mt-detail-player-card--clickable:hover {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  background: var(--accent-dim);
+  transform: translateY(-2px);
+}
+.mt-detail-player-card--clickable:active { transform: translateY(0); }
+
+/* ── REGISTRO: SECCIONES (VISTAS · VIENDO/VISTO) ─────────── */
+.mt-sections { display: flex; flex-direction: column; }
+.mt-section-header {
+  display: flex; align-items: center; gap: 0.7rem;
+  margin: 1.75rem 0 1rem;
+}
+.mt-section-header:first-child { margin-top: 0.25rem; }
+.mt-section-header__label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem; font-weight: 900; letter-spacing: 0.08em;
+  color: var(--accent); text-transform: uppercase;
+  text-shadow: 0 0 20px var(--accent-glow);
+  white-space: nowrap;
+}
+.mt-section-header__count {
+  font-size: 0.68rem; font-weight: 700; color: var(--txt3);
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  border-radius: 20px; padding: 0.1rem 0.6rem; flex-shrink: 0;
+}
+.mt-section-header::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, rgba(var(--accent-rgb),0.35), transparent);
+}
+.mt-section-empty {
+  font-size: 0.82rem; color: var(--txt3);
+  padding: 0.2rem 0 0.4rem;
+}
+
+/* ── MODAL AÑADIR: resultados de biblioteca ──────────────── */
+.mt-add-empty {
+  font-size: 0.85rem; color: var(--txt3);
+  text-align: center; padding: 1.6rem 1rem; line-height: 1.55;
+}
+.mt-add-empty strong { color: var(--txt2); }
+.mt-add-result__badge {
+  font-size: 0.6rem; font-weight: 700;
+  padding: 0.16rem 0.5rem; border-radius: 5px;
+  flex-shrink: 0; white-space: nowrap;
+}
+
+/* ── NOTA VISUAL (degradado rojo 0 → verde 10) ───────────── */
+.mt-player-row--nota { grid-template-columns: auto 116px 1fr; }
+
+.mt-nota-picker {
+  display: flex; align-items: center; gap: 0.55rem;
+  min-width: 0;
+}
+.mt-nota-picker__range {
+  -webkit-appearance: none; appearance: none;
+  flex: 1; min-width: 0; height: 8px; border-radius: 6px;
+  background: linear-gradient(90deg, #ef4444 0%, #f97316 28%, #eab308 52%, #84cc16 76%, #22c55e 100%);
+  outline: none; cursor: pointer;
+}
+.mt-nota-picker__range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; border: 2px solid rgba(0,0,0,0.4);
+  box-shadow: 0 1px 5px rgba(0,0,0,0.55); cursor: pointer;
+  transition: transform 0.12s;
+}
+.mt-nota-picker__range::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.mt-nota-picker__range::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; border: 2px solid rgba(0,0,0,0.4);
+  box-shadow: 0 1px 5px rgba(0,0,0,0.55); cursor: pointer;
+}
+.mt-nota-picker__val {
+  font-family: 'Orbitron', sans-serif; font-weight: 900;
+  font-size: 1.05rem; line-height: 1;
+  min-width: 2.6ch; text-align: center; flex-shrink: 0;
+}
+.mt-nota-picker__clear {
+  background: none; border: none; color: var(--txt3);
+  cursor: pointer; font-size: 0.72rem; line-height: 1;
+  padding: 0.25rem; border-radius: 5px; flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+.mt-nota-picker__clear:hover { color: var(--txt1); background: rgba(255,255,255,0.07); }
+
 /* ── RESPONSIVE ──────────────────────────────────────────── */
 @media (max-width: 900px) {
   .mt-cat-tabs .mt-cat-tab span.label { display: none; }
@@ -816,4 +907,7 @@ body {
   .mt-form-grid { grid-template-columns: 1fr; }
   .mt-player-row { grid-template-columns: auto 1fr 70px; }
   .mt-player-row .mt-form-input { display: none; } /* episodio oculto en móvil */
+  /* La fila con nota visual mantiene sus 3 columnas propias */
+  .mt-player-row--nota { grid-template-columns: auto 96px 1fr; }
+  .mt-player-row--nota .mt-nota-picker { display: flex; }
 }
