@@ -14,6 +14,7 @@
   var _unsub       = null;
   var _filterYear  = '';
   var _searchQuery = '';
+  var _sortBy      = 'alpha';   // 'alpha' | 'nota'
   var _editingId   = null;
   var _addPickId   = null;   // id del ítem de biblioteca elegido para añadir
 
@@ -36,6 +37,8 @@
     });
     var yf = document.getElementById('yearFilter');
     if (yf) yf.addEventListener('change', function () { _filterYear = this.value; renderGrid(); });
+    var so = document.getElementById('sortSelect');
+    if (so) so.addEventListener('change', function () { _sortBy = this.value; renderGrid(); });
     var cf = document.getElementById('clearFilters');
     if (cf) cf.addEventListener('click', clearFilters);
 
@@ -112,9 +115,10 @@
   function itemYear(item) { return item.anio || item['año'] || ''; }
 
   function clearFilters() {
-    _filterYear = ''; _searchQuery = '';
+    _filterYear = ''; _searchQuery = ''; _sortBy = 'alpha';
     document.getElementById('searchInput').value = '';
     var yf = document.getElementById('yearFilter'); if (yf) yf.value = '';
+    var so = document.getElementById('sortSelect'); if (so) so.value = 'alpha';
     renderGrid();
   }
 
@@ -131,20 +135,45 @@
       years.map(function (y) { return '<option value="' + y + '"' + (String(y) === cur ? ' selected' : '') + '>' + y + '</option>'; }).join('');
   }
 
-  /* ── ÍTEMS DEL JUGADOR POR ESTADO ────────────────────────── */
-  function itemsForEstado(estadoKey) {
+  /* ── FAVORITA para un jugador ────────────────────────────── */
+  function isFav(item, player) {
+    return !!(item.jugadores && item.jugadores[player] && item.jugadores[player].fav);
+  }
+
+  function passesFilters(item) {
+    if (_filterYear && String(itemYear(item)) !== _filterYear) return false;
+    if (_searchQuery) {
+      var hay = [item.titulo, item.director, item.estudio].join(' ').toLowerCase();
+      if ((item.generos || []).length) hay += ' ' + item.generos.join(' ').toLowerCase();
+      if (hay.indexOf(_searchQuery) < 0) return false;
+    }
+    return true;
+  }
+
+  /* ── ÍTEMS POR SECCIÓN (fav / viendo / visto) ────────────── */
+  function itemsForSection(key) {
     var player = getPlayer();
-    return _items.filter(function (item) {
-      var est = U().resolvePlayerEstado(item, player);
-      if (!est || U().statusClass(est) !== estadoKey) return false;
-      if (_filterYear && String(itemYear(item)) !== _filterYear) return false;
-      if (_searchQuery) {
-        var hay = [item.titulo, item.director, item.estudio].join(' ').toLowerCase();
-        if ((item.generos || []).length) hay += ' ' + item.generos.join(' ').toLowerCase();
-        if (hay.indexOf(_searchQuery) < 0) return false;
-      }
-      return true;
+    var u      = U();
+    var list = _items.filter(function (item) {
+      if (!passesFilters(item)) return false;
+      if (key === 'fav') return isFav(item, player);
+      /* Los favoritos se muestran solo en su sección, no duplicados */
+      if (isFav(item, player)) return false;
+      var est = u.resolvePlayerEstado(item, player);
+      return est && u.statusClass(est) === key;
     });
+
+    if (_sortBy === 'nota') {
+      list = list.slice().sort(function (a, b) {
+        var na = u.resolvePlayerNota(a, player);
+        var nb = u.resolvePlayerNota(b, player);
+        if (na === null && nb === null) return 0;
+        if (na === null) return 1;
+        if (nb === null) return -1;
+        return nb - na;
+      });
+    }
+    return list;
   }
 
   /* ── RENDER GRID (por secciones) ─────────────────────────── */
@@ -155,17 +184,21 @@
     var count  = document.getElementById('pageCount');
 
     var sections = cat === 'peliculas'
-      ? [{ key: 'visto', label: '🎬 Vistas' }]
-      : [{ key: 'viendo', label: '👁️ Viendo' }, { key: 'visto', label: '✅ Visto' }];
+      ? [{ key: 'fav', label: '⭐ Favoritas' }, { key: 'visto', label: '🎬 Vistas' }]
+      : [{ key: 'fav', label: '⭐ Favoritas' }, { key: 'viendo', label: '👁️ Viendo' }, { key: 'visto', label: '✅ Visto' }];
 
     var total = 0;
     var html  = sections.map(function (sec) {
-      var items = itemsForEstado(sec.key);
+      var items = itemsForSection(sec.key);
       total += items.length;
-      var header = '<div class="mt-section-header"><span class="mt-section-header__label">' + sec.label +
-        '</span><span class="mt-section-header__count">' + items.length + '</span></div>';
+      var header = '<div class="mt-section-header' + (sec.key === 'fav' ? ' mt-section-header--fav' : '') + '">' +
+        '<span class="mt-section-header__label">' + sec.label + '</span>' +
+        '<span class="mt-section-header__count">' + items.length + '</span></div>';
       if (!items.length) {
-        return header + '<div class="mt-section-empty">Nada por aquí todavía.</div>';
+        var msg = sec.key === 'fav'
+          ? 'Pulsa la ⭐ de un título para añadirlo a favoritas.'
+          : 'Nada por aquí todavía.';
+        return header + '<div class="mt-section-empty">' + msg + '</div>';
       }
       return header + '<div class="mt-grid">' + items.map(renderCard).join('') + '</div>';
     }).join('');
@@ -206,8 +239,14 @@
       ? '<span class="mt-card__genre">' + u.escHtml(item.generos[0]) + '</span>'
       : '';
 
+    var fav = isFav(item, player);
+    var starBtn = '<button class="mt-card__fav' + (fav ? ' mt-card__fav--on' : '') + '" ' +
+      'title="' + (fav ? 'Quitar de favoritas' : 'Añadir a favoritas') + '" ' +
+      'onclick="event.stopPropagation();window.MTReg._toggleFav(\'' + id.replace(/'/g, "\\'") + '\')">' +
+      (fav ? '★' : '☆') + '</button>';
+
     return '<div class="mt-card" onclick="window.MTReg.openReg(\'' + id.replace(/'/g, "\\'") + '\')">' +
-      '<div class="mt-card__cover">' + cover + scoreBadge + '</div>' +
+      '<div class="mt-card__cover">' + cover + starBtn + scoreBadge + '</div>' +
       '<div class="mt-card__body">' +
         '<div class="mt-card__title">' + u.escHtml(item.titulo) + '</div>' +
         '<div class="mt-card__meta">' +
@@ -423,9 +462,31 @@
       });
   }
 
+  /* ── TOGGLE FAVORITA (jugador actual) ────────────────────── */
+  function toggleFav(id) {
+    var item = _items.find(function (i) { return i.id === id; });
+    if (!item) return;
+    var player   = getPlayer();
+    var existing = (item.jugadores && item.jugadores[player]) || {};
+    var payload  = {
+      estado: existing.estado || '',
+      nota  : (existing.nota !== undefined ? existing.nota : null),
+      fav   : !isFav(item, player)
+    };
+    if (!item.jugadores) item.jugadores = {};
+    item.jugadores[player] = payload;   /* optimista */
+    renderGrid();
+
+    var upd = {};
+    upd['jugadores.' + player] = payload;
+    window.MT.getDb().collection('mt_items').doc(id).update(upd)
+      .catch(function (e) { console.error('toggleFav:', e); });
+  }
+
   window.MTReg = {
-    openReg    : openReg,
-    _pickAdd   : pickAdd
+    openReg   : openReg,
+    _pickAdd  : pickAdd,
+    _toggleFav: toggleFav
   };
 
   if (document.readyState === 'loading') {

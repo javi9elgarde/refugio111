@@ -861,6 +861,26 @@ body {
   font-size: 0.82rem; color: var(--txt3);
   padding: 0.2rem 0 0.4rem;
 }
+/* Cabecera de la sección Favoritas (dorada) */
+.mt-section-header--fav .mt-section-header__label { color: #fbbf24; text-shadow: 0 0 20px rgba(251,191,36,0.4); }
+.mt-section-header--fav::after { background: linear-gradient(90deg, rgba(251,191,36,0.4), transparent); }
+
+/* Botón estrella (favoritas) sobre la portada */
+.mt-card__fav {
+  position: absolute; top: 0.4rem; left: 0.4rem; z-index: 5;
+  width: 27px; height: 27px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(7,7,15,0.7); backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.55); font-size: 0.92rem; line-height: 1;
+  cursor: pointer; transition: all 0.15s;
+}
+.mt-card__fav:hover { color: #fbbf24; border-color: rgba(251,191,36,0.5); transform: scale(1.12); }
+.mt-card__fav--on {
+  color: #fbbf24; border-color: rgba(251,191,36,0.55);
+  background: rgba(251,191,36,0.16);
+  text-shadow: 0 0 10px rgba(251,191,36,0.6);
+}
 
 /* ── MODAL AÑADIR: resultados de biblioteca ──────────────── */
 .mt-add-empty {
