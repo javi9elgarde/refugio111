@@ -816,6 +816,24 @@ body {
 }
 .mt-detail-player-card--clickable:active { transform: translateY(0); }
 
+/* Selector de estado (pastillas) en el modal de jugador */
+.mt-estado-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.mt-estado-pill {
+  flex: 1; min-width: 88px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--txt2); border-radius: 10px; padding: 0.7rem 0.5rem;
+  cursor: pointer; font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+  transition: all 0.15s;
+}
+.mt-estado-pill:hover { border-color: rgba(var(--accent-rgb),0.4); color: var(--txt1); }
+.mt-estado-pill--active {
+  background: var(--accent-dim);
+  border-color: rgba(var(--accent-rgb),0.6);
+  color: var(--accent);
+  box-shadow: 0 0 14px var(--accent-glow);
+}
+
 /* ── REGISTRO: SECCIONES (VISTAS · VIENDO/VISTO) ─────────── */
 .mt-sections { display: flex; flex-direction: column; }
 .mt-section-header {

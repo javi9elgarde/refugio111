@@ -69,6 +69,14 @@
       if (e.target === this) closeDetailModal();
     });
 
+    /* Modal editar estado+nota de jugador */
+    document.getElementById('bibPlayerClose').addEventListener('click', closeBibPlayer);
+    document.getElementById('bibPlayerCancel').addEventListener('click', closeBibPlayer);
+    document.getElementById('bibPlayerSave').addEventListener('click', saveBibPlayer);
+    document.getElementById('bibPlayerModal').addEventListener('click', function (e) {
+      if (e.target === this) closeBibPlayer();
+    });
+
     /* Filtros */
     document.getElementById('searchInput').addEventListener('input', function () {
       _searchQuery = this.value.toLowerCase();
@@ -301,12 +309,11 @@
     }).join('');
 
     /* Tarjetas de jugadores (3 en fila) — nivel título.
-       En películas la casilla es clicable para marcar Pendiente. */
-    var isFilm = item.tipo === 'peliculas';
+       Clicables: abren el selector de estado + nota. */
     var cardsHtml = ['David', 'Javi', 'Mery'].map(function (p) {
       var estadoP = U.resolvePlayerEstado(item, p);
       var notaP   = U.resolvePlayerNota(item, p);
-      return detailPlayerCard(p, estadoP, notaP, U, id, isFilm);
+      return detailPlayerCard(p, estadoP, notaP, U, id);
     }).join('');
 
     /* Layout final */
@@ -333,26 +340,15 @@
       '<span class="mt-detail-meta-val"' + (style ? ' style="' + style + '"' : '') + '>' + val + '</span>' +
     '</div>';
   }
-  function detailPlayerCard(p, estado, notaP, U, id, isFilm) {
+  function detailPlayerCard(p, estado, notaP, U, id) {
     var estadoText = estado || 'Sin estado';
     var sc         = estado ? U.statusClass(estado) : 'sinregistrar';
-    var norm       = U.normEstado(estado);
-    var isVista    = norm === 'visto' || norm === 'vista';
     var notaHtml   = notaP !== null && notaP !== undefined
       ? '<div class="mt-detail-player-card__nota" style="color:' + U.notaColor(notaP) + '">' + U.formatNota(notaP) + '</div>'
       : '<div class="mt-detail-player-card__nota--empty">—</div>';
 
-    /* Clicable solo en películas y si no está ya vista */
-    var clickable = isFilm && !isVista;
-    var cls  = 'mt-detail-player-card' + (clickable ? ' mt-detail-player-card--clickable' : '');
-    var tip  = !clickable
-      ? (isVista ? 'Ya vista' : '')
-      : (norm === 'pendiente' ? 'Quitar de pendientes' : 'Marcar como pendiente');
-    var onclick = clickable
-      ? ' onclick="window.MT_Bib._togglePendiente(\'' + id.replace(/'/g, "\\'") + '\',\'' + p + '\')"'
-      : '';
-
-    return '<div class="' + cls + '"' + onclick + (tip ? ' title="' + tip + '"' : '') + '>' +
+    return '<div class="mt-detail-player-card mt-detail-player-card--clickable" ' +
+      'onclick="window.MT_Bib._editPlayer(\'' + id.replace(/'/g, "\\'") + '\',\'' + p + '\')" title="Editar estado y nota">' +
       '<div class="mt-detail-player-card__avatar mt-detail-player__avatar--' + p.toLowerCase() + '">' + p.charAt(0) + '</div>' +
       '<div class="mt-detail-player-card__name">' + p + '</div>' +
       notaHtml +
@@ -360,28 +356,94 @@
     '</div>';
   }
 
-  /* ── Toggle pendiente desde el detalle (películas) ───────── */
-  function togglePendiente(id, player) {
+  /* ══════════════════════════════════════════════════════════
+     EDITAR ESTADO + NOTA DE UN JUGADOR (desde el detalle)
+     Pendiente → sin nota · Visto/Viendo → aparece el picker.
+  ══════════════════════════════════════════════════════════ */
+  var _bibEdit = null;
+
+  function isWatched(estado) {
+    var n = window.MT.Utils.normEstado(estado);
+    return n === 'visto' || n === 'vista' || n === 'viendo';
+  }
+
+  function editPlayer(id, player) {
     var item = _items.find(function (i) { return i.id === id; });
     if (!item) return;
-    var U    = window.MT.Utils;
-    var curN = U.normEstado(U.resolvePlayerEstado(item, player));
-    if (curN === 'visto' || curN === 'vista') return;   /* ya vista → no tocar */
+    var U       = window.MT.Utils;
+    var cat     = window.MT.getCat();
+    var estados = window.MT.ESTADOS[cat] || ['Vista', 'Pendiente'];
+    var estado  = U.resolvePlayerEstado(item, player);
+    var nota    = U.resolvePlayerNota(item, player);
 
-    var nuevo    = (curN === 'pendiente') ? '' : 'Pendiente';
-    var existing = (item.jugadores && item.jugadores[player]) || {};
-    var notaKeep = (existing.nota !== undefined) ? existing.nota : null;
-    var payload  = { estado: nuevo, nota: notaKeep };
+    _bibEdit = {
+      id     : id,
+      player : player,
+      estado : estados.indexOf(estado) >= 0 ? estado : '',
+      nota   : nota
+    };
 
-    if (!item.jugadores) item.jugadores = {};
-    item.jugadores[player] = payload;   /* optimista */
+    document.getElementById('bibPlayerTitle').textContent = item.titulo;
+    document.getElementById('bibPlayerName').innerHTML =
+      '<div class="mt-detail-player-card__avatar mt-detail-player__avatar--' + player.toLowerCase() + '" style="margin:0 auto 0.45rem;width:40px;height:40px;font-size:0.95rem">' + player.charAt(0) + '</div>' +
+      '<div style="text-align:center;font-family:\'Orbitron\',sans-serif;font-weight:700;color:var(--txt1);letter-spacing:0.05em">' + player + '</div>';
+
+    renderBibPills();
+    renderBibNota();
+    document.getElementById('bibPlayerModal').classList.add('open');
+  }
+
+  function renderBibPills() {
+    var cat     = window.MT.getCat();
+    var estados = window.MT.ESTADOS[cat] || [];
+    document.getElementById('bibEstadoPills').innerHTML = estados.map(function (e) {
+      var active = e === _bibEdit.estado ? ' mt-estado-pill--active' : '';
+      return '<button type="button" class="mt-estado-pill mt-estado-pill--' + window.MT.Utils.statusClass(e) + active + '" ' +
+        'onclick="window.MT_Bib._pickEstado(\'' + e + '\')">' + e + '</button>';
+    }).join('');
+  }
+
+  function pickEstado(e) {
+    if (!_bibEdit) return;
+    _bibEdit.estado = (_bibEdit.estado === e) ? '' : e;
+    renderBibPills();
+    renderBibNota();
+  }
+
+  function renderBibNota() {
+    var wrap = document.getElementById('bibNotaWrap');
+    if (isWatched(_bibEdit.estado)) {
+      wrap.style.display = '';
+      document.getElementById('bibNotaHost').innerHTML = window.MT.Nota.html('bibNota', _bibEdit.nota);
+    } else {
+      wrap.style.display = 'none';
+      document.getElementById('bibNotaHost').innerHTML = '';
+    }
+  }
+
+  function saveBibPlayer() {
+    if (!_bibEdit) return;
+    var estado  = _bibEdit.estado;
+    var nota    = isWatched(estado) ? window.MT.Nota.read('bibNota') : null;
+    var payload = { estado: estado, nota: nota };
+    var id      = _bibEdit.id;
+    var player  = _bibEdit.player;
+
+    var item = _items.find(function (i) { return i.id === id; });
+    if (item) { if (!item.jugadores) item.jugadores = {}; item.jugadores[player] = payload; }
 
     var upd = {};
     upd['jugadores.' + player] = payload;
     window.MT.getDb().collection('mt_items').doc(id).update(upd)
-      .catch(function (e) { console.error('togglePendiente:', e); });
+      .catch(function (e) { console.error('saveBibPlayer:', e); });
 
-    openDetail(id);   /* refrescar modal */
+    closeBibPlayer();
+    openDetail(id);
+  }
+
+  function closeBibPlayer() {
+    document.getElementById('bibPlayerModal').classList.remove('open');
+    _bibEdit = null;
   }
 
   function closeDetailModal() {
@@ -697,10 +759,11 @@
 
   /* ── EXPOSE ──────────────────────────────────────────────── */
   window.MT_Bib = {
-    openDetail      : openDetail,
-    openEditModal   : openEditModal,
-    _toggleChip     : _toggleChip,
-    _togglePendiente: togglePendiente
+    openDetail   : openDetail,
+    openEditModal: openEditModal,
+    _toggleChip  : _toggleChip,
+    _editPlayer  : editPlayer,
+    _pickEstado  : pickEstado
   };
 
   if (document.readyState === 'loading') {
