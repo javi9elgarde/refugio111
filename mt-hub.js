@@ -53,21 +53,13 @@
       greetPlayer.textContent = 'Casa ' + player;
       playSelectSound(330, 415);
 
-      /* Pequeño delay para que se vea el efecto choosing antes de salir */
+      /* Al elegir personaje se va directo al apartado General (dashboard) */
       setTimeout(function () {
-        /* Salida de fase 1 */
         phasePlayer.classList.add('mth-phase--exit');
+        flash.className = 'mth-flash mth-flash--peliculas mth-flash--active';
         setTimeout(function () {
-          phasePlayer.classList.add('mth-phase--hidden');
-          phasePlayer.classList.remove('mth-phase--exit');
-          phasePlayer.style.display = 'none';
-          self.classList.remove('choosing');
-
-          /* Entrada de fase 2 */
-          phaseCat.classList.remove('mth-phase--hidden');
-          phaseCat.style.display = '';
-          phaseCat.classList.add('mth-phase--enter');
-        }, 320);
+          window.location.href = 'mt-general.html';
+        }, 360);
       }, 180);
     });
   });

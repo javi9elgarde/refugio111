@@ -5,149 +5,211 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#e63946">
-  <title>Refugio 111 — General</title>
+  <title>Refugio 111 — Cine</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20260711a">
+  <link rel="stylesheet" href="mt-styles.css?v=20260712a">
   <style>
-    /* ── LAYOUT GENERAL ─────────────────────────────────── */
-    .gen-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1.5rem; align-items: start; }
-    @media (max-width: 900px) { .gen-grid { grid-template-columns: 1fr; } }
+    body { background: var(--bg1); }
 
-    .gen-panel {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--border);
-      border-radius: 16px; padding: 1.25rem;
+    /* ══ TOP BAR ══════════════════════════════════════════════ */
+    .gen-topbar {
+      position: sticky; top: 0; z-index: 300;
+      display: flex; align-items: center; gap: 1.25rem;
+      height: 62px; padding: 0 1.5rem;
+      background: rgba(7,7,15,0.92); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
     }
-    .gen-panel__head {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap;
-    }
-    .gen-panel__title {
-      font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 900;
-      letter-spacing: 0.06em; color: var(--txt1);
-    }
+    .gen-brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; flex-shrink: 0; }
+    .gen-brand__logo { width: 34px; height: 34px; border-radius: 8px; object-fit: contain; }
+    .gen-brand__name { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1rem; color: var(--txt1); letter-spacing: 0.04em; }
+    @media (max-width: 640px) { .gen-brand__name { display: none; } }
 
-    /* ── CALENDARIO ─────────────────────────────────────── */
+    .gen-search { position: relative; flex: 1; max-width: 560px; margin: 0 auto; }
+    .gen-search__input {
+      width: 100%; height: 42px; border-radius: 22px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--txt1); padding: 0 1rem 0 2.6rem; font-size: 0.88rem; font-family: inherit;
+      transition: border-color 0.18s, background 0.18s;
+    }
+    .gen-search__input:focus { outline: none; border-color: rgba(var(--accent-rgb),0.5); background: rgba(var(--accent-rgb),0.05); }
+    .gen-search__icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--txt3); pointer-events: none; }
+    .gen-search__results {
+      display: none; position: absolute; top: 50px; left: 0; right: 0; z-index: 400;
+      background: #0f0f1e; border: 1px solid var(--border); border-radius: 14px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.6); overflow: hidden; max-height: 60vh; overflow-y: auto;
+    }
+    .gen-search__item { display: flex; align-items: center; gap: 0.7rem; padding: 0.55rem 0.85rem; text-decoration: none; border-bottom: 1px solid var(--border); transition: background 0.14s; }
+    .gen-search__item:last-child { border-bottom: none; }
+    .gen-search__item:hover { background: rgba(var(--accent-rgb),0.08); }
+    .gen-search__poster { width: 34px; height: 48px; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,0.05); flex-shrink: 0; }
+    .gen-search__poster img { width: 100%; height: 100%; object-fit: cover; }
+    .gen-search__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+    .gen-search__title { font-size: 0.85rem; font-weight: 700; color: var(--txt1); }
+    .gen-search__meta { font-size: 0.7rem; color: var(--txt3); }
+    .gen-search__empty { padding: 1rem; text-align: center; color: var(--txt3); font-size: 0.82rem; }
+
+    .gen-userpill {
+      display: flex; align-items: center; gap: 0.45rem; flex-shrink: 0;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: 22px; padding: 0.3rem 0.85rem 0.3rem 0.4rem; text-decoration: none;
+      font-size: 0.8rem; font-weight: 600; color: var(--txt2); transition: border-color 0.18s;
+    }
+    .gen-userpill:hover { border-color: rgba(255,255,255,0.2); color: var(--txt1); }
+
+    /* ══ LAYOUT DASHBOARD ═════════════════════════════════════ */
+    .gen-layout { display: grid; grid-template-columns: 210px 1fr 330px; gap: 1.5rem; max-width: 1600px; margin: 0 auto; padding: 1.5rem; align-items: start; }
+    @media (max-width: 1180px) { .gen-layout { grid-template-columns: 1fr 320px; } .gen-sidebar { display: none; } }
+    @media (max-width: 900px) { .gen-layout { grid-template-columns: 1fr; } .gen-right { position: static; } }
+
+    /* ══ SIDEBAR ══════════════════════════════════════════════ */
+    .gen-sidebar { position: sticky; top: 78px; display: flex; flex-direction: column; gap: 0.15rem; }
+    .gen-nav__group { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; color: var(--txt3); text-transform: uppercase; padding: 0.9rem 0.75rem 0.4rem; }
+    .gen-nav__item {
+      display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 0.75rem; border-radius: 10px;
+      text-decoration: none; color: var(--txt2); font-size: 0.85rem; font-weight: 500;
+      cursor: pointer; transition: background 0.15s, color 0.15s; border: 1px solid transparent;
+    }
+    .gen-nav__item:hover { background: rgba(255,255,255,0.05); color: var(--txt1); }
+    .gen-nav__item--active { background: var(--accent-dim); color: var(--accent); border-color: rgba(var(--accent-rgb),0.3); }
+    .gen-nav__ico { width: 18px; text-align: center; }
+
+    /* ══ HERO ═════════════════════════════════════════════════ */
+    .gen-hero-wrap { position: relative; border-radius: 18px; overflow: hidden; }
+    .gen-hero { position: relative; height: 380px; }
+    @media (max-width: 640px) { .gen-hero { height: 340px; } }
+    .gen-hero__slide {
+      position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease;
+      background-size: cover; background-position: center; display: flex; align-items: center;
+      pointer-events: none;
+    }
+    .gen-hero__slide--active { opacity: 1; pointer-events: auto; }
+    .gen-hero__content { padding: 0 2.5rem; max-width: 620px; }
+    @media (max-width: 640px) { .gen-hero__content { padding: 0 1.25rem; } }
+    .gen-hero__badge {
+      display: inline-block; font-family: 'Orbitron', sans-serif; font-size: 0.6rem; font-weight: 900;
+      letter-spacing: 0.1em; color: #fff; background: var(--accent);
+      padding: 0.35rem 0.75rem; border-radius: 6px; margin-bottom: 1rem;
+      box-shadow: 0 4px 16px rgba(var(--accent-rgb),0.4);
+    }
+    .gen-hero__title { font-family: 'Orbitron', sans-serif; font-size: clamp(1.6rem, 4vw, 2.6rem); font-weight: 900; color: #fff; line-height: 1.05; margin-bottom: 0.5rem; text-shadow: 0 2px 20px rgba(0,0,0,0.7); }
+    .gen-hero__date { font-size: 0.82rem; color: var(--accent); font-weight: 700; margin-bottom: 0.85rem; }
+    .gen-hero__desc { font-size: 0.88rem; color: rgba(232,232,248,0.85); line-height: 1.55; margin-bottom: 1.25rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; max-width: 520px; }
+    .gen-hero__actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .gen-hero__btn { display: inline-flex; align-items: center; gap: 0.45rem; font-family: 'Orbitron', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; border-radius: 10px; padding: 0.7rem 1.3rem; cursor: pointer; border: none; transition: all 0.18s; }
+    .gen-hero__btn--play { background: var(--accent); color: #fff; box-shadow: 0 4px 16px rgba(var(--accent-rgb),0.4); }
+    .gen-hero__btn--play:hover { background: var(--accent2); transform: translateY(-2px); }
+    .gen-hero__btn--info { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(6px); }
+    .gen-hero__btn--info:hover { background: rgba(255,255,255,0.2); }
+    .gen-hero__dots { position: absolute; bottom: 1rem; left: 2.5rem; display: flex; gap: 0.4rem; z-index: 3; }
+    @media (max-width: 640px) { .gen-hero__dots { left: 1.25rem; } }
+    .gen-hero__dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,0.3); border: none; cursor: pointer; padding: 0; transition: all 0.2s; }
+    .gen-hero__dot--active { background: var(--accent); width: 26px; border-radius: 5px; }
+    .gen-hero__empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; height: 100%; text-align: center; color: var(--txt3); font-size: 0.9rem; line-height: 1.6; background: var(--bg2); }
+    .gen-hero__nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 4; width: 40px; height: 40px; border-radius: 50%; background: rgba(7,7,15,0.55); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    .gen-hero__nav:hover { background: rgba(7,7,15,0.85); }
+    .gen-hero__nav--prev { left: 0.75rem; }
+    .gen-hero__nav--next { right: 0.75rem; }
+
+    /* ══ TOPS ═════════════════════════════════════════════════ */
+    .gen-tops-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 2rem 0 1rem; flex-wrap: wrap; }
+    .gen-tops-head__title { font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 900; color: var(--txt1); letter-spacing: 0.04em; }
+    .gen-tops-head__title span { color: var(--accent); }
+    .gen-tops-scope { font-family: 'Orbitron', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; background: var(--accent-dim); border: 1px solid rgba(var(--accent-rgb),0.4); color: var(--accent); border-radius: 10px; padding: 0.55rem 1rem; cursor: pointer; transition: all 0.15s; }
+    .gen-tops-scope:hover { background: rgba(var(--accent-rgb),0.2); box-shadow: 0 0 16px var(--accent-glow); }
+    .gen-tops { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; }
+    @media (max-width: 1180px) { .gen-tops { grid-template-columns: 1fr; } }
+    .gen-top { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem; }
+    .gen-top__title { font-family: 'Orbitron', sans-serif; font-size: 0.8rem; font-weight: 900; letter-spacing: 0.04em; margin-bottom: 0.85rem; text-align: center; }
+    .gen-top--peliculas .gen-top__title { color: #ff6b78; }
+    .gen-top--series    .gen-top__title { color: #7d92ff; }
+    .gen-top--anime     .gen-top__title { color: #e77ad4; }
+    .mt-top__empty { font-size: 0.78rem; color: var(--txt3); text-align: center; padding: 1.5rem 0.5rem; }
+    .mt-top-row { display: grid; grid-template-columns: 22px 32px 1fr auto; gap: 0.55rem; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 9px; padding: 0.35rem 0.5rem; margin-bottom: 0.4rem; text-decoration: none; transition: background 0.14s, border-color 0.14s; }
+    .mt-top-row:hover { background: rgba(var(--accent-rgb),0.08); border-color: rgba(var(--accent-rgb),0.3); }
+    .mt-top-row__rank { font-family: 'Orbitron', sans-serif; font-size: 0.78rem; font-weight: 900; color: var(--txt3); text-align: center; }
+    .mt-top-row--gold   .mt-top-row__rank { color: #fbbf24; }
+    .mt-top-row--silver .mt-top-row__rank { color: #d1d5db; }
+    .mt-top-row--bronze .mt-top-row__rank { color: #d97706; }
+    .mt-top-row--gold { border-color: rgba(251,191,36,0.35); }
+    .mt-top-row__poster { width: 32px; height: 46px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.05); }
+    .mt-top-row__poster img { width: 100%; height: 100%; object-fit: cover; }
+    .mt-top-row__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+    .mt-top-row__info { min-width: 0; }
+    .mt-top-row__title { font-size: 0.74rem; font-weight: 700; color: var(--txt1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mt-top-row__meta { font-size: 0.64rem; color: var(--txt3); }
+    .mt-top-row__nota { font-family: 'Orbitron', sans-serif; font-size: 0.92rem; font-weight: 900; }
+    .mt-top__more { width: 100%; margin-top: 0.35rem; background: none; border: 1px dashed var(--border); color: var(--txt3); border-radius: 8px; padding: 0.45rem; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .mt-top__more:hover { color: var(--accent); border-color: rgba(var(--accent-rgb),0.4); }
+
+    /* ══ COLUMNA DERECHA ══════════════════════════════════════ */
+    .gen-right { display: flex; flex-direction: column; gap: 1.25rem; position: sticky; top: 78px; }
+    .gen-panel { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem; }
+    .gen-panel__head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.9rem; }
+    .gen-panel__title { font-family: 'Orbitron', sans-serif; font-size: 0.82rem; font-weight: 900; color: var(--txt1); letter-spacing: 0.04em; }
+    .gen-panel__link { font-size: 0.68rem; font-weight: 700; color: var(--accent); background: none; border: none; cursor: pointer; }
+    .gen-panel__link:hover { text-decoration: underline; }
+
+    .mt-upcoming { display: flex; flex-direction: column; gap: 0.5rem; }
+    .mt-upcoming__empty { font-size: 0.8rem; color: var(--txt3); text-align: center; padding: 1.25rem 0.5rem; }
+    .mt-upcoming__item { display: flex; align-items: center; gap: 0.65rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-left: 3px solid var(--border); border-radius: 9px; padding: 0.4rem 0.55rem; }
+    .mt-upcoming__item--peliculas { border-left-color: #e63946; }
+    .mt-upcoming__item--series { border-left-color: #4361ee; }
+    .mt-upcoming__item--anime { border-left-color: #b5179e; }
+    .mt-upcoming__poster { width: 32px; height: 46px; border-radius: 5px; overflow: hidden; flex-shrink: 0; background: rgba(255,255,255,0.05); }
+    .mt-upcoming__poster img { width: 100%; height: 100%; object-fit: cover; }
+    .mt-upcoming__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; }
+    .mt-upcoming__info { flex: 1; min-width: 0; }
+    .mt-upcoming__title { font-size: 0.78rem; font-weight: 700; color: var(--txt1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mt-upcoming__meta { font-size: 0.66rem; color: var(--txt3); margin-top: 0.1rem; }
+    .mt-upcoming__del { background: none; border: none; color: var(--txt3); cursor: pointer; font-size: 0.72rem; padding: 0.25rem; border-radius: 5px; flex-shrink: 0; transition: all 0.15s; }
+    .mt-upcoming__del:hover { color: #f87171; background: rgba(239,68,68,0.12); }
+
+    /* Estadísticas */
+    .gen-stats-select { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--txt1); border-radius: 8px; padding: 0.3rem 0.5rem; font-size: 0.75rem; font-family: inherit; cursor: pointer; }
+    .gen-stats-select option { background: var(--bg2); }
+    .gen-stats { display: flex; flex-direction: column; gap: 0.6rem; }
+    .gen-stat { display: flex; align-items: center; gap: 0.85rem; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 11px; padding: 0.7rem 0.9rem; }
+    .gen-stat__ico { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    .gen-stat--pel .gen-stat__ico { background: rgba(230,57,70,0.15); }
+    .gen-stat--ser .gen-stat__ico { background: rgba(67,97,238,0.15); }
+    .gen-stat--ani .gen-stat__ico { background: rgba(181,23,158,0.15); }
+    .gen-stat--hrs .gen-stat__ico { background: rgba(67,233,123,0.15); }
+    .gen-stat__num { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 900; color: var(--txt1); line-height: 1; }
+    .gen-stat__lbl { font-size: 0.72rem; color: var(--txt3); margin-top: 0.15rem; }
+
+    /* ══ MODALES: calendario · ficha · estreno ════════════════ */
     .mt-cal__nav { display: flex; align-items: center; gap: 0.5rem; }
-    .mt-cal__navbtn {
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      color: var(--txt2); border-radius: 8px; width: 30px; height: 30px;
-      cursor: pointer; font-size: 0.85rem; transition: all 0.15s;
-    }
-    .mt-cal__navbtn:hover { background: var(--accent-dim); color: var(--accent); border-color: rgba(var(--accent-rgb),0.4); }
-    .mt-cal__monthlabel {
-      font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700;
-      color: var(--accent); min-width: 130px; text-align: center; letter-spacing: 0.04em;
-    }
-    .mt-cal__today {
-      font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em;
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      color: var(--txt2); border-radius: 7px; padding: 0.3rem 0.6rem; cursor: pointer;
-      font-family: 'Orbitron', sans-serif; transition: all 0.15s;
-    }
-    .mt-cal__today:hover { color: var(--accent); border-color: rgba(var(--accent-rgb),0.4); }
-
+    .mt-cal__navbtn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--txt2); border-radius: 8px; width: 30px; height: 30px; cursor: pointer; }
+    .mt-cal__navbtn:hover { background: var(--accent-dim); color: var(--accent); }
+    .mt-cal__monthlabel { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--accent); min-width: 130px; text-align: center; }
+    .mt-cal__today { font-size: 0.66rem; font-weight: 700; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--txt2); border-radius: 7px; padding: 0.3rem 0.6rem; cursor: pointer; font-family: 'Orbitron', sans-serif; }
     .mt-cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
     .mt-cal__grid--head { margin-bottom: 5px; }
-    .mt-cal__dow {
-      text-align: center; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em;
-      color: var(--txt3); padding: 0.2rem 0;
-    }
-    .mt-cal__cell {
-      min-height: 62px; border-radius: 8px;
-      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
-      padding: 0.28rem; display: flex; flex-direction: column; gap: 2px; overflow: hidden;
-    }
+    .mt-cal__dow { text-align: center; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; color: var(--txt3); padding: 0.2rem 0; }
+    .mt-cal__cell { min-height: 60px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 0.28rem; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
     .mt-cal__cell--empty { background: none; border: none; }
-    .mt-cal__cell--today { border-color: rgba(var(--accent-rgb),0.6); box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb),0.3); }
+    .mt-cal__cell--today { border-color: rgba(var(--accent-rgb),0.6); }
     .mt-cal__cell--has { background: rgba(var(--accent-rgb),0.04); }
     .mt-cal__daynum { font-size: 0.62rem; font-weight: 700; color: var(--txt3); }
     .mt-cal__cell--today .mt-cal__daynum { color: var(--accent); }
     .mt-cal__rels { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
-    .mt-cal__rel {
-      font-size: 0.56rem; font-weight: 600; line-height: 1.15;
-      padding: 1px 4px; border-radius: 3px; cursor: pointer;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .mt-cal__rel--peliculas { background: rgba(230,57,70,0.18);  color: #ff8b93; }
-    .mt-cal__rel--series    { background: rgba(67,97,238,0.18);  color: #93a7ff; }
-    .mt-cal__rel--anime     { background: rgba(181,23,158,0.18); color: #e77ad4; }
+    .mt-cal__rel { font-size: 0.55rem; font-weight: 600; padding: 1px 4px; border-radius: 3px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mt-cal__rel--peliculas { background: rgba(230,57,70,0.18); color: #ff8b93; }
+    .mt-cal__rel--series { background: rgba(67,97,238,0.18); color: #93a7ff; }
+    .mt-cal__rel--anime { background: rgba(181,23,158,0.18); color: #e77ad4; }
 
-    /* ── PRÓXIMOS ESTRENOS ──────────────────────────────── */
-    .mt-upcoming { display: flex; flex-direction: column; gap: 0.5rem; }
-    .mt-upcoming__empty { font-size: 0.8rem; color: var(--txt3); text-align: center; padding: 1.5rem 0.5rem; line-height: 1.5; }
-    .mt-upcoming__item {
-      display: flex; align-items: center; gap: 0.7rem;
-      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-      border-left: 3px solid var(--border);
-      border-radius: 9px; padding: 0.45rem 0.6rem;
-    }
-    .mt-upcoming__item--peliculas { border-left-color: #e63946; }
-    .mt-upcoming__item--series    { border-left-color: #4361ee; }
-    .mt-upcoming__item--anime     { border-left-color: #b5179e; }
-    .mt-upcoming__poster {
-      width: 34px; height: 50px; border-radius: 5px; overflow: hidden; flex-shrink: 0;
-      background: rgba(255,255,255,0.05);
-    }
-    .mt-upcoming__poster img { width: 100%; height: 100%; object-fit: cover; }
-    .mt-upcoming__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
-    .mt-upcoming__info { flex: 1; min-width: 0; }
-    .mt-upcoming__title { font-size: 0.8rem; font-weight: 700; color: var(--txt1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .mt-upcoming__meta { font-size: 0.68rem; color: var(--txt3); margin-top: 0.1rem; }
-    .mt-upcoming__del {
-      background: none; border: none; color: var(--txt3); cursor: pointer;
-      font-size: 0.75rem; padding: 0.25rem; border-radius: 5px; flex-shrink: 0; transition: all 0.15s;
-    }
-    .mt-upcoming__del:hover { color: #f87171; background: rgba(239,68,68,0.12); }
+    .ficha-top { display: grid; grid-template-columns: 150px 1fr; gap: 1.25rem; }
+    @media (max-width: 520px) { .ficha-top { grid-template-columns: 100px 1fr; gap: 0.8rem; } }
+    .ficha-poster { width: 100%; aspect-ratio: 2/3; border-radius: 10px; overflow: hidden; background: var(--bg3); }
+    .ficha-poster img { width: 100%; height: 100%; object-fit: cover; }
+    .ficha-meta { font-size: 0.82rem; color: var(--txt2); font-weight: 600; margin-bottom: 0.6rem; }
+    .ficha-genres { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
+    .ficha-overview { font-size: 0.85rem; color: var(--txt2); line-height: 1.6; }
 
-    /* ── TOP 10 ─────────────────────────────────────────── */
-    .gen-tops { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 1.5rem; }
-    @media (max-width: 900px) { .gen-tops { grid-template-columns: 1fr; } }
-    .gen-top {
-      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
-      border-radius: 16px; padding: 1.1rem;
-    }
-    .gen-top__title {
-      font-family: 'Orbitron', sans-serif; font-size: 0.82rem; font-weight: 900;
-      letter-spacing: 0.05em; margin-bottom: 0.85rem; text-align: center;
-    }
-    .gen-top--peliculas .gen-top__title { color: #ff6b78; }
-    .gen-top--series    .gen-top__title { color: #7d92ff; }
-    .gen-top--anime     .gen-top__title { color: #e77ad4; }
-    .mt-top__list { display: flex; flex-direction: column; gap: 0.4rem; }
-    .mt-top__empty { font-size: 0.78rem; color: var(--txt3); text-align: center; padding: 1.5rem 0.5rem; }
-    .mt-top-row {
-      display: grid; grid-template-columns: 24px 34px 1fr auto; gap: 0.6rem;
-      align-items: center;
-      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-      border-radius: 9px; padding: 0.35rem 0.55rem;
-    }
-    .mt-top-row__rank {
-      font-family: 'Orbitron', sans-serif; font-size: 0.8rem; font-weight: 900;
-      color: var(--txt3); text-align: center;
-    }
-    .mt-top-row--gold   .mt-top-row__rank { color: #fbbf24; }
-    .mt-top-row--silver .mt-top-row__rank { color: #d1d5db; }
-    .mt-top-row--bronze .mt-top-row__rank { color: #d97706; }
-    .mt-top-row--gold   { border-color: rgba(251,191,36,0.35); }
-    .mt-top-row__poster { width: 34px; height: 48px; border-radius: 4px; overflow: hidden; background: rgba(255,255,255,0.05); }
-    .mt-top-row__poster img { width: 100%; height: 100%; object-fit: cover; }
-    .mt-top-row__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
-    .mt-top-row__info { min-width: 0; }
-    .mt-top-row__title { font-size: 0.75rem; font-weight: 700; color: var(--txt1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .mt-top-row__meta { font-size: 0.65rem; color: var(--txt3); }
-    .mt-top-row__nota { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; font-weight: 900; }
-
-    /* ── MODAL AÑADIR ESTRENO ───────────────────────────── */
     .estreno-cat-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.9rem; }
-    .estreno-cat-tab {
-      flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
-      color: var(--txt2); border-radius: 9px; padding: 0.5rem; cursor: pointer;
-      font-family: 'Orbitron', sans-serif; font-size: 0.68rem; font-weight: 700;
-      letter-spacing: 0.05em; transition: all 0.15s;
-    }
+    .estreno-cat-tab { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--txt2); border-radius: 9px; padding: 0.5rem; cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 0.66rem; font-weight: 700; transition: all 0.15s; }
     .estreno-cat-tab--active { background: var(--accent-dim); border-color: rgba(var(--accent-rgb),0.5); color: var(--accent); }
     .estreno-search-row { display: flex; gap: 0.5rem; margin-bottom: 0.9rem; }
     .estreno-search-row .mt-search { flex: 1; }
@@ -170,95 +232,133 @@
 <!-- Loading overlay -->
 <div id="mtLoading">
   <div class="mt-loading__brand">🎬 REFUGIO 111</div>
-  <div class="mt-loading__dots">
-    <div class="mt-loading__dot"></div>
-    <div class="mt-loading__dot"></div>
-    <div class="mt-loading__dot"></div>
-  </div>
-  <div class="mt-loading__sub">Cargando general...</div>
+  <div class="mt-loading__dots"><div class="mt-loading__dot"></div><div class="mt-loading__dot"></div><div class="mt-loading__dot"></div></div>
+  <div class="mt-loading__sub">Cargando...</div>
 </div>
 
-<!-- ── NAVEGACIÓN ─────────────────────────────────────────── -->
-<nav class="mt-nav">
-  <a href="hub.html" class="mt-nav__hub">🏠 Hub</a>
-
-  <div class="mt-cat-tabs">
-    <button class="mt-cat-tab mt-cat-tab--active" data-cat="peliculas">🎬 <span class="label">Películas</span></button>
-    <button class="mt-cat-tab" data-cat="series">📺 <span class="label">Series</span></button>
-    <button class="mt-cat-tab" data-cat="anime">🌸 <span class="label">Anime</span></button>
+<!-- ══ TOP BAR ══ -->
+<div class="gen-topbar">
+  <a href="mt-general.html" class="gen-brand">
+    <img src="logonuevo.png" class="gen-brand__logo" alt="" onerror="this.style.display='none'">
+    <span class="gen-brand__name">Refugio 111</span>
+  </a>
+  <div class="gen-search">
+    <span class="gen-search__icon">🔍</span>
+    <input type="text" class="gen-search__input" id="genSearch" placeholder="Buscar películas, series o anime..." autocomplete="off">
+    <div class="gen-search__results" id="genSearchResults"></div>
   </div>
-
-  <div class="mt-nav__links">
-    <a href="mt-general.html"     class="mt-nav__link mt-nav__link--active">General</a>
-    <a href="mt-biblioteca.html"  class="mt-nav__link">Biblioteca</a>
-    <a href="mt-registro.html"    class="mt-nav__link">Registro</a>
-    <a href="mt-pendientes.html"  class="mt-nav__link">Pendientes</a>
-  </div>
-
-  <a href="mt-hub.html" class="mt-nav__player-pill" id="mtPlayerPill" title="Cambiar jugador">
+  <a href="mt-hub.html" class="gen-userpill" id="mtPlayerPill" title="Cambiar jugador">
     <div class="mt-nav__player-avatar mt-nav__player-avatar--javi">J</div>
     <span class="mt-player-pill-name">Javi</span>
   </a>
+</div>
 
-  <button class="mt-nav__hamburger" id="mtHamburger" aria-label="Menú">☰</button>
-</nav>
-<div class="mt-accent-bar" id="mtAccentBar"></div>
+<!-- ══ DASHBOARD ══ -->
+<div class="gen-layout">
 
-<!-- ── CONTENIDO ──────────────────────────────────────────── -->
-<div class="mt-page">
+  <!-- SIDEBAR -->
+  <aside class="gen-sidebar">
+    <div class="gen-nav__group">Menú</div>
+    <a href="mt-general.html"                  class="gen-nav__item gen-nav__item--active"><span class="gen-nav__ico">🏠</span> Inicio</a>
+    <a href="mt-biblioteca.html?cat=peliculas" class="gen-nav__item"><span class="gen-nav__ico">🎬</span> Películas</a>
+    <a href="mt-biblioteca.html?cat=series"    class="gen-nav__item"><span class="gen-nav__ico">📺</span> Series</a>
+    <a href="mt-biblioteca.html?cat=anime"     class="gen-nav__item"><span class="gen-nav__ico">🌸</span> Anime</a>
 
-  <div class="mt-page-header">
-    <div>
-      <h1 class="mt-page-header__title">📅 General</h1>
-      <p class="mt-page-header__sub">Calendario de estrenos y los mejores de cada categoría</p>
+    <div class="gen-nav__group">Mi zona</div>
+    <a href="mt-biblioteca.html" class="gen-nav__item"><span class="gen-nav__ico">📚</span> Mi Biblioteca</a>
+    <a href="mt-registro.html"   class="gen-nav__item"><span class="gen-nav__ico">📝</span> Registro</a>
+    <a href="mt-pendientes.html" class="gen-nav__item"><span class="gen-nav__ico">🕒</span> Pendientes</a>
+    <a href="mt-registro.html"   class="gen-nav__item"><span class="gen-nav__ico">⭐</span> Favoritos</a>
+
+    <div class="gen-nav__group">Explorar</div>
+    <div class="gen-nav__item" onclick="document.getElementById('openCalendar').click()"><span class="gen-nav__ico">📅</span> Estrenos</div>
+    <div class="gen-nav__item" onclick="document.getElementById('genTops').scrollIntoView({behavior:'smooth'})"><span class="gen-nav__ico">🏆</span> Top Valorados</div>
+    <a href="mt-biblioteca.html" class="gen-nav__item"><span class="gen-nav__ico">🏷️</span> Géneros</a>
+
+    <a href="hub.html" class="gen-nav__item" style="margin-top:1rem"><span class="gen-nav__ico">←</span> Hub Friki</a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="gen-main">
+    <div class="gen-hero-wrap">
+      <div class="gen-hero" id="genHero"></div>
+      <button class="gen-hero__nav gen-hero__nav--prev" id="heroPrev" aria-label="Anterior">◀</button>
+      <button class="gen-hero__nav gen-hero__nav--next" id="heroNext" aria-label="Siguiente">▶</button>
     </div>
-    <button class="mt-btn mt-btn--primary" id="btnAddEstreno" style="flex-shrink:0;white-space:nowrap">+ Añadir estreno</button>
-  </div>
 
-  <!-- Calendario + Próximos -->
-  <div class="gen-grid">
+    <div class="gen-tops-head" id="genTops">
+      <div class="gen-tops-head__title">🏆 Mejores <span id="topScopeLabel">2026</span></div>
+      <button class="gen-tops-scope" id="topScopeBtn">🏆 Ver TOP Histórico</button>
+    </div>
+    <div class="gen-tops">
+      <div class="gen-top gen-top--peliculas"><div class="gen-top__title">🎬 TOP PELÍCULAS</div><div id="top-peliculas"></div></div>
+      <div class="gen-top gen-top--series"><div class="gen-top__title">📺 TOP SERIES</div><div id="top-series"></div></div>
+      <div class="gen-top gen-top--anime"><div class="gen-top__title">🌸 TOP ANIME</div><div id="top-anime"></div></div>
+    </div>
+  </main>
+
+  <!-- RIGHT COLUMN -->
+  <aside class="gen-right">
     <div class="gen-panel">
       <div class="gen-panel__head">
-        <div class="gen-panel__title">Calendario de estrenos</div>
-        <div class="mt-cal__nav">
-          <button class="mt-cal__navbtn" id="calPrev" aria-label="Mes anterior">◀</button>
-          <div class="mt-cal__monthlabel" id="calMonthLabel">—</div>
-          <button class="mt-cal__navbtn" id="calNext" aria-label="Mes siguiente">▶</button>
-          <button class="mt-cal__today" id="calToday">HOY</button>
-        </div>
+        <div class="gen-panel__title">📅 Próximos estrenos</div>
+        <button class="gen-panel__link" id="openCalendar">Ver calendario</button>
       </div>
-      <div id="mtCalendar"></div>
+      <div class="mt-upcoming" id="genUpcoming"></div>
+      <button class="mt-btn mt-btn--secondary mt-btn--sm" id="btnAddEstreno" style="width:100%;justify-content:center;margin-top:0.75rem">+ Añadir estreno</button>
     </div>
 
     <div class="gen-panel">
       <div class="gen-panel__head">
-        <div class="gen-panel__title">Próximos estrenos</div>
+        <div class="gen-panel__title">📊 Tu universo en cifras</div>
+        <select class="gen-stats-select" id="statsPlayer">
+          <option value="David">David</option>
+          <option value="Javi">Javi</option>
+          <option value="Mery">Mery</option>
+        </select>
       </div>
-      <div class="mt-upcoming" id="mtUpcoming"></div>
+      <div class="gen-stats">
+        <div class="gen-stat gen-stat--pel"><div class="gen-stat__ico">🎬</div><div><div class="gen-stat__num" id="statPel">0</div><div class="gen-stat__lbl">Películas vistas</div></div></div>
+        <div class="gen-stat gen-stat--ser"><div class="gen-stat__ico">📺</div><div><div class="gen-stat__num" id="statSer">0</div><div class="gen-stat__lbl">Series completadas</div></div></div>
+        <div class="gen-stat gen-stat--ani"><div class="gen-stat__ico">🌸</div><div><div class="gen-stat__num" id="statAni">0</div><div class="gen-stat__lbl">Anime completados</div></div></div>
+        <div class="gen-stat gen-stat--hrs"><div class="gen-stat__ico">🕒</div><div><div class="gen-stat__num" id="statHoras">0</div><div class="gen-stat__lbl">Horas disfrutadas</div></div></div>
+      </div>
     </div>
-  </div>
-
-  <!-- TOP 10 -->
-  <div class="gen-tops">
-    <div class="gen-top gen-top--peliculas">
-      <div class="gen-top__title">🎬 TOP 10 PELÍCULAS</div>
-      <div class="mt-top__list" id="top-peliculas"></div>
-    </div>
-    <div class="gen-top gen-top--series">
-      <div class="gen-top__title">📺 TOP 10 SERIES</div>
-      <div class="mt-top__list" id="top-series"></div>
-    </div>
-    <div class="gen-top gen-top--anime">
-      <div class="gen-top__title">🌸 TOP 10 ANIME</div>
-      <div class="mt-top__list" id="top-anime"></div>
-    </div>
-  </div>
+  </aside>
 
 </div>
 
-<!-- ════════════════════════════════════════════
-     MODAL: AÑADIR ESTRENO
-═══════════════════════════════════════════════ -->
+<!-- ══ MODAL: CALENDARIO ══ -->
+<div class="mt-modal-overlay" id="calendarModal">
+  <div class="mt-modal" style="max-width:640px">
+    <div class="mt-modal__header">
+      <h2 class="mt-modal__title">📅 Calendario de estrenos</h2>
+      <button class="mt-modal__close" id="calModalClose">✕</button>
+    </div>
+    <div class="mt-modal__body">
+      <div class="mt-cal__nav" style="justify-content:center;margin-bottom:1rem">
+        <button class="mt-cal__navbtn" id="calPrev">◀</button>
+        <div class="mt-cal__monthlabel" id="calMonthLabel">—</div>
+        <button class="mt-cal__navbtn" id="calNext">▶</button>
+        <button class="mt-cal__today" id="calToday">HOY</button>
+      </div>
+      <div id="mtCalendar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: FICHA ══ -->
+<div class="mt-modal-overlay" id="fichaModal">
+  <div class="mt-modal" style="max-width:600px">
+    <div class="mt-modal__header">
+      <h2 class="mt-modal__title" id="fichaTitle">Ficha</h2>
+      <button class="mt-modal__close" id="fichaClose">✕</button>
+    </div>
+    <div class="mt-modal__body" id="fichaBody"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL: AÑADIR ESTRENO ══ -->
 <div class="mt-modal-overlay" id="estrenoModal">
   <div class="mt-modal" style="max-width:520px">
     <div class="mt-modal__header">
@@ -266,8 +366,6 @@
       <button class="mt-modal__close" id="estrenoModalClose">✕</button>
     </div>
     <div class="mt-modal__body">
-
-      <!-- Paso 1: categoría + búsqueda TMDB -->
       <div id="estrenoStep1">
         <div class="estreno-cat-tabs">
           <button class="estreno-cat-tab estreno-cat-tab--active" data-cat="peliculas">🎬 Película</button>
@@ -280,8 +378,6 @@
         </div>
         <div id="estrenoResults"></div>
       </div>
-
-      <!-- Paso 2: confirmar fecha -->
       <div id="estrenoStep2" style="display:none">
         <button class="estreno-back" id="estrenoBack">← Cambiar selección</button>
         <div id="estrenoPreview"></div>
@@ -290,7 +386,6 @@
           <input type="date" class="mt-form-input" id="estrenoFecha">
         </div>
       </div>
-
     </div>
     <div class="mt-modal__footer">
       <button class="mt-btn mt-btn--secondary" id="estrenoCancel">Cancelar</button>
@@ -303,6 +398,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="mt-main.js?v=20260711a"         defer></script>
-<script src="mt-general.js?v=20260711a"      defer></script>
+<script src="mt-general.js?v=20260712a"      defer></script>
 </body>
 </html>

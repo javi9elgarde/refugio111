@@ -128,10 +128,23 @@
         renderGrid();
         buildYearFilter();
         window.MT.hideLoading();
+        maybeOpenFromUrl();
       }, function (err) {
         console.error('MT items error:', err);
         window.MT.hideLoading();
       });
+  }
+
+  /* ── ABRIR FICHA DESDE ?open=id (buscador / TOP de General) ── */
+  var _openedFromUrl = false;
+  function maybeOpenFromUrl() {
+    if (_openedFromUrl) return;
+    var id = new URLSearchParams(window.location.search).get('open');
+    if (!id) return;
+    var item = _items.find(function (i) { return i.id === id; });
+    if (!item) return;
+    _openedFromUrl = true;
+    openDetail(id);
   }
 
   /* ── METADATA DE PÁGINA ─────────────────────────────────── */
