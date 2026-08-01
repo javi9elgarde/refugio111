@@ -365,7 +365,7 @@
 <div class="mt-modal-overlay" id="estrenoModal">
   <div class="mt-modal" style="max-width:520px">
     <div class="mt-modal__header">
-      <h2 class="mt-modal__title">Añadir estreno</h2>
+      <h2 class="mt-modal__title" id="estrenoModalTitle">Añadir estreno</h2>
       <button class="mt-modal__close" id="estrenoModalClose">✕</button>
     </div>
     <div class="mt-modal__body">
@@ -385,12 +385,14 @@
         <button class="estreno-back" id="estrenoBack">← Cambiar selección</button>
         <div id="estrenoPreview"></div>
         <div class="mt-form-group">
-          <label class="mt-form-label" for="estrenoFecha">Fecha de estreno</label>
+          <label class="mt-form-label" for="estrenoFecha">Fecha de estreno (España)</label>
           <input type="date" class="mt-form-input" id="estrenoFecha">
+          <div class="mt-form-small" id="estrenoDateHint"></div>
         </div>
       </div>
     </div>
     <div class="mt-modal__footer">
+      <button class="mt-btn mt-btn--danger" id="estrenoDelete" style="display:none;margin-right:auto">🗑 Eliminar</button>
       <button class="mt-btn mt-btn--secondary" id="estrenoCancel">Cancelar</button>
       <button class="mt-btn mt-btn--primary" id="estrenoSave" style="display:none">✔ Guardar</button>
     </div>
@@ -401,6 +403,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="mt-main.js?v=20260712b"         defer></script>
-<script src="mt-general.js?v=20260712a"      defer></script>
+<script src="mt-general.js?v=20260712c"      defer></script>
 </body>
 </html>

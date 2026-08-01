@@ -36,9 +36,10 @@
   var _statsPlayer = 'Javi';
 
   var _view        = new Date();
-  var _addCat      = 'peliculas';
-  var _tmdbResults = [];
-  var _addPick     = null;
+  var _addCat        = 'peliculas';
+  var _tmdbResults   = [];
+  var _addPick       = null;
+  var _editingRelId  = null;   // id de estreno en edición (o null = nuevo)
 
   function U() { return window.MT.Utils; }
   function esc(s) { return U().escHtml(s); }
@@ -110,6 +111,7 @@
     document.getElementById('estrenoSearchInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') doTMDBSearch(); });
     document.getElementById('estrenoSearchBtn').addEventListener('click', doTMDBSearch);
     document.getElementById('estrenoSave').addEventListener('click', saveEstreno);
+    document.getElementById('estrenoDelete').addEventListener('click', deleteEditingRel);
     document.getElementById('estrenoBack').addEventListener('click', function () { showEstrenoStep(1); _addPick = null; });
   }
 
@@ -138,10 +140,11 @@
 
   /* ══ HERO (estrenos destacados) ═════════════════════════════ */
   function buildHero() {
-    var todayStr = new Date().toISOString().slice(0, 10);
-    _hero = _releases.filter(function (r) { return r.fecha && r.fecha >= todayStr; })
+    /* Incluye estrenos recientes (últimos 45 días, aún en cines) y próximos */
+    var cutoff = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    _hero = _releases.filter(function (r) { return r.fecha && r.fecha >= cutoff; })
       .sort(function (a, b) { return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0; })
-      .slice(0, 6);
+      .slice(0, 8);
     if (_heroIdx >= _hero.length) _heroIdx = 0;
     renderHero();
     /* Enriquecer con TMDB (backdrop, sinopsis, tráiler) */
@@ -336,11 +339,12 @@
     if (!list.length) { el.innerHTML = '<div class="mt-upcoming__empty">No hay estrenos próximos.</div>'; return; }
     el.innerHTML = list.map(function (r) {
       var poster = r.portadaUrl ? '<img src="' + esc(r.portadaUrl) + '" onerror="this.style.display=\'none\'">' : '<div class="mt-upcoming__ph">' + U().catEmoji(r.tipo) + '</div>';
-      return '<div class="mt-upcoming__item mt-upcoming__item--' + (r.tipo || 'peliculas') + '">' +
+      var sid = r.id.replace(/'/g, "\\'");
+      return '<div class="mt-upcoming__item mt-upcoming__item--' + (r.tipo || 'peliculas') + '" title="Editar fecha" onclick="window.MTGen._editRel(\'' + sid + '\')">' +
         '<div class="mt-upcoming__poster">' + poster + '</div>' +
         '<div class="mt-upcoming__info"><div class="mt-upcoming__title">' + esc(r.titulo) + '</div>' +
           '<div class="mt-upcoming__meta">' + fmtDateShort(r.fecha) + '</div></div>' +
-        '<button class="mt-upcoming__del" title="Eliminar" onclick="window.MTGen._delRel(\'' + r.id.replace(/'/g, "\\'") + '\')">✕</button>' +
+        '<button class="mt-upcoming__del" title="Eliminar" onclick="event.stopPropagation();window.MTGen._delRel(\'' + sid + '\')">✕</button>' +
       '</div>';
     }).join('');
   }
@@ -390,8 +394,8 @@
     for (var d = 1; d <= daysInMonth; d++) {
       var rels = releasesOn(y, m, d);
       var relHtml = rels.map(function (r) {
-        return '<div class="mt-cal__rel mt-cal__rel--' + (r.tipo || 'peliculas') + '" title="' + esc(r.titulo) + '" ' +
-          'onclick="window.MTGen._delRel(\'' + r.id.replace(/'/g, "\\'") + '\')">' + esc(r.titulo) + '</div>';
+        return '<div class="mt-cal__rel mt-cal__rel--' + (r.tipo || 'peliculas') + '" title="' + esc(r.titulo) + ' — editar" ' +
+          'onclick="window.MTGen._editRel(\'' + r.id.replace(/'/g, "\\'") + '\')">' + esc(r.titulo) + '</div>';
       }).join('');
       cells += '<div class="mt-cal__cell' + (isToday(d) ? ' mt-cal__cell--today' : '') + (rels.length ? ' mt-cal__cell--has' : '') + '">' +
         '<div class="mt-cal__daynum">' + d + '</div><div class="mt-cal__rels">' + relHtml + '</div></div>';
@@ -402,9 +406,11 @@
   function fmtDate(iso) { var p = iso.split('-'); return parseInt(p[2]) + ' ' + MESES[parseInt(p[1]) - 1] + ' ' + p[0]; }
   function fmtDateShort(iso) { var p = iso.split('-'); return parseInt(p[2]) + ' ' + MESES[parseInt(p[1]) - 1].slice(0, 3) + ' ' + p[0]; }
 
-  /* ══ AÑADIR ESTRENO (TMDB) ══════════════════════════════════ */
+  /* ══ AÑADIR / EDITAR ESTRENO (TMDB) ═════════════════════════ */
   function openAddModal() {
-    _addPick = null; _tmdbResults = []; _addCat = 'peliculas';
+    _addPick = null; _tmdbResults = []; _addCat = 'peliculas'; _editingRelId = null;
+    document.getElementById('estrenoModalTitle').textContent = 'Añadir estreno';
+    document.getElementById('estrenoDelete').style.display = 'none';
     document.querySelectorAll('.estreno-cat-tab').forEach(function (t) { t.classList.toggle('estreno-cat-tab--active', t.dataset.cat === 'peliculas'); });
     document.getElementById('estrenoSearchInput').value = '';
     document.getElementById('estrenoResults').innerHTML = '';
@@ -412,13 +418,34 @@
     document.getElementById('estrenoModal').classList.add('open');
     setTimeout(function () { document.getElementById('estrenoSearchInput').focus(); }, 120);
   }
-  function closeAddModal() { document.getElementById('estrenoModal').classList.remove('open'); _addPick = null; }
+  function closeAddModal() { document.getElementById('estrenoModal').classList.remove('open'); _addPick = null; _editingRelId = null; }
   function showEstrenoStep(n) {
     document.getElementById('estrenoStep1').style.display = n === 1 ? '' : 'none';
     document.getElementById('estrenoStep2').style.display = n === 2 ? '' : 'none';
     document.getElementById('estrenoSave').style.display  = n === 2 ? '' : 'none';
-    document.getElementById('estrenoBack').style.display  = n === 2 ? '' : 'none';
+    document.getElementById('estrenoBack').style.display  = (n === 2 && !_editingRelId) ? '' : 'none';
   }
+
+  function previewHTML(pick) {
+    return (pick.portadaUrl ? '<img src="' + esc(pick.portadaUrl) + '" class="mt-add-preview__poster" onerror="this.style.display=\'none\'">' : '<div class="mt-add-preview__poster"></div>') +
+      '<div><div class="mt-add-preview__title">' + esc(pick.titulo) + '</div>' +
+      '<div class="mt-add-preview__meta">' + U().catEmoji(pick.tipo) + ' ' + (pick.tipo === 'peliculas' ? 'Película' : pick.tipo === 'series' ? 'Serie' : 'Anime') + '</div></div>';
+  }
+
+  /* Fecha de estreno en España (TMDB release_dates); null si no la tiene */
+  function fetchESDate(tmdbId) {
+    return fetch('https://api.themoviedb.org/3/movie/' + tmdbId + '/release_dates?api_key=' + TMDB_KEY)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var es = (data.results || []).find(function (x) { return x.iso_3166_1 === 'ES'; });
+        if (!es || !es.release_dates || !es.release_dates.length) return null;
+        var chosen = null;
+        [3, 2, 1, 4, 5].forEach(function (t) { if (!chosen) chosen = es.release_dates.find(function (d) { return d.type === t; }); });
+        if (!chosen) chosen = es.release_dates[0];
+        return (chosen.release_date || '').slice(0, 10) || null;
+      }).catch(function () { return null; });
+  }
+
   function doTMDBSearch() {
     var query = document.getElementById('estrenoSearchInput').value.trim();
     if (!query) return;
@@ -440,24 +467,62 @@
       }).join('');
     }).catch(function () { el.innerHTML = '<div class="mt-tmdb-msg">❌ Error al buscar en TMDB.</div>'; });
   }
+
   function pickTMDB(idx) {
     var r = _tmdbResults[idx]; if (!r) return;
     var date = r.release_date || r.first_air_date || '';
     _addPick = { titulo: r.title || r.name || '', tipo: _addCat, fecha: date || '', portadaUrl: r.poster_path ? IMG_FULL + r.poster_path : null, tmdbId: r.id };
-    document.getElementById('estrenoPreview').innerHTML =
-      (_addPick.portadaUrl ? '<img src="' + esc(_addPick.portadaUrl) + '" class="mt-add-preview__poster" onerror="this.style.display=\'none\'">' : '<div class="mt-add-preview__poster"></div>') +
-      '<div><div class="mt-add-preview__title">' + esc(_addPick.titulo) + '</div>' +
-      '<div class="mt-add-preview__meta">' + U().catEmoji(_addPick.tipo) + ' ' + (_addPick.tipo === 'peliculas' ? 'Película' : _addPick.tipo === 'series' ? 'Serie' : 'Anime') + '</div></div>';
+    document.getElementById('estrenoPreview').innerHTML = previewHTML(_addPick);
     document.getElementById('estrenoFecha').value = _addPick.fecha || '';
+    document.getElementById('estrenoDateHint').textContent = 'Fecha de TMDB — ajústala a la de España si hace falta.';
     showEstrenoStep(2);
+    /* Para películas: intentar la fecha de estreno en España */
+    if (_addCat === 'peliculas') {
+      fetchESDate(r.id).then(function (d) {
+        if (d && _addPick && _addPick.tmdbId === r.id) {
+          _addPick.fecha = d;
+          var fi = document.getElementById('estrenoFecha'); if (fi) fi.value = d;
+          document.getElementById('estrenoDateHint').textContent = '📍 Fecha de estreno en España (según TMDB).';
+        }
+      });
+    }
   }
+
+  function editRel(id) {
+    var r = _releases.find(function (x) { return x.id === id; }); if (!r) return;
+    _editingRelId = id;
+    _addPick = { titulo: r.titulo, tipo: r.tipo, fecha: r.fecha, portadaUrl: r.portadaUrl, tmdbId: r.tmdbId };
+    document.getElementById('estrenoModalTitle').textContent = 'Editar estreno';
+    document.getElementById('estrenoPreview').innerHTML = previewHTML(_addPick);
+    document.getElementById('estrenoFecha').value = r.fecha || '';
+    document.getElementById('estrenoDateHint').textContent = 'Cambia la fecha (usa la de estreno en España).';
+    document.getElementById('estrenoDelete').style.display = '';
+    showEstrenoStep(2);
+    document.getElementById('estrenoModal').classList.add('open');
+  }
+
   function saveEstreno() {
     if (!_addPick) return;
     var fecha = document.getElementById('estrenoFecha').value;
     if (!fecha) { var fi = document.getElementById('estrenoFecha'); fi.style.borderColor = 'var(--accent)'; fi.focus(); return; }
-    _addPick.fecha = fecha; _addPick.creadoEn = new Date();
-    window.MT.getDb().collection('mt_estrenos').add(_addPick).then(closeAddModal).catch(function (e) { console.error(e); alert('Error al guardar.'); });
+    if (_editingRelId) {
+      window.MT.getDb().collection('mt_estrenos').doc(_editingRelId).update({ fecha: fecha, tipo: _addPick.tipo })
+        .then(closeAddModal).catch(function (e) { console.error(e); alert('Error al guardar.'); });
+    } else {
+      _addPick.fecha = fecha; _addPick.creadoEn = new Date();
+      window.MT.getDb().collection('mt_estrenos').add(_addPick)
+        .then(closeAddModal).catch(function (e) { console.error(e); alert('Error al guardar.'); });
+    }
   }
+
+  function deleteEditingRel() {
+    if (!_editingRelId) return;
+    var r = _releases.find(function (x) { return x.id === _editingRelId; });
+    if (!confirm('¿Eliminar "' + (r ? r.titulo : 'este estreno') + '" del calendario?')) return;
+    window.MT.getDb().collection('mt_estrenos').doc(_editingRelId).delete()
+      .then(closeAddModal).catch(function (e) { console.error(e); });
+  }
+
   function delRel(id) {
     var r = _releases.find(function (x) { return x.id === id; });
     if (!confirm('¿Eliminar "' + (r ? r.titulo : 'este estreno') + '" del calendario?')) return;
@@ -471,6 +536,7 @@
     _ficha    : heroFicha,
     _toggleTop: toggleTop,
     _delRel   : delRel,
+    _editRel  : editRel,
     _pickTMDB : pickTMDB
   };
 
