@@ -140,8 +140,9 @@
 
   /* ══ HERO (estrenos destacados) ═════════════════════════════ */
   function buildHero() {
-    /* Incluye estrenos recientes (últimos 45 días, aún en cines) y próximos */
-    var cutoff = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    /* Incluye estrenos recientes (hasta 1 mes atrás, aún en cines) y próximos */
+    var c = new Date(); c.setMonth(c.getMonth() - 1);
+    var cutoff = c.toISOString().slice(0, 10);
     _hero = _releases.filter(function (r) { return r.fecha && r.fecha >= cutoff; })
       .sort(function (a, b) { return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0; })
       .slice(0, 8);

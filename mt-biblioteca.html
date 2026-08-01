@@ -9,9 +9,25 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20260712b">
+  <link rel="stylesheet" href="mt-styles.css?v=20260712c">
 </head>
-<body>
+<body class="mt-has-sidebar">
+
+<!-- ── MENÚ LATERAL ──────────────────────────────────────── -->
+<aside class="mt-sidebar">
+  <a href="mt-general.html" class="mt-sidebar__brand"><img src="logonuevo.png" onerror="this.style.display='none'"><span>Refugio 111</span></a>
+  <div class="mt-sidebar__group">Menú</div>
+  <a href="mt-general.html"                  class="mt-sidebar__item"><span class="mt-sidebar__ico">🏠</span> Inicio</a>
+  <a href="mt-biblioteca.html?cat=peliculas" class="mt-sidebar__item"><span class="mt-sidebar__ico">🎬</span> Películas</a>
+  <a href="mt-biblioteca.html?cat=series"    class="mt-sidebar__item"><span class="mt-sidebar__ico">📺</span> Series</a>
+  <a href="mt-biblioteca.html?cat=anime"     class="mt-sidebar__item"><span class="mt-sidebar__ico">🌸</span> Anime</a>
+  <div class="mt-sidebar__group">Mi zona</div>
+  <a href="mt-biblioteca.html" class="mt-sidebar__item mt-sidebar__item--active"><span class="mt-sidebar__ico">📚</span> Mi Biblioteca</a>
+  <a href="mt-registro.html"   class="mt-sidebar__item"><span class="mt-sidebar__ico">📝</span> Registro</a>
+  <a href="mt-pendientes.html" class="mt-sidebar__item"><span class="mt-sidebar__ico">🕒</span> Pendientes</a>
+  <a href="mt-registro.html"   class="mt-sidebar__item"><span class="mt-sidebar__ico">⭐</span> Favoritos</a>
+  <a href="hub.html" class="mt-sidebar__item" style="margin-top:auto"><span class="mt-sidebar__ico">←</span> Hub Friki</a>
+</aside>
 
 <!-- Loading overlay -->
 <div id="mtLoading">
