@@ -922,9 +922,14 @@ body {
 }
 .mt-nota-picker__val {
   font-family: 'Orbitron', sans-serif; font-weight: 900;
-  font-size: 1.05rem; line-height: 1;
-  min-width: 2.6ch; text-align: center; flex-shrink: 0;
+  font-size: 1rem; line-height: 1;
+  width: 3.6ch; text-align: center; flex-shrink: 0;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.3rem 0.1rem;
+  transition: border-color 0.15s, background 0.15s;
 }
+.mt-nota-picker__val::placeholder { color: var(--txt3); font-family: 'Inter', sans-serif; font-weight: 400; }
+.mt-nota-picker__val:focus { outline: none; border-color: rgba(var(--accent-rgb),0.6); background: rgba(var(--accent-rgb),0.06); }
 .mt-nota-picker__clear {
   background: none; border: none; color: var(--txt3);
   cursor: pointer; font-size: 0.72rem; line-height: 1;

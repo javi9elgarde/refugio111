@@ -252,14 +252,17 @@ window.MT = window.MT || {};
       var has  = value !== null && value !== undefined && value !== '';
       var v    = has ? parseFloat(value) : 5;
       var col  = has ? notaColor(v) : 'var(--txt3)';
-      var disp = has ? formatNota(v) : '—';
+      var disp = has ? formatNota(v) : '';
       return '<div class="mt-nota-picker" id="' + base + 'Wrap" data-set="' + (has ? '1' : '0') + '">' +
-        '<input type="range" min="0" max="10" step="0.5" value="' + v + '" class="mt-nota-picker__range" id="' + base + 'Range" ' +
+        '<input type="range" min="0" max="10" step="0.1" value="' + v + '" class="mt-nota-picker__range" id="' + base + 'Range" ' +
           'oninput="window.MT.Nota.input(\'' + base + '\')">' +
-        '<span class="mt-nota-picker__val" id="' + base + 'Val" style="color:' + col + '">' + disp + '</span>' +
+        '<input type="text" inputmode="decimal" class="mt-nota-picker__val" id="' + base + 'Val" ' +
+          'placeholder="—" value="' + disp + '" style="color:' + col + '" ' +
+          'oninput="window.MT.Nota.type(\'' + base + '\')">' +
         '<button type="button" class="mt-nota-picker__clear" title="Quitar nota" onclick="window.MT.Nota.clear(\'' + base + '\')">✕</button>' +
       '</div>';
     },
+    /* Al arrastrar el slider → actualiza el número editable */
     input: function (base) {
       var wrap = document.getElementById(base + 'Wrap');
       var r    = document.getElementById(base + 'Range');
@@ -267,22 +270,43 @@ window.MT = window.MT || {};
       if (!wrap || !r || !val) return;
       wrap.dataset.set = '1';
       var v = parseFloat(r.value);
-      val.textContent = formatNota(v);
+      val.value = formatNota(v);
       val.style.color = notaColor(v);
+    },
+    /* Al teclear el número (admite coma o punto, un decimal libre) */
+    type: function (base) {
+      var wrap = document.getElementById(base + 'Wrap');
+      var r    = document.getElementById(base + 'Range');
+      var val  = document.getElementById(base + 'Val');
+      if (!wrap || !r || !val) return;
+      var raw = (val.value || '').trim().replace(',', '.');
+      if (raw === '') { wrap.dataset.set = '0'; val.style.color = 'var(--txt3)'; return; }
+      var n = parseFloat(raw);
+      if (isNaN(n)) return;
+      n = Math.max(0, Math.min(10, n));
+      wrap.dataset.set = '1';
+      r.value = n;
+      val.style.color = notaColor(n);
     },
     clear: function (base) {
       var wrap = document.getElementById(base + 'Wrap');
       var val  = document.getElementById(base + 'Val');
       if (!wrap || !val) return;
       wrap.dataset.set = '0';
-      val.textContent = '—';
+      val.value = '';
       val.style.color = 'var(--txt3)';
     },
     read: function (base) {
       var wrap = document.getElementById(base + 'Wrap');
       if (!wrap || wrap.dataset.set !== '1') return null;
-      var r = document.getElementById(base + 'Range');
-      return r ? parseFloat(r.value) : null;
+      var val = document.getElementById(base + 'Val');
+      if (!val) return null;
+      var raw = (val.value || '').trim().replace(',', '.');
+      if (raw === '') return null;
+      var n = parseFloat(raw);
+      if (isNaN(n)) return null;
+      n = Math.max(0, Math.min(10, n));
+      return Math.round(n * 10) / 10;   /* un decimal */
     }
   };
 
