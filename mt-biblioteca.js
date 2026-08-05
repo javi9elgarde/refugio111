@@ -487,6 +487,8 @@
     document.getElementById('fSaga').value         = '';
     _selGeneros = []; _selPlats = [];
     document.getElementById('btnDelete').style.display = 'none';
+    var imp = document.getElementById('impBulkBanner');
+    if (imp) { imp.style.display = 'flex'; imp.href = 'mt-importar.html?cat=' + cat; }
     resetTMDBSearch();
     buildChips();
     document.getElementById('editModal').classList.add('open');
@@ -512,6 +514,8 @@
     _selGeneros = (item.generos   || []).slice();
     _selPlats   = item.plataforma ? [item.plataforma] : [];
     document.getElementById('btnDelete').style.display = 'inline-flex';
+    var impE = document.getElementById('impBulkBanner');
+    if (impE) impE.style.display = 'none';
     resetTMDBSearch();
     buildChips();
     document.getElementById('editModal').classList.add('open');
