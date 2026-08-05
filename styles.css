@@ -3305,14 +3305,14 @@ tr.reg-row-david { box-shadow: inset 4px 0 0 var(--player-david); }
 tr.reg-row-javi  { box-shadow: inset 4px 0 0 var(--player-javi);  }
 tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
 
-/* Registro â€” fila Platinado: tinte dorado revelador */
+/* Registro â€” fila Platinado: tinte dorado uniforme (sin cortes por columna) */
 tr.reg-row--platino td {
-  background: linear-gradient(90deg, rgba(250,204,21,.13), rgba(250,204,21,.035) 55%, transparent);
+  background: rgba(250,204,21,.075);
   border-top: 1px solid rgba(250,204,21,.22);
   border-bottom: 1px solid rgba(250,204,21,.22);
 }
 tr.reg-row--platino:hover td {
-  background: linear-gradient(90deg, rgba(250,204,21,.22), rgba(250,204,21,.06) 55%, transparent);
+  background: rgba(250,204,21,.13);
 }
 
 /* â”€â”€ PLAYER PROFILES â€” Pendientes page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
