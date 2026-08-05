@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20260712c">
+  <link rel="stylesheet" href="mt-styles.css?v=20260712d">
   <style>
     /* ── MODAL AÑADIR AL REGISTRO ──────────────────────── */
     .mt-add-search-row { display:flex; gap:0.6rem; margin-bottom:1rem; }
@@ -72,10 +72,10 @@
 <nav class="mt-nav">
   <a href="hub.html" class="mt-nav__hub">🏠 Hub</a>
 
-  <div class="mt-cat-tabs">
-    <button class="mt-cat-tab mt-cat-tab--active" data-cat="peliculas">🎬 <span class="label">Películas</span></button>
-    <button class="mt-cat-tab" data-cat="series">📺 <span class="label">Series</span></button>
-    <button class="mt-cat-tab" data-cat="anime">🌸 <span class="label">Anime</span></button>
+  <div class="mt-catsel">
+    <button class="mt-catsel__item" data-cat="peliculas"><span class="ico">🎬</span><span class="label">Películas</span></button>
+    <button class="mt-catsel__item" data-cat="series"><span class="ico">📺</span><span class="label">Series</span></button>
+    <button class="mt-catsel__item" data-cat="anime"><span class="ico">🌸</span><span class="label">Anime</span></button>
   </div>
 
   <div class="mt-nav__links">
@@ -193,7 +193,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
-<script src="mt-main.js?v=20260712b"         defer></script>
+<script src="mt-main.js?v=20260712c"         defer></script>
 <script src="mt-registro.js?v=20260712g"     defer></script>
 </body>
 </html>

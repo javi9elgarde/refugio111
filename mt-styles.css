@@ -136,6 +136,31 @@ body {
   border: 1px solid rgba(var(--accent-rgb), 0.3);
 }
 
+/* ── SELECTOR DE CATEGORÍA CENTRAL ANIMADO ──────────────── */
+.mt-catsel { position: relative; flex: 1; height: 100%; min-width: 0; }
+.mt-catsel__item {
+  position: absolute; top: 50%; left: 50%;
+  display: flex; align-items: center; gap: 0.4rem;
+  background: none; border: 1px solid transparent; cursor: pointer;
+  font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spacing: 0.05em;
+  white-space: nowrap; border-radius: 999px; padding: 0.4rem 1.05rem; color: var(--txt3);
+  transition: transform 0.42s cubic-bezier(0.34,1.15,0.4,1), opacity 0.32s ease,
+              color 0.25s, background 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+.mt-catsel__item span.ico { font-size: 1.05em; }
+.mt-catsel__item--center { transform: translate(-50%,-50%) scale(1);    opacity: 1;    z-index: 3; font-size: 0.92rem; }
+.mt-catsel__item--left   { transform: translate(calc(-50% - 158px),-50%) scale(0.72); opacity: 0.45; z-index: 2; font-size: 0.82rem; }
+.mt-catsel__item--right  { transform: translate(calc(-50% + 158px),-50%) scale(0.72); opacity: 0.45; z-index: 2; font-size: 0.82rem; }
+.mt-catsel__item:not(.is-active):hover { opacity: 0.85; color: var(--txt1); }
+.mt-catsel__item--peliculas.is-active { color: #ff6b78; background: rgba(230,57,70,0.14);  border-color: rgba(230,57,70,0.5);  box-shadow: 0 0 20px rgba(230,57,70,0.3); }
+.mt-catsel__item--series.is-active    { color: #7d92ff; background: rgba(67,97,238,0.14);  border-color: rgba(67,97,238,0.5);  box-shadow: 0 0 20px rgba(67,97,238,0.3); }
+.mt-catsel__item--anime.is-active     { color: #e77ad4; background: rgba(181,23,158,0.14); border-color: rgba(181,23,158,0.5); box-shadow: 0 0 20px rgba(181,23,158,0.3); }
+@media (max-width: 900px) {
+  .mt-catsel__item--left  { transform: translate(calc(-50% - 108px),-50%) scale(0.7); }
+  .mt-catsel__item--right { transform: translate(calc(-50% + 108px),-50%) scale(0.7); }
+  .mt-catsel__item:not(.is-active) span.label { display: none; }
+}
+
 .mt-nav__links {
   display: flex; gap: 0.25rem; align-items: center;
 }
