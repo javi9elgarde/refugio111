@@ -157,8 +157,6 @@
     var list = _items.filter(function (item) {
       if (!passesFilters(item)) return false;
       if (key === 'fav') return isFav(item, player);
-      /* Los favoritos se muestran solo en su sección, no duplicados */
-      if (isFav(item, player)) return false;
       var est = u.resolvePlayerEstado(item, player);
       return est && u.statusClass(est) === key;
     });
@@ -184,21 +182,18 @@
     var count  = document.getElementById('pageCount');
 
     var sections = cat === 'peliculas'
-      ? [{ key: 'fav', label: '⭐ Favoritas' }, { key: 'visto', label: '🎬 Vistas' }]
-      : [{ key: 'fav', label: '⭐ Favoritas' }, { key: 'viendo', label: '👁️ Viendo' }, { key: 'visto', label: '✅ Visto' }];
+      ? [{ key: 'visto', label: '🎬 Vistas' }]
+      : [{ key: 'viendo', label: '👁️ Viendo' }, { key: 'visto', label: '✅ Visto' }];
 
     var total = 0;
     var html  = sections.map(function (sec) {
       var items = itemsForSection(sec.key);
       total += items.length;
-      var header = '<div class="mt-section-header' + (sec.key === 'fav' ? ' mt-section-header--fav' : '') + '">' +
+      var header = '<div class="mt-section-header">' +
         '<span class="mt-section-header__label">' + sec.label + '</span>' +
         '<span class="mt-section-header__count">' + items.length + '</span></div>';
       if (!items.length) {
-        var msg = sec.key === 'fav'
-          ? 'Pulsa la ⭐ de un título para añadirlo a favoritas.'
-          : 'Nada por aquí todavía.';
-        return header + '<div class="mt-section-empty">' + msg + '</div>';
+        return header + '<div class="mt-section-empty">Nada por aquí todavía.</div>';
       }
       return header + '<div class="mt-grid">' + items.map(renderCard).join('') + '</div>';
     }).join('');

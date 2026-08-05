@@ -5,7 +5,7 @@
   <link rel="icon" href="logonavegador.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#e63946">
-  <title>Refugio 111 — Pendientes</title>
+  <title>Refugio 111 — Favoritos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,19 +24,15 @@
   <div class="mt-sidebar__group">Mi zona</div>
   <a href="mt-biblioteca.html" class="mt-sidebar__item"><span class="mt-sidebar__ico">📚</span> Mi Biblioteca</a>
   <a href="mt-registro.html"   class="mt-sidebar__item"><span class="mt-sidebar__ico">📝</span> Registro</a>
-  <a href="mt-pendientes.html" class="mt-sidebar__item mt-sidebar__item--active"><span class="mt-sidebar__ico">🕒</span> Pendientes</a>
-  <a href="mt-favoritos.html"  class="mt-sidebar__item"><span class="mt-sidebar__ico">⭐</span> Favoritos</a>
+  <a href="mt-pendientes.html" class="mt-sidebar__item"><span class="mt-sidebar__ico">🕒</span> Pendientes</a>
+  <a href="mt-favoritos.html"  class="mt-sidebar__item mt-sidebar__item--active"><span class="mt-sidebar__ico">⭐</span> Favoritos</a>
   <a href="hub.html" class="mt-sidebar__item" style="margin-top:auto"><span class="mt-sidebar__ico">←</span> Hub Friki</a>
 </aside>
 
 <div id="mtLoading">
   <div class="mt-loading__brand">🎬 REFUGIO 111</div>
-  <div class="mt-loading__dots">
-    <div class="mt-loading__dot"></div>
-    <div class="mt-loading__dot"></div>
-    <div class="mt-loading__dot"></div>
-  </div>
-  <div class="mt-loading__sub">Cargando pendientes...</div>
+  <div class="mt-loading__dots"><div class="mt-loading__dot"></div><div class="mt-loading__dot"></div><div class="mt-loading__dot"></div></div>
+  <div class="mt-loading__sub">Cargando favoritos...</div>
 </div>
 
 <nav class="mt-nav">
@@ -50,7 +46,7 @@
     <a href="mt-general.html"     class="mt-nav__link">General</a>
     <a href="mt-biblioteca.html"  class="mt-nav__link">Biblioteca</a>
     <a href="mt-registro.html"    class="mt-nav__link">Registro</a>
-    <a href="mt-pendientes.html"  class="mt-nav__link mt-nav__link--active">Pendientes</a>
+    <a href="mt-pendientes.html"  class="mt-nav__link">Pendientes</a>
   </div>
   <a href="mt-hub.html" class="mt-nav__player-pill" id="mtPlayerPill" title="Cambiar jugador">
     <div class="mt-nav__player-avatar mt-nav__player-avatar--javi">J</div>
@@ -61,77 +57,19 @@
 <div class="mt-accent-bar" id="mtAccentBar"></div>
 
 <div class="mt-page">
-
-  <!-- Selector de jugador -->
-  <div class="mt-psel" id="playerSelector">
-    <div class="mt-psel__card mt-psel__card--david" data-player="David">
-      <div class="mt-psel__img-wrap">
-        <img src="icondavidneutral.png" alt="David"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div class=mt-psel__fallback>D</div>'">
-      </div>
-      <div class="mt-psel__name">David</div>
-      <div class="mt-psel__count" id="pselCount-David">—</div>
-    </div>
-    <div class="mt-psel__card mt-psel__card--javi" data-player="Javi">
-      <div class="mt-psel__img-wrap">
-        <img src="iconjavineutral.png" alt="Javi"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div class=mt-psel__fallback>J</div>'">
-      </div>
-      <div class="mt-psel__name">Javi</div>
-      <div class="mt-psel__count" id="pselCount-Javi">—</div>
-    </div>
-    <div class="mt-psel__card mt-psel__card--mery" data-player="Mery">
-      <div class="mt-psel__img-wrap">
-        <img src="iconmeryneutral.png" alt="Mery"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div class=mt-psel__fallback>M</div>'">
-      </div>
-      <div class="mt-psel__name">Mery</div>
-      <div class="mt-psel__count" id="pselCount-Mery">—</div>
-    </div>
-  </div>
-
-  <div class="mt-page-header" style="margin-top:0">
+  <div class="mt-page-header">
     <div>
-      <h1 class="mt-page-header__title" id="pageTitle">Pendientes · Películas</h1>
+      <h1 class="mt-page-header__title">⭐ Favoritos</h1>
       <p class="mt-page-header__sub" id="pageCount">Cargando...</p>
     </div>
   </div>
-
-  <div class="mt-filters">
-    <div class="mt-search-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      <input type="text" class="mt-search" id="searchInput" placeholder="Buscar título, director...">
-    </div>
-    <select class="mt-select" id="genreFilter"><option value="">🏷 Géneros</option></select>
-    <select class="mt-select" id="yearFilter"><option value="">📅 Año</option></select>
-    <button class="mt-btn mt-btn--ghost mt-btn--sm" id="clearFilters" title="Limpiar filtros">✕</button>
-  </div>
-
-  <div class="mt-grid" id="mtGrid"></div>
-
-</div>
-
-<!-- Modal registrar -->
-<div class="mt-modal-overlay" id="regModal">
-  <div class="mt-modal" style="max-width:480px">
-    <div class="mt-modal__header">
-      <h2 class="mt-modal__title" id="regModalTitle">Registrar</h2>
-      <button class="mt-modal__close" id="regModalClose">✕</button>
-    </div>
-    <div class="mt-modal__body">
-      <div class="mt-player-rows" id="regPlayerRows"></div>
-    </div>
-    <div class="mt-modal__footer">
-      <button class="mt-btn mt-btn--secondary" id="regCancel">Cancelar</button>
-      <button class="mt-btn mt-btn--primary"   id="regSave">Guardar</button>
-    </div>
-  </div>
+  <div class="mt-sections" id="favGrid"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="mt-main.js?v=20260712b"         defer></script>
-<script src="mt-pendientes.js?v=20260711a"   defer></script>
+<script src="mt-favoritos.js?v=20260712a"    defer></script>
 </body>
 </html>
