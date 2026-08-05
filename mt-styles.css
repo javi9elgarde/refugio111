@@ -89,6 +89,45 @@ body {
   body.mt-has-sidebar .mt-nav__links { display: none; }
 }
 
+/* ── MÓVIL: cajón lateral + barra inferior ──────────────── */
+.mt-drawer-overlay { display: none; }
+.mt-tabbar { display: none; }
+@media (max-width: 1099px) {
+  /* Sidebar → cajón deslizante desde la izquierda */
+  .mt-sidebar {
+    display: flex; transform: translateX(-100%); width: 250px;
+    box-shadow: 6px 0 30px rgba(0,0,0,0.6);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  body.mt-drawer-open .mt-sidebar { transform: translateX(0); }
+  .mt-drawer-overlay {
+    display: block; position: fixed; inset: 0; z-index: 240;
+    background: rgba(0,0,0,0.55); opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  body.mt-drawer-open .mt-drawer-overlay { opacity: 1; pointer-events: auto; }
+
+  /* Barra inferior de navegación */
+  .mt-tabbar {
+    display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 260;
+    background: rgba(9,9,17,0.97); backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    padding: 0.3rem 0.25rem calc(0.3rem + env(safe-area-inset-bottom, 0px));
+  }
+  .mt-tabbar__item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    text-decoration: none; color: var(--txt3); font-size: 0.58rem; font-weight: 600;
+    padding: 0.35rem 0; border: none; background: none; cursor: pointer;
+    letter-spacing: 0.02em; transition: color 0.15s;
+  }
+  .mt-tabbar__item .ico { font-size: 1.25rem; line-height: 1; }
+  .mt-tabbar__item--active { color: var(--accent); }
+  body { padding-bottom: 62px; }
+  body.mt-has-sidebar { padding-left: 0; }
+  /* Hamburguesa visible en el nav para abrir el cajón */
+  .mt-nav__hamburger { display: flex !important; }
+}
+
 /* ── NAVEGACIÓN ──────────────────────────────────────────── */
 .mt-nav {
   position: sticky; top: 0; z-index: 200;

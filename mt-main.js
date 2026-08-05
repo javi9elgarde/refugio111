@@ -370,6 +370,16 @@ window.MT = window.MT || {};
       });
     }
     updatePlayerPill();
+
+    /* Cajón lateral móvil (hamburguesa + overlay) */
+    var burger = document.getElementById('mtHamburger');
+    var overlay = document.querySelector('.mt-drawer-overlay');
+    function closeDrawer() { document.body.classList.remove('mt-drawer-open'); }
+    if (burger) burger.addEventListener('click', function () { document.body.classList.toggle('mt-drawer-open'); });
+    if (overlay) overlay.addEventListener('click', closeDrawer);
+    document.querySelectorAll('.mt-sidebar__item').forEach(function (a) {
+      a.addEventListener('click', closeDrawer);
+    });
   });
 
   /* ── EXPOSE ──────────────────────────────────────────────── */
