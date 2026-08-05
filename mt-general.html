@@ -183,25 +183,32 @@
     .gen-stat__lbl { font-size: 0.72rem; color: var(--txt3); margin-top: 0.15rem; }
 
     /* ══ MODALES: calendario · ficha · estreno ════════════════ */
-    .mt-cal__nav { display: flex; align-items: center; gap: 0.5rem; }
-    .mt-cal__navbtn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--txt2); border-radius: 8px; width: 30px; height: 30px; cursor: pointer; }
-    .mt-cal__navbtn:hover { background: var(--accent-dim); color: var(--accent); }
-    .mt-cal__monthlabel { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--accent); min-width: 130px; text-align: center; }
-    .mt-cal__today { font-size: 0.66rem; font-weight: 700; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--txt2); border-radius: 7px; padding: 0.3rem 0.6rem; cursor: pointer; font-family: 'Orbitron', sans-serif; }
-    .mt-cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-    .mt-cal__grid--head { margin-bottom: 5px; }
-    .mt-cal__dow { text-align: center; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; color: var(--txt3); padding: 0.2rem 0; }
-    .mt-cal__cell { min-height: 60px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 0.28rem; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+    .mt-cal__nav { display: flex; align-items: center; gap: 0.6rem; }
+    .mt-cal__navbtn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--txt2); border-radius: 10px; width: 38px; height: 38px; font-size: 1rem; cursor: pointer; transition: all 0.15s; }
+    .mt-cal__navbtn:hover { background: var(--accent-dim); color: var(--accent); border-color: rgba(var(--accent-rgb),0.4); }
+    .mt-cal__monthlabel { font-family: 'Orbitron', sans-serif; font-size: 1.15rem; font-weight: 900; color: var(--accent); min-width: 190px; text-align: center; text-shadow: 0 0 24px var(--accent-glow); letter-spacing: 0.03em; }
+    .mt-cal__today { font-size: 0.7rem; font-weight: 700; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--txt2); border-radius: 9px; padding: 0.45rem 0.8rem; cursor: pointer; font-family: 'Orbitron', sans-serif; transition: all 0.15s; }
+    .mt-cal__today:hover { color: var(--accent); border-color: rgba(var(--accent-rgb),0.4); }
+    .mt-cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .mt-cal__grid--head { margin-bottom: 7px; }
+    .mt-cal__dow { text-align: center; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em; color: var(--txt2); padding: 0.35rem 0; font-family: 'Orbitron', sans-serif; }
+    .mt-cal__cell { min-height: 92px; border-radius: 11px; background: rgba(255,255,255,0.025); border: 1px solid var(--border); padding: 0.42rem 0.42rem 0.35rem; display: flex; flex-direction: column; gap: 4px; overflow: hidden; transition: background 0.15s, border-color 0.15s; }
     .mt-cal__cell--empty { background: none; border: none; }
-    .mt-cal__cell--today { border-color: rgba(var(--accent-rgb),0.6); }
-    .mt-cal__cell--has { background: rgba(var(--accent-rgb),0.04); }
-    .mt-cal__daynum { font-size: 0.62rem; font-weight: 700; color: var(--txt3); }
-    .mt-cal__cell--today .mt-cal__daynum { color: var(--accent); }
-    .mt-cal__rels { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
-    .mt-cal__rel { font-size: 0.55rem; font-weight: 600; padding: 1px 4px; border-radius: 3px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .mt-cal__rel--peliculas { background: rgba(230,57,70,0.18); color: #ff8b93; }
-    .mt-cal__rel--series { background: rgba(67,97,238,0.18); color: #93a7ff; }
-    .mt-cal__rel--anime { background: rgba(181,23,158,0.18); color: #e77ad4; }
+    .mt-cal__cell--today { border-color: rgba(var(--accent-rgb),0.7); background: rgba(var(--accent-rgb),0.07); box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb),0.35); }
+    .mt-cal__cell--has { background: rgba(var(--accent-rgb),0.05); }
+    .mt-cal__cell--has:hover { border-color: rgba(var(--accent-rgb),0.4); }
+    .mt-cal__daynum { font-family: 'Orbitron', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--txt2); align-self: flex-end; line-height: 1; }
+    .mt-cal__cell--today .mt-cal__daynum { color: var(--accent); text-shadow: 0 0 12px var(--accent-glow); }
+    .mt-cal__rels { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
+    .mt-cal__rel { font-size: 0.62rem; font-weight: 700; line-height: 1.25; padding: 0.16rem 0.4rem; border-radius: 6px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid currentColor; transition: filter 0.15s; }
+    .mt-cal__rel:hover { filter: brightness(1.25); }
+    .mt-cal__rel--peliculas { background: rgba(230,57,70,0.16); color: #ff8b93; }
+    .mt-cal__rel--series { background: rgba(67,97,238,0.16); color: #93a7ff; }
+    .mt-cal__rel--anime { background: rgba(181,23,158,0.16); color: #e77ad4; }
+    /* Leyenda colores calendario */
+    .mt-cal__legend { display: flex; gap: 1.1rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap; }
+    .mt-cal__legend span { display: flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: var(--txt3); font-weight: 600; }
+    .mt-cal__legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
 
     .ficha-top { display: grid; grid-template-columns: 150px 1fr; gap: 1.25rem; }
     @media (max-width: 520px) { .ficha-top { grid-template-columns: 100px 1fr; gap: 0.8rem; } }
@@ -329,19 +336,24 @@
 
 <!-- ══ MODAL: CALENDARIO ══ -->
 <div class="mt-modal-overlay" id="calendarModal">
-  <div class="mt-modal" style="max-width:640px">
+  <div class="mt-modal" style="max-width:920px">
     <div class="mt-modal__header">
       <h2 class="mt-modal__title">📅 Calendario de estrenos</h2>
       <button class="mt-modal__close" id="calModalClose">✕</button>
     </div>
     <div class="mt-modal__body">
-      <div class="mt-cal__nav" style="justify-content:center;margin-bottom:1rem">
+      <div class="mt-cal__nav" style="justify-content:center;margin-bottom:1.1rem">
         <button class="mt-cal__navbtn" id="calPrev">◀</button>
         <div class="mt-cal__monthlabel" id="calMonthLabel">—</div>
         <button class="mt-cal__navbtn" id="calNext">▶</button>
         <button class="mt-cal__today" id="calToday">HOY</button>
       </div>
       <div id="mtCalendar"></div>
+      <div class="mt-cal__legend">
+        <span><i style="background:#e63946"></i> Películas</span>
+        <span><i style="background:#4361ee"></i> Series</span>
+        <span><i style="background:#b5179e"></i> Anime</span>
+      </div>
     </div>
   </div>
 </div>
@@ -399,6 +411,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="mt-main.js?v=20260712b"         defer></script>
-<script src="mt-general.js?v=20260712d"      defer></script>
+<script src="mt-general.js?v=20260712e"      defer></script>
 </body>
 </html>

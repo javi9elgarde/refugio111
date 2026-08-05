@@ -17,6 +17,7 @@
   var _sortBy      = 'alpha';   // 'alpha' | 'nota'
   var _editingId   = null;
   var _addPickId   = null;   // id del ítem de biblioteca elegido para añadir
+  var _player      = 'Javi';
 
   function U() { return window.MT.Utils; }
 
@@ -26,10 +27,23 @@
   }
 
   function init() {
+    _player = (window.MT && window.MT.getPlayer && window.MT.getPlayer()) || 'Javi';
+
     waitForMT(function () {
       loadItems();
       updatePageMeta();
     });
+
+    /* Selector de jugador */
+    document.querySelectorAll('.mt-psel__card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        _player = this.dataset.player;
+        updatePlayerSelector();
+        renderGrid();
+        buildYearFilter();
+      });
+    });
+    updatePlayerSelector();
 
     /* Filtros de lista */
     document.getElementById('searchInput').addEventListener('input', function () {
@@ -110,7 +124,13 @@
     document.title = 'Refugio 111 — ' + (titles[cat] || 'Registro');
   }
 
-  function getPlayer() { return window.MT.getPlayer(); }
+  function getPlayer() { return _player; }
+
+  function updatePlayerSelector() {
+    document.querySelectorAll('.mt-psel__card').forEach(function (card) {
+      card.classList.toggle('mt-psel__card--active', card.dataset.player === _player);
+    });
+  }
 
   function itemYear(item) { return item.anio || item['año'] || ''; }
 

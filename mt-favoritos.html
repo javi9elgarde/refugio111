@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20260712c">
+  <link rel="stylesheet" href="mt-styles.css?v=20260712d">
 </head>
 <body class="mt-has-sidebar">
 
@@ -23,6 +23,8 @@
   <a href="mt-registro.html"   class="mt-sidebar__item"><span class="mt-sidebar__ico">📝</span> Registro</a>
   <a href="mt-pendientes.html" class="mt-sidebar__item"><span class="mt-sidebar__ico">🕒</span> Pendientes</a>
   <a href="mt-favoritos.html"  class="mt-sidebar__item mt-sidebar__item--active"><span class="mt-sidebar__ico">⭐</span> Favoritos</a>
+  <div class="mt-sidebar__group">Explorar</div>
+  <a href="mt-general.html?cal=1" class="mt-sidebar__item"><span class="mt-sidebar__ico">📅</span> Estrenos</a>
   <a href="hub.html" class="mt-sidebar__item" style="margin-top:auto"><span class="mt-sidebar__ico">←</span> Hub Friki</a>
 </aside>
 
@@ -33,8 +35,11 @@
 </div>
 
 <nav class="mt-nav">
-  <a href="hub.html" class="mt-nav__hub">🏠 Hub</a>
-  <div style="margin-right:auto;font-family:'Orbitron',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.06em;color:var(--accent);padding-left:0.5rem">⭐ Favoritos</div>
+  <div class="mt-catsel">
+    <button class="mt-catsel__item" data-cat="peliculas"><span class="ico">🎬</span><span class="label">Películas</span></button>
+    <button class="mt-catsel__item" data-cat="series"><span class="ico">📺</span><span class="label">Series</span></button>
+    <button class="mt-catsel__item" data-cat="anime"><span class="ico">🌸</span><span class="label">Anime</span></button>
+  </div>
   <div class="mt-nav__links">
     <a href="mt-general.html"     class="mt-nav__link">General</a>
     <a href="mt-biblioteca.html"  class="mt-nav__link">Biblioteca</a>
@@ -56,13 +61,30 @@
       <p class="mt-page-header__sub" id="pageCount">Cargando...</p>
     </div>
   </div>
+
+  <!-- Selector de jugador -->
+  <div class="mt-psel" id="playerSelector">
+    <div class="mt-psel__card mt-psel__card--david" data-player="David">
+      <div class="mt-psel__img-wrap"><img src="icondavidneutral.png" alt="David" onerror="this.style.display='none';this.parentNode.innerHTML='<div class=mt-psel__fallback>D</div>'"></div>
+      <div class="mt-psel__name">David</div>
+    </div>
+    <div class="mt-psel__card mt-psel__card--javi" data-player="Javi">
+      <div class="mt-psel__img-wrap"><img src="iconjavineutral.png" alt="Javi" onerror="this.style.display='none';this.parentNode.innerHTML='<div class=mt-psel__fallback>J</div>'"></div>
+      <div class="mt-psel__name">Javi</div>
+    </div>
+    <div class="mt-psel__card mt-psel__card--mery" data-player="Mery">
+      <div class="mt-psel__img-wrap"><img src="iconmeryneutral.png" alt="Mery" onerror="this.style.display='none';this.parentNode.innerHTML='<div class=mt-psel__fallback>M</div>'"></div>
+      <div class="mt-psel__name">Mery</div>
+    </div>
+  </div>
+
   <div class="mt-sections" id="favGrid"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
-<script src="mt-main.js?v=20260712b"         defer></script>
-<script src="mt-favoritos.js?v=20260712a"    defer></script>
+<script src="mt-main.js?v=20260712c"         defer></script>
+<script src="mt-favoritos.js?v=20260713a"    defer></script>
 </body>
 </html>

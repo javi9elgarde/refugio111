@@ -91,6 +91,11 @@
     document.getElementById('calNext').addEventListener('click', function () { _view.setMonth(_view.getMonth() + 1); renderCalendar(); });
     document.getElementById('calToday').addEventListener('click', function () { _view = new Date(); _view.setDate(1); renderCalendar(); });
 
+    /* Auto-abrir calendario si se llega con ?cal=1 (desde "Estrenos" del menú) */
+    if (new URLSearchParams(window.location.search).get('cal') === '1') {
+      setTimeout(openCalendar, 300);
+    }
+
     /* Ficha (modal) */
     document.getElementById('fichaClose').addEventListener('click', closeFicha);
     document.getElementById('fichaModal').addEventListener('click', function (e) { if (e.target === this) closeFicha(); });

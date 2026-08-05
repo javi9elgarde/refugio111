@@ -1,17 +1,16 @@
 /* ============================================================
-   MEDIA TRACKER — Favoritos (del jugador, todas las categorías)
-   Version: 20260712a
+   MEDIA TRACKER — Favoritos (por jugador y categoría)
+   Version: 20260713a
    ============================================================ */
 (function () {
   'use strict';
 
-  var _items = [];
-  var _unsub = null;
-  var CATS = [['peliculas', '🎬 Películas'], ['series', '📺 Series'], ['anime', '🌸 Anime']];
+  var _items  = [];
+  var _unsub  = null;
+  var _player = 'Javi';
 
   function U() { return window.MT.Utils; }
   function esc(s) { return U().escHtml(s); }
-  function player() { return window.MT.getPlayer(); }
   function isFav(it, p) { return !!(it.jugadores && it.jugadores[p] && it.jugadores[p].fav); }
 
   function waitForMT(cb) {
@@ -20,8 +19,25 @@
   }
 
   function init() {
+    _player = (window.MT && window.MT.getPlayer && window.MT.getPlayer()) || 'Javi';
     waitForMT(load);
+
+    document.querySelectorAll('.mt-psel__card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        _player = this.dataset.player;
+        updateSel();
+        render();
+      });
+    });
+    updateSel();
+
     window.addEventListener('mt:catChange', function () { render(); });
+  }
+
+  function updateSel() {
+    document.querySelectorAll('.mt-psel__card').forEach(function (c) {
+      c.classList.toggle('mt-psel__card--active', c.dataset.player === _player);
+    });
   }
 
   function load() {
@@ -37,30 +53,25 @@
   function render() {
     var host = document.getElementById('favGrid');
     if (!host) return;
-    var p = player();
-    var favs = _items.filter(function (it) { return isFav(it, p); });
-    document.getElementById('pageCount').textContent = favs.length + ' favorito' + (favs.length !== 1 ? 's' : '') + ' · ' + p;
+    var p = _player, cat = window.MT.getCat();
+    var favs = _items.filter(function (it) { return it.tipo === cat && isFav(it, p); })
+      .sort(function (a, b) { return (a.titulo || '').localeCompare(b.titulo || '', 'es'); });
+
+    document.getElementById('pageCount').textContent =
+      favs.length + ' favorito' + (favs.length !== 1 ? 's' : '') + ' · ' + p + ' · ' + U().catLabel(cat);
 
     if (!favs.length) {
       host.innerHTML =
         '<div class="mt-empty"><div class="mt-empty__icon">⭐</div>' +
-        '<div class="mt-empty__title">Sin favoritos todavía</div>' +
-        '<p>Pulsa la ⭐ de un título en tu <strong>Registro</strong> o <strong>Biblioteca</strong> para añadirlo aquí.</p></div>';
+        '<div class="mt-empty__title">Sin favoritos aquí</div>' +
+        '<p>Pulsa la ⭐ de un título (' + U().catLabel(cat) + ') en tu Registro o Biblioteca.</p></div>';
       return;
     }
-
-    host.innerHTML = CATS.map(function (c) {
-      var list = favs.filter(function (it) { return it.tipo === c[0]; })
-        .sort(function (a, b) { return (a.titulo || '').localeCompare(b.titulo || '', 'es'); });
-      if (!list.length) return '';
-      return '<div class="mt-section-header"><span class="mt-section-header__label">' + c[1] +
-        '</span><span class="mt-section-header__count">' + list.length + '</span></div>' +
-        '<div class="mt-grid">' + list.map(card).join('') + '</div>';
-    }).join('');
+    host.innerHTML = '<div class="mt-grid">' + favs.map(card).join('') + '</div>';
   }
 
   function card(it) {
-    var u = U(), p = player();
+    var u = U(), p = _player;
     var nota   = u.resolvePlayerNota(it, p);
     var estado = u.resolvePlayerEstado(it, p);
     var color  = nota !== null ? u.notaColor(nota) : null;
@@ -84,7 +95,7 @@
   function toggleFav(id) {
     var it = _items.find(function (x) { return x.id === id; });
     if (!it) return;
-    var p = player();
+    var p = _player;
     var existing = (it.jugadores && it.jugadores[p]) || {};
     var payload = { estado: existing.estado || '', nota: (existing.nota !== undefined ? existing.nota : null), fav: false };
     if (!it.jugadores) it.jugadores = {};
