@@ -46,7 +46,8 @@ window.GT.Utils = (function () {
   function statusBadge(estado) {
     var map = {
       'Terminado':'badge-terminado','Jugando':'badge-jugando','Rejugado':'badge-rejugado',
-      'Retomar':'badge-retomar','Abandonado':'badge-abandonado','Jugado':'badge-jugado'
+      'Retomar':'badge-retomar','Abandonado':'badge-abandonado','Jugado':'badge-jugado',
+      'Platinado':'badge-platino'
     };
     return map[estado] || '';
   }

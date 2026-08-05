@@ -213,8 +213,9 @@
       : '<span style="color:var(--txt3);font-size:0.8rem">—</span>';
 
     var rowCls = r.jugador === 'David' ? 'reg-row-david' : r.jugador === 'Javi' ? 'reg-row-javi' : r.jugador === 'Mery' ? 'reg-row-mery' : '';
+    var platino = (r.estado === 'Platinado') ? ' reg-row--platino' : '';
 
-    return '<tr class="' + rowCls + '">' +
+    return '<tr class="' + rowCls + platino + '">' +
       '<td><span style="font-size:0.8rem;color:var(--txt2);line-height:1.3">' + Utils.monthName(r.mes) + '<br><span style="color:var(--txt3)">' + r.año + '</span></span></td>' +
       '<td><span class="badge ' + Utils.playerBadge(r.jugador) + '">' + Utils.escapeHtml(r.jugador) + '</span></td>' +
       '<td><div class="game-cell">' + coverHtml +
@@ -223,7 +224,7 @@
           : '<span style="font-weight:600;color:var(--txt3)">' + Utils.escapeHtml(titulo) + '</span>') +
       '</div></td>' +
       '<td>' + scoreHtml + '</td>' +
-      '<td><span class="badge ' + Utils.statusBadge(r.estado) + '">' + Utils.escapeHtml(r.estado) + '</span></td>' +
+      '<td><span class="badge ' + Utils.statusBadge(r.estado) + '">' + (r.estado === 'Platinado' ? '🏆 ' : '') + Utils.escapeHtml(r.estado) + '</span></td>' +
       '<td><span style="font-size:0.85rem;color:var(--txt2)">' + (r.horas ? r.horas + 'h' : '—') + '</span></td>' +
       '<td>' + (game && game.generos && game.generos.length ? Utils.genreBadgesHtml(game.generos.slice(0,2)) : '—') + '</td>' +
       '<td>' + (r.plataformaJugada ? '<span class="badge badge-plat ' + Utils.platformClass(r.plataformaJugada) + '">' + Utils.escapeHtml(r.plataformaJugada) + '</span>' : '—') + '</td>' +

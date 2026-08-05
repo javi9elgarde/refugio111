@@ -442,6 +442,16 @@ ul, ol { list-style: none; }
 .badge-retomar    { background: rgba(249,115,22,.15); color: #f97316;  border: 1px solid rgba(249,115,22,.3); }
 .badge-abandonado { background: rgba(239,68,68,.15);  color: #ef4444;  border: 1px solid rgba(239,68,68,.3);  }
 .badge-jugado     { background: rgba(6,182,212,.15);  color: #06b6d4;  border: 1px solid rgba(6,182,212,.3);  }
+.badge-platino {
+  background: linear-gradient(135deg, rgba(250,204,21,.25), rgba(234,179,8,.14));
+  color: #fde047; border: 1px solid rgba(250,204,21,.55);
+  font-weight: 700; text-shadow: 0 0 8px rgba(250,204,21,.5);
+  animation: platShine 2.2s ease-in-out infinite;
+}
+@keyframes platShine {
+  0%,100% { box-shadow: 0 0 7px rgba(250,204,21,.30); }
+  50%     { box-shadow: 0 0 17px rgba(250,204,21,.65); }
+}
 
 /* Platform badges */
 .badge-plat { color: #fff; font-size: 0.7rem; }
@@ -3294,6 +3304,16 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 tr.reg-row-david { box-shadow: inset 4px 0 0 var(--player-david); }
 tr.reg-row-javi  { box-shadow: inset 4px 0 0 var(--player-javi);  }
 tr.reg-row-mery  { box-shadow: inset 4px 0 0 var(--player-mery);  }
+
+/* Registro â€” fila Platinado: tinte dorado revelador */
+tr.reg-row--platino td {
+  background: linear-gradient(90deg, rgba(250,204,21,.13), rgba(250,204,21,.035) 55%, transparent);
+  border-top: 1px solid rgba(250,204,21,.22);
+  border-bottom: 1px solid rgba(250,204,21,.22);
+}
+tr.reg-row--platino:hover td {
+  background: linear-gradient(90deg, rgba(250,204,21,.22), rgba(250,204,21,.06) 55%, transparent);
+}
 
 /* â”€â”€ PLAYER PROFILES â€” Pendientes page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .player-profiles { display: flex; flex-direction: column; gap: 2rem; }
