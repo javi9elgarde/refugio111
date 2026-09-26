@@ -66,6 +66,8 @@
 
     /* Modal añadir (busca en biblioteca) */
     document.getElementById('btnAddTitle').addEventListener('click', openAddModal);
+    var regFab = document.getElementById('regFab');
+    if (regFab) regFab.addEventListener('click', openAddModal);
     document.getElementById('addModalClose').addEventListener('click', closeAddModal);
     document.getElementById('addCancel').addEventListener('click', closeAddModal);
     document.getElementById('addModal').addEventListener('click', function (e) {
