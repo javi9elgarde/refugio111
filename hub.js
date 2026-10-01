@@ -252,8 +252,11 @@
   var touchSide = null;
 
   document.addEventListener('touchstart', function (e) {
-    var x = e.touches[0].clientX;
-    touchSide = x < window.innerWidth / 2 ? 'left' : 'right';
+    var t  = e.touches[0];
+    var el = document.elementFromPoint(t.clientX, t.clientY);
+    if (el === zoneLeft) touchSide = 'left';
+    else if (el === zoneRight) touchSide = 'right';
+    else return;
     hub.classList.toggle('hover-left',  touchSide === 'left');
     hub.classList.toggle('hover-right', touchSide === 'right');
     startSpawning(touchSide);

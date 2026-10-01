@@ -485,6 +485,74 @@ html, body {
   .hub__title-friki { font-size: 1.5rem; }
 }
 
+/* ── MÓVIL VERTICAL (9:16) — split horizontal: arriba juegos, abajo cine ── */
+@media (max-width: 768px) and (orientation: portrait) {
+  .hub__split { flex-direction: column; }
+  .hub__half  { width: 100%; height: 50%; }
+
+  .hub__split-img--left,
+  .hub__split-img--right {
+    left: 0; right: 0;
+    object-position: center center;
+  }
+
+  .hub__bg-left,
+  .hub__bg-right {
+    width: 100%;
+    height: 55%;
+  }
+  .hub__bg-left  { top: 0;    left: 0; }
+  .hub__bg-right { top: auto; bottom: 0; right: 0; }
+
+  .hub__dim-left,
+  .hub__dim-right {
+    width: 100%;
+    height: 50%;
+  }
+  .hub__dim-left  { top: 0;    left: 0; }
+  .hub__dim-right { top: auto; bottom: 0; right: 0; }
+
+  .hub__zone--left {
+    left: 0; top: 0;
+    width: 100%; height: 50%;
+  }
+  .hub__zone--right {
+    left: 0; right: auto; top: auto; bottom: 0;
+    width: 100%; height: 50%;
+  }
+
+  /* Divisor: banda horizontal dorada en vez de vertical */
+  .hub__divider {
+    clip-path: polygon(
+      0% calc(50% - 2px),
+      100% calc(50% - 2px),
+      100% calc(50% + 2px),
+      0% calc(50% + 2px)
+    );
+    background: linear-gradient(
+      to right,
+      transparent          0%,
+      rgba(255,200,55,.80) 12%,
+      rgba(255,220,90,1)   50%,
+      rgba(255,200,55,.80) 88%,
+      transparent          100%
+    );
+  }
+
+  /* Labels: uno arriba (juegos) y otro abajo (cine) en vez de izq/dcha */
+  .hub__label {
+    left: 50% !important;
+    transform: translateX(-50%) translateY(10px);
+    width: clamp(200px, 72%, 320px);
+  }
+  .hub__label--left  { top: 8vh;    bottom: auto; }
+  .hub__label--right { bottom: 8vh; top: auto; }
+  #hub.hover-left  .hub__label--left  { transform: translateX(-50%) translateY(0); }
+  #hub.hover-right .hub__label--right { transform: translateX(-50%) translateY(0); }
+
+  .hub__title { top: 2.5vh; padding: 0.55rem 1.4rem 0.6rem; }
+}
+
 /* ════════════════════════════════════════════════════
    CHARACTER SELECTION OVERLAY
 ════════════════════════════════════════════════════ */

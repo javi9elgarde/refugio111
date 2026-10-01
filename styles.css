@@ -1232,8 +1232,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
   .hero--bg {
     background-image: url('fondomovilinicio.png') !important;
     background-position: top center !important;
-    background-size: cover !important;
-    min-height: 100svh !important;
+    background-size: 100% 100% !important;
+    aspect-ratio: 1536 / 2752;
+    min-height: 0 !important;
+    height: auto;
   }
 }
 
@@ -3812,7 +3814,7 @@ tr.reg-row--platino:hover td {
 @media (max-width: 640px) {
   /* El fondo se muestra completo en móvil */
   .hero.hero--bg {
-    min-height: 100svh !important;
+    min-height: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
   }
@@ -5312,7 +5314,7 @@ html {
 
   /* ── HERO INICIO: fondo completo en móvil ── */
   .hero.hero--bg {
-    min-height: 100svh !important;
+    min-height: 0 !important;
     max-height: none !important;
     background-attachment: scroll !important;
     overflow: hidden !important;
