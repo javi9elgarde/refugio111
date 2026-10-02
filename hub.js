@@ -28,10 +28,19 @@
     var cx     = window.innerWidth;
     var cy     = window.innerHeight;
 
+    var vertical = window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches;
+
     for (var i = 0; i < count; i++) {
-      var xRange = isLeft ? [0, cx * 0.45] : [cx * 0.55, cx];
-      var x = xRange[0] + Math.random() * (xRange[1] - xRange[0]);
-      var y = cy * 0.25 + Math.random() * (cy * 0.55);
+      var x, y;
+      if (vertical) {
+        var yRange = isLeft ? [cy * 0.05, cy * 0.45] : [cy * 0.55, cy * 0.95];
+        x = Math.random() * cx;
+        y = yRange[0] + Math.random() * (yRange[1] - yRange[0]);
+      } else {
+        var xRange = isLeft ? [0, cx * 0.45] : [cx * 0.55, cx];
+        x = xRange[0] + Math.random() * (xRange[1] - xRange[0]);
+        y = cy * 0.25 + Math.random() * (cy * 0.55);
+      }
 
       particles.push({
         x:     x,

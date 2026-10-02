@@ -217,75 +217,6 @@ html, body {
 #hub.hover-left  .hub__divider { opacity: 0.55; }
 #hub.hover-right .hub__divider { opacity: 0.55; }
 
-/* ── TÍTULO CENTRAL — centrado sobre la diagonal ───── */
-.hub__title {
-  position: absolute;
-  left: 50%;
-  top: 6%;
-  transform: translateX(-50%);
-  z-index: 20;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
-  background: rgba(7, 7, 15, 0.45);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 0.75rem 2rem 0.85rem;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.08);
-  white-space: nowrap;
-}
-
-.hub__title-main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1;
-  gap: 0.05em;
-}
-
-.hub__title-el {
-  font-size: clamp(1rem, 2.2vw, 1.6rem);
-  font-weight: 700;
-  letter-spacing: 0.35em;
-  color: rgba(232,232,248,0.85);
-  white-space: nowrap;
-}
-
-.hub__title-friki {
-  font-size: clamp(1.8rem, 4vw, 3rem);
-  font-weight: 900;
-  letter-spacing: 0.15em;
-  white-space: nowrap;
-  background: linear-gradient(135deg, #00ff88 0%, #4facfe 50%, #a78bfa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  background-size: 200% auto;
-  animation: titleShimmer 4s linear infinite;
-  filter: drop-shadow(0 0 20px rgba(79,172,254,0.3));
-}
-
-@keyframes titleShimmer {
-  0%   { background-position: 0% center; }
-  100% { background-position: 200% center; }
-}
-
-.hub__title-spark {
-  font-size: 0.65rem;
-  color: rgba(255,255,255,0.45);
-  animation: sparkPulse 2.4s ease-in-out infinite;
-}
-.hub__title-spark--a { animation-delay: 0s;    font-size: 0.8rem; }
-.hub__title-spark--b { animation-delay: 1.2s;  font-size: 0.8rem; }
-
-@keyframes sparkPulse {
-  0%, 100% { opacity: 0.2; transform: scale(0.7); }
-  50%       { opacity: 1;   transform: scale(1.3); }
-}
-
 /* ── LABELS LATERALES — glass card (abajo del todo) ── */
 .hub__label {
   position: absolute;
@@ -481,12 +412,12 @@ html, body {
   .hub__label { width: clamp(120px, 42%, 210px); padding: 0.9rem 0.8rem 0.8rem; border-radius: 14px; bottom: 2vh; }
   .hub__label-name  { font-size: clamp(0.65rem, 3.8vw, 0.88rem); letter-spacing: 0.08em; }
   .hub__label-enter { font-size: 0.58rem; padding: 0.38rem 0.85rem; }
-  .hub__title-el    { font-size: 0.85rem; }
-  .hub__title-friki { font-size: 1.5rem; }
 }
 
 /* ── MÓVIL VERTICAL (9:16) — split horizontal: arriba juegos, abajo cine ── */
 @media (max-width: 768px) and (orientation: portrait) {
+  .hub__flash--left  { background: radial-gradient(ellipse at 50% 25%, rgba(0,255,136,0.25), transparent 70%); }
+  .hub__flash--right { background: radial-gradient(ellipse at 50% 75%, rgba(79,172,254,0.25), transparent 70%); }
   .hub__split { flex-direction: column; }
   .hub__half  { width: 100%; height: 50%; }
 
@@ -550,7 +481,6 @@ html, body {
   #hub.hover-left  .hub__label--left  { transform: translateX(-50%) translateY(0); }
   #hub.hover-right .hub__label--right { transform: translateX(-50%) translateY(0); }
 
-  .hub__title { top: 2.5vh; padding: 0.55rem 1.4rem 0.6rem; }
 }
 
 /* ════════════════════════════════════════════════════
