@@ -548,7 +548,7 @@ html, body {
 .psel__card {
   position: relative; cursor: pointer;
   display: flex; flex-direction: column; align-items: center;
-  width: 195px; padding: 0 1rem 1.75rem;
+  width: 225px; padding: 0 1rem 1.75rem;
   border-radius: 18px;
   border: 2px solid rgba(255,255,255,0.05);
   background: rgba(255,255,255,0.02);
@@ -581,28 +581,31 @@ html, body {
 }
 .psel__card:hover .psel__glow { opacity: 0.3; }
 
-/* Character image */
+/* Character image — retrato cuadrado */
 .psel__img-wrap {
-  width: 100%; height: 230px;
-  display: flex; align-items: flex-end; justify-content: center;
-  margin-bottom: 1.5rem; overflow: visible;
+  width: 100%; aspect-ratio: 1 / 1;
+  margin: 1.1rem 0 1.4rem;
+  border-radius: 16px; overflow: hidden;
+  background: #000;
+  border: 2px solid rgba(255,255,255,0.08);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.6);
+  transition: border-color 0.3s, box-shadow 0.35s;
 }
 .psel__img {
-  max-height: 100%; width: auto; max-width: 140%;
-  image-rendering: pixelated; image-rendering: crisp-edges;
-  object-fit: contain; object-position: bottom center;
-  filter: drop-shadow(0 14px 30px rgba(0,0,0,0.75));
-  transition: filter 0.35s;
+  display: block; width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
 }
-.psel__card--david .psel__img { animation: pselFloat 3.6s ease-in-out 0s   infinite; }
-.psel__card--javi  .psel__img { animation: pselFloat 3.6s ease-in-out 0.5s infinite; }
-.psel__card--mery  .psel__img { animation: pselFloat 3.6s ease-in-out 1s   infinite; }
+.psel__card--david .psel__img-wrap { animation: pselFloat 3.6s ease-in-out 0s   infinite; }
+.psel__card--javi  .psel__img-wrap { animation: pselFloat 3.6s ease-in-out 0.5s infinite; }
+.psel__card--mery  .psel__img-wrap { animation: pselFloat 3.6s ease-in-out 1s   infinite; }
 @keyframes pselFloat {
   0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-16px); }
+  50%       { transform: translateY(-10px); }
 }
-.psel__card:hover .psel__img {
-  filter: drop-shadow(0 0 22px var(--pc)) drop-shadow(0 14px 30px rgba(0,0,0,0.55));
+.psel__card:hover .psel__img-wrap,
+.psel__card.choosing .psel__img-wrap {
+  border-color: var(--pc);
+  box-shadow: 0 0 26px var(--pc), 0 14px 30px rgba(0,0,0,0.55);
 }
 
 /* Name */
@@ -638,7 +641,7 @@ html, body {
 @media (max-width: 700px) {
   .psel__cards { gap: 0.9rem; }
   .psel__card  { width: 115px; padding: 0 0.5rem 1rem; }
-  .psel__img-wrap { height: 140px; }
+  .psel__img-wrap { margin: 0.7rem 0 0.9rem; border-radius: 12px; }
   .psel__name  { font-size: 0.8rem; letter-spacing: 0.08em; }
   .psel__fullname { display: none; }
   .psel__title { font-size: 1.6rem; }
