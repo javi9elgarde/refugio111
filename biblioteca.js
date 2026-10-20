@@ -136,7 +136,7 @@
 
   /* ── RAWG API ───────────────────────────────────────────── */
   var RAWG_KEY = 'c8cd3af7977b43b287e0a19389902880';
-  var RAWG_BTN_INNER = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg> Buscar en RAWG';
+  var RAWG_BTN_INNER = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg> Autorrellenar con RAWG';
 
   function searchRawg() {
     var titulo = document.getElementById('fTitulo').value.trim();
@@ -158,11 +158,11 @@
           Toast.show('Sin resultados con portada en RAWG', 'error');
           return;
         }
+        rawgGames = games;
         resultsEl.innerHTML = '<div class="rawg-grid">' +
-          games.map(function(g) {
+          games.map(function(g, i) {
             var year    = g.released ? g.released.slice(0, 4) : '';
-            var safeUrl = (g.background_image || '').replace(/'/g, '%27');
-            return '<div class="rawg-result" onclick="window.GT_Bib.pickRawgCover(\'' + safeUrl + '\')">' +
+            return '<div class="rawg-result" onclick="window.GT_Bib.pickRawg(' + i + ')">' +
               '<div class="rawg-result__img"><img src="' + Utils.escapeHtml(g.background_image) + '" loading="lazy" alt=""></div>' +
               '<div class="rawg-result__name">' + Utils.escapeHtml(g.name) + '</div>' +
               (year ? '<div class="rawg-result__year">' + year + '</div>' : '') +
@@ -178,11 +178,44 @@
       });
   }
 
-  function pickRawgCover(url) {
-    document.getElementById('fPortada').value = url;
+  var rawgGames = [];
+  var RAWG_GENRES = { action:'Acción', adventure:'Aventura', 'role-playing-games-rpg':'RPG', shooter:'Shooter',
+    strategy:'Estrategia', simulation:'Simulación', puzzle:'Puzzle', platformer:'Plataformas',
+    racing:'Carreras', indie:'Indie' };
+  var RAWG_TAGS = { horror:'Terror', survival:'Supervivencia', roguelike:'Roguelike/Roguelite', roguelite:'Roguelike/Roguelite',
+    metroidvania:'Metroidvania', soulslike:'Soulslike', 'souls-like':'Soulslike', stealth:'Sigilo', fps:'FPS',
+    sandbox:'Sandbox', 'hack-and-slash':'Hack and Slash' };
+  var RAWG_PLATFORMS = { 'PC':'PC', 'PlayStation 5':'PS5', 'PlayStation 4':'PS4', 'PlayStation 3':'PS3',
+    'PlayStation 2':'PS2', 'Xbox Series S/X':'Xbox Series X', 'Xbox One':'Xbox One', 'Xbox 360':'Xbox 360',
+    'Nintendo Switch':'Nintendo Switch', 'Nintendo Switch 2':'Nintendo Switch 2' };
+
+  function addUnique(list, v) { if (v && list.indexOf(v) === -1) list.push(v); }
+
+  function fillFromRawg(g) {
+    if (g.name) document.getElementById('fTitulo').value = g.name;
+    if (g.background_image) {
+      document.getElementById('fPortada').value = g.background_image;
+      if (coverPreview) coverPreview.update(g.background_image, document.getElementById('fPortadaPos').value || 'center top');
+    }
+    if (g.developers && g.developers[0]) document.getElementById('fDesarrollador').value = g.developers[0].name;
+    if (g.released) { setDateSelects(g.released); updateHypeFormVisibility(); }
+    (g.genres || []).forEach(function(x) { addUnique(selectedGeneros, RAWG_GENRES[x.slug]); });
+    (g.tags || []).forEach(function(x) { addUnique(selectedGeneros, RAWG_TAGS[x.slug]); });
+    (g.platforms || []).forEach(function(x) { addUnique(selectedPlataformas, RAWG_PLATFORMS[x.platform.name]); });
+    renderGeneroChips();
+    renderPlataformaChips();
+  }
+
+  function pickRawg(i) {
+    var g = rawgGames[i];
+    if (!g) return;
     document.getElementById('rawgResults').style.display = 'none';
-    if (coverPreview) coverPreview.update(url, document.getElementById('fPortadaPos').value || 'center top');
-    Toast.show('Portada aplicada ✓');
+    // la lista no trae desarrolladora ni tags: se piden al detalle; si falla se usa lo que hay
+    fetch('https://api.rawg.io/api/games/' + g.id + '?key=' + RAWG_KEY)
+      .then(function(r) { return r.json(); })
+      .then(function(d) { fillFromRawg(d && d.id ? d : g); })
+      .catch(function() { fillFromRawg(g); })
+      .then(function() { Toast.show('Datos rellenados desde RAWG ✓'); });
   }
 
   function safe(fn, name) {
@@ -1477,7 +1510,7 @@
   window.GT_Bib = {
     openDetail: openDetail,
     openEdit: openEdit,
-    pickRawgCover: pickRawgCover,
+    pickRawg: pickRawg,
     goToGame: goToGame,
     removeGalleryImg: function(idx) {
       var id = state.detailId;
