@@ -135,7 +135,6 @@
                    'N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
 
   /* ── RAWG API ───────────────────────────────────────────── */
-  var RAWG_KEY = 'c8cd3af7977b43b287e0a19389902880';
   var RAWG_BTN_INNER = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg> Autorrellenar con RAWG';
 
   function searchRawg() {
@@ -146,14 +145,11 @@
     btn.disabled     = true;
     btn.innerHTML    = '⏳ Buscando...';
     resultsEl.style.display = 'none';
-    fetch('https://api.rawg.io/api/games?key=' + RAWG_KEY +
-          '&search=' + encodeURIComponent(titulo) +
-          '&page_size=8&ordering=-rating')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
+    window.GT.Rawg.search(titulo, 8, '-rating')
+      .then(function(results) {
         btn.disabled  = false;
         btn.innerHTML = RAWG_BTN_INNER;
-        var games = (data.results || []).filter(function(g) { return g.background_image; });
+        var games = results.filter(function(g) { return g.background_image; });
         if (!games.length) {
           Toast.show('Sin resultados con portada en RAWG', 'error');
           return;
@@ -179,29 +175,21 @@
   }
 
   var rawgGames = [];
-  var RAWG_GENRES = { action:'Acción', adventure:'Aventura', 'role-playing-games-rpg':'RPG', shooter:'Shooter',
-    strategy:'Estrategia', simulation:'Simulación', puzzle:'Puzzle', platformer:'Plataformas',
-    racing:'Carreras', indie:'Indie' };
-  var RAWG_TAGS = { horror:'Terror', survival:'Supervivencia', roguelike:'Roguelike/Roguelite', roguelite:'Roguelike/Roguelite',
-    metroidvania:'Metroidvania', soulslike:'Soulslike', 'souls-like':'Soulslike', stealth:'Sigilo', fps:'FPS',
-    sandbox:'Sandbox', 'hack-and-slash':'Hack and Slash' };
-  var RAWG_PLATFORMS = { 'PC':'PC', 'PlayStation 5':'PS5', 'PlayStation 4':'PS4', 'PlayStation 3':'PS3',
-    'PlayStation 2':'PS2', 'Xbox Series S/X':'Xbox Series X', 'Xbox One':'Xbox One', 'Xbox 360':'Xbox 360',
-    'Nintendo Switch':'Nintendo Switch', 'Nintendo Switch 2':'Nintendo Switch 2' };
 
   function addUnique(list, v) { if (v && list.indexOf(v) === -1) list.push(v); }
 
   function fillFromRawg(g) {
-    if (g.name) document.getElementById('fTitulo').value = g.name;
-    if (g.background_image) {
-      document.getElementById('fPortada').value = g.background_image;
-      if (coverPreview) coverPreview.update(g.background_image, document.getElementById('fPortadaPos').value || 'center top');
+    var d = window.GT.Rawg.toGame(g);
+    if (d.titulo) document.getElementById('fTitulo').value = d.titulo;
+    if (d.portadaUrl) {
+      document.getElementById('fPortada').value = d.portadaUrl;
+      if (coverPreview) coverPreview.update(d.portadaUrl, document.getElementById('fPortadaPos').value || 'center top');
     }
-    if (g.developers && g.developers[0]) document.getElementById('fDesarrollador').value = g.developers[0].name;
-    if (g.released) { setDateSelects(g.released); updateHypeFormVisibility(); }
-    (g.genres || []).forEach(function(x) { addUnique(selectedGeneros, RAWG_GENRES[x.slug]); });
-    (g.tags || []).forEach(function(x) { addUnique(selectedGeneros, RAWG_TAGS[x.slug]); });
-    (g.platforms || []).forEach(function(x) { addUnique(selectedPlataformas, RAWG_PLATFORMS[x.platform.name]); });
+    if (d.desarrollador) document.getElementById('fDesarrollador').value = d.desarrollador;
+    if (d.fechaLanzamiento) { setDateSelects(d.fechaLanzamiento); updateHypeFormVisibility(); }
+    if (d.duracion && !document.getElementById('fDuracion').value) document.getElementById('fDuracion').value = d.duracion;
+    d.generos.forEach(function(x) { addUnique(selectedGeneros, x); });
+    d.plataformas.forEach(function(x) { addUnique(selectedPlataformas, x); });
     renderGeneroChips();
     renderPlataformaChips();
   }
@@ -210,9 +198,8 @@
     var g = rawgGames[i];
     if (!g) return;
     document.getElementById('rawgResults').style.display = 'none';
-    // la lista no trae desarrolladora ni tags: se piden al detalle; si falla se usa lo que hay
-    fetch('https://api.rawg.io/api/games/' + g.id + '?key=' + RAWG_KEY)
-      .then(function(r) { return r.json(); })
+    // la lista no trae desarrolladora, tags ni horas: se piden al detalle; si falla se usa lo que hay
+    window.GT.Rawg.detail(g.id)
       .then(function(d) { fillFromRawg(d && d.id ? d : g); })
       .catch(function() { fillFromRawg(g); })
       .then(function() { Toast.show('Datos rellenados desde RAWG ✓'); });
