@@ -20,8 +20,8 @@
 
   /* El título/portada salen de la biblioteca (siempre al día); lo guardado en la tómbola es solo respaldo */
   function gameOf(entry) {
-    var g = Biblioteca.getById(entry.id);
-    return g || { id: entry.id, titulo: entry.titulo || '(juego eliminado)', portadaUrl: entry.portadaUrl || '' };
+    var g = entry.libre ? null : Biblioteca.getById(entry.id);
+    return g || { id: entry.id, titulo: entry.titulo || '(juego eliminado)', portadaUrl: entry.portadaUrl || '', libre: !!entry.libre };
   }
 
   /* ── BOMBO ──────────────────────────────────────────────── */
@@ -46,6 +46,30 @@
 
   function removeFromPool(id) { return coll('tombola').doc(id).delete(); }
 
+  function addFree(nombre) {
+    return coll('tombola').doc().set({ titulo: nombre, portadaUrl: '', libre: true, agregadoPor: player(), creadoEn: new Date().toISOString() });
+  }
+
+  /* borra todos los documentos de una colección (por tandas: un lote de Firestore admite 500) */
+  function wipe(name) {
+    return coll(name).get().then(function (snap) {
+      var chunks = [];
+      for (var i = 0; i < snap.docs.length; i += 450) chunks.push(snap.docs.slice(i, i + 450));
+      return Promise.all(chunks.map(function (docs) {
+        var batch = window.GT.db.batch();
+        docs.forEach(function (d) { batch.delete(d.ref); });
+        return batch.commit();
+      }));
+    });
+  }
+
+  function clearPool() {
+    if (!pool.length) { Toast.show('El bombo ya está vacío'); return; }
+    if (!confirm('¿Vaciar el bombo? Se quitan los ' + pool.length + ' juegos (no se borran de la biblioteca).')) return;
+    wipe('tombola').then(function () { Toast.show('Bombo vaciado ✓'); $('tmbResult').style.display = 'none'; winner = null; })
+      .catch(function () { Toast.show('No se pudo vaciar el bombo', 'error'); });
+  }
+
   /* ── BUSCADOR PARA AÑADIR ───────────────────────────────── */
   function norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
 
@@ -56,11 +80,11 @@
     var inPool = {};
     pool.forEach(function (e) { inPool[e.id] = true; });
     var hits = Biblioteca.getAll().filter(function (g) { return !inPool[g.id] && norm(g.titulo).indexOf(q) !== -1; }).slice(0, 8);
-    box.innerHTML = hits.length
-      ? hits.map(function (g) {
-          return '<button type="button" data-add="' + esc(g.id) + '">' + (g.portadaUrl ? '<img src="' + esc(g.portadaUrl) + '" alt="" loading="lazy">' : '') + esc(g.titulo) + '</button>';
-        }).join('')
-      : '<div class="tmb-empty" style="padding:0.6rem 0.8rem">Sin resultados (o ya está en el bombo)</div>';
+    var raw = $('tmbSearch').value.trim();
+    box.innerHTML = hits.map(function (g) {
+        return '<button type="button" data-add="' + esc(g.id) + '">' + (g.portadaUrl ? '<img src="' + esc(g.portadaUrl) + '" alt="" loading="lazy">' : '') + esc(g.titulo) + '</button>';
+      }).join('') +
+      '<button type="button" data-free="1">➕ Añadir «' + esc(raw) + '» como juego nuevo (no está en la biblioteca)</button>';
     box.style.display = 'block';
   }
 
@@ -90,6 +114,7 @@
       busy = false;
       renderPool();
       $('tmbResultMeta').textContent = [picked.desarrollador, (picked.plataformas || []).join(' · '), picked.duracion ? '~' + picked.duracion + ' h' : ''].filter(Boolean).join(' — ');
+      $('tmbPend').style.display = picked.libre ? 'none' : '';
       $('tmbResult').style.display = 'block';
       $('tmbGo').textContent = '🎰 ¡OTRA VEZ!';
       coll('tombola_historial').add({ jugador: player(), juegoId: picked.id, titulo: picked.titulo, fecha: new Date().toISOString() })
@@ -147,6 +172,14 @@
     document.addEventListener('click', function (e) { if (!e.target.closest('.tmb-search')) $('tmbSuggest').style.display = 'none'; });
 
     $('tmbSuggest').addEventListener('click', function (e) {
+      var f = e.target.closest('[data-free]');
+      if (f) {
+        var nombre = $('tmbSearch').value.trim();
+        if (nombre) addFree(nombre).then(function () { Toast.show('“' + nombre + '” añadido al bombo ✓'); }).catch(function () { Toast.show('No se pudo añadir', 'error'); });
+        $('tmbSearch').value = '';
+        $('tmbSuggest').style.display = 'none';
+        return;
+      }
       var b = e.target.closest('[data-add]');
       if (!b) return;
       var g = Biblioteca.getById(b.dataset.add);
@@ -173,6 +206,14 @@
       });
       batch.commit().then(function () { Toast.show(games.length + ' pendientes de ' + p + ' añadidos ✓'); })
         .catch(function () { Toast.show('No se pudieron añadir', 'error'); });
+    });
+
+    $('tmbClearAll').addEventListener('click', clearPool);
+    $('tmbClearAfter').addEventListener('click', clearPool);
+    $('tmbClearHist').addEventListener('click', function () {
+      if (!confirm('¿Borrar el historial de sorteos?')) return;
+      wipe('tombola_historial').then(function () { Toast.show('Historial borrado ✓'); })
+        .catch(function () { Toast.show('No se pudo borrar el historial', 'error'); });
     });
 
     $('tmbRemove').addEventListener('click', function () {

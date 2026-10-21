@@ -154,15 +154,16 @@
         <div class="tmb-result__meta" id="tmbResultMeta"></div>
         <div class="tmb-actions">
           <button type="button" class="btn btn-primary btn-sm" id="tmbPend">⏳ Añadir a mis pendientes</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="tmbRemove">Quitar de la tómbola</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="tmbRemove">Quitar este juego</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="tmbClearAfter">🧹 Vaciar bombo</button>
         </div>
       </div>
     </div>
 
     <div class="tmb-card">
-      <h2>EN EL BOMBO <small id="tmbPoolCount"></small></h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.75rem"><h2 style="margin:0">EN EL BOMBO <small id="tmbPoolCount"></small></h2><button type="button" class="btn btn-ghost btn-sm" id="tmbClearAll">🧹 Vaciar bombo</button></div>
       <div class="tmb-search">
-        <input type="text" class="form-input" id="tmbSearch" placeholder="Busca un juego de la biblioteca para añadirlo..." autocomplete="off">
+        <input type="text" class="form-input" id="tmbSearch" placeholder="Busca cualquier juego de la biblioteca (o escribe un nombre nuevo)..." autocomplete="off">
         <div class="tmb-suggest" id="tmbSuggest"></div>
       </div>
       <div style="margin-top:0.6rem"><button type="button" class="btn btn-ghost btn-sm" id="tmbAddPend">➕ Añadir los pendientes de <span id="tmbPlayerName">Javi</span></button></div>
@@ -170,7 +171,7 @@
     </div>
 
     <div class="tmb-card">
-      <h2>ÚLTIMOS SORTEOS</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.75rem"><h2 style="margin:0">ÚLTIMOS SORTEOS</h2><button type="button" class="btn btn-ghost btn-sm" id="tmbClearHist">🗑 Borrar historial</button></div>
       <ul class="tmb-hist" id="tmbHist"><li class="tmb-empty">Aún no hay sorteos</li></ul>
     </div>
   </div>
@@ -180,7 +181,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260529l"            defer></script>
-<script src="tombola.js?v=20261023a"         defer></script>
+<script src="tombola.js?v=20261024a"         defer></script>
 <script src="app.js?v=20261023a" defer></script>
 </body>
 </html>

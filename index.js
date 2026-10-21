@@ -903,27 +903,10 @@
   }
 
   /* ── BOOT ────────────────────────────────────────────────── */
+  // El resto de la página (carrusel, tops, estrenos, cifras…) vive ahora en home.js; aquí solo queda el calendario.
   document.addEventListener('DOMContentLoaded', function () {
-    safe(initCountdowns, 'initCountdowns');
     window.GT.onDataReady(function () {
-      safe(initHeroCanvas,        'initHeroCanvas');
-      safe(initHofParticles,      'initHofParticles');
-      safe(initHeroParallax,      'initHeroParallax');
-      safe(initHeroPlayerStats,   'initHeroPlayerStats');
-      safe(initStats,             'initStats');
-      safe(initCalendar,          'initCalendar');
-      safe(initRanking,           'initRanking');
-      safe(renderUpcomingCards,   'renderUpcomingCards');
-      safe(renderSalaNukaTop,     'renderSalaNukaTop');
-      // Re-render when another user changes data in real time
-      window.GT.onDataChange(function () {
-        safe(initStats,             'initStats');
-        safe(initHeroPlayerStats,   'initHeroPlayerStats');
-        safe(renderUpcomingCards,   'renderUpcomingCards');
-        safe(renderSalaNukaTop,     'renderSalaNukaTop');
-        var sel = document.getElementById('rankingYear');
-        if (sel) safe(function(){ renderRanking(parseInt(sel.value)); }, 'renderRanking');
-      });
+      safe(initCalendar, 'initCalendar');
     });
   });
 })();
