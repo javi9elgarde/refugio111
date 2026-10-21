@@ -145,7 +145,7 @@
     btn.disabled     = true;
     btn.innerHTML    = '⏳ Buscando...';
     resultsEl.style.display = 'none';
-    window.GT.Rawg.search(titulo, 8)
+    window.GT.Rawg.search(titulo, 8, true)
       .then(function(results) {
         btn.disabled  = false;
         btn.innerHTML = RAWG_BTN_INNER;

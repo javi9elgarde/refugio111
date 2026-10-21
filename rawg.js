@@ -25,8 +25,22 @@ window.GT.Rawg = (function () {
       });
   }
 
-  function search(q, size) {
-    return get('games', '&search=' + encodeURIComponent(q) + '&page_size=' + size).then(function (d) { return d.results || []; });
+  function find(q, size, extra) {
+    return get('games', '&search=' + encodeURIComponent(q) + '&page_size=' + size + (extra || ''))
+      .then(function (d) { return d.results || []; });
+  }
+
+  function isoDay(offsetDays) { return new Date(Date.now() + offsetDays * 864e5).toISOString().slice(0, 10); }
+
+  // recent=true: añade juegos de los últimos ~18 meses y próximo año, primero; RAWG los esconde con títulos a medias
+  function search(q, size, recent) {
+    var main = find(q, size);
+    if (!recent) return main;
+    var news = find(q, size, '&dates=' + isoDay(-548) + ',' + isoDay(365));
+    return Promise.all([news, main]).then(function (r) {
+      var seen = {};
+      return r[0].concat(r[1]).filter(function (g) { return !seen[g.id] && (seen[g.id] = true); });
+    });
   }
 
   function detail(id) { return get('games/' + id); }
