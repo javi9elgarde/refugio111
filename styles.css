@@ -514,6 +514,10 @@ ul, ol { list-style: none; }
   padding: 1rem;
 }
 .modal-overlay.open { display: flex; }
+/* Con un modal abierto se congela el fondo animado: así el backdrop-filter no se recalcula en cada fotograma */
+body:has(.modal-overlay.open) .page-hero__orb,
+body:has(.modal-overlay.open) .nav__logo-gear,
+body:has(.modal-overlay.open) .badge-platino { animation-play-state: paused; }
 .modal {
   background: var(--bg2);
   border: 1px solid rgba(79,172,254,0.2);

@@ -444,7 +444,8 @@
     }
 
     closeModal();
-    renderTable();
+    // alta: la caché aún no tiene la entrada; el listener de Firestore repinta al recibirla
+    if (state.editId) renderTable();
   }
 
   function deleteEntry() {
