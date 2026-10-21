@@ -25,9 +25,8 @@ window.GT.Rawg = (function () {
       });
   }
 
-  function search(q, size, ordering) {
-    return get('games', '&search=' + encodeURIComponent(q) + '&page_size=' + size +
-      (ordering ? '&ordering=' + ordering : '')).then(function (d) { return d.results || []; });
+  function search(q, size) {
+    return get('games', '&search=' + encodeURIComponent(q) + '&page_size=' + size).then(function (d) { return d.results || []; });
   }
 
   function detail(id) { return get('games/' + id); }
