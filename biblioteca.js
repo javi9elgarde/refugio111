@@ -39,6 +39,7 @@
   var coverPreview = null;
   var _alphaObserver = null;
   var _activeAlpha   = '';
+  var _skipAnim      = false; // true mientras repinta un cambio remoto/de datos: sin re-animar todas las tarjetas
 
   /* ── DATE HELPERS ───────────────────────────────────────── */
   function populateDateSelects() {
@@ -364,6 +365,7 @@
 
   /* ── RENDER GRID ────────────────────────────────────────── */
   function renderGrid() {
+    var animate = !_skipAnim;
     var filters = {};
     if (state.genero)     filters.genero     = state.genero;
     if (state.plataforma) filters.plataforma = state.plataforma;
@@ -441,7 +443,7 @@
       });
       grid.innerHTML = html;
 
-      requestAnimationFrame(function() {
+      if (animate) requestAnimationFrame(function() {
         grid.querySelectorAll('.game-card').forEach(function(card, i) {
           card.style.animationDelay = Math.min(i * 0.025, 0.5) + 's';
           card.classList.add('card-appear');
@@ -521,7 +523,7 @@
     }
 
     // Staggered appear animation
-    requestAnimationFrame(function() {
+    if (animate) requestAnimationFrame(function() {
       grid.querySelectorAll('.game-card').forEach(function(card, i) {
         card.style.animationDelay = Math.min(i * 0.025, 0.5) + 's';
         card.classList.add('card-appear');
@@ -1310,8 +1312,7 @@
     }
 
     closeModal();
-    renderGrid();
-    renderFilterDropdowns();
+    if (state.editId) { renderGrid(); renderFilterDropdowns(); }
   }
 
   function deleteGame() {
@@ -1528,7 +1529,9 @@
     window.GT.onDataReady(function () {
       safe(init, 'init');
       window.GT.onDataChange(function () {
+        _skipAnim = true;
         safe(renderGrid,             'renderGrid');
+        _skipAnim = false;
         safe(renderFilterDropdowns, 'renderFilterDropdowns');
       });
     });
