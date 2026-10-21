@@ -1234,7 +1234,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 }
 @media (max-width: 768px) {
   .hero--bg {
-    background-image: url('fondomovilinicio.png') !important;
+    background-image: url('fondomovilinicio.jpg') !important;
     background-position: top center !important;
     background-size: 100% 100% !important;
     aspect-ratio: 1536 / 2752;

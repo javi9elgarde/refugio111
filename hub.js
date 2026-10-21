@@ -63,7 +63,8 @@
     currentSide = side;
     clearInterval(spawnTimer);
     spawnBatch(side);
-    spawnTimer = setInterval(function () { spawnBatch(side); }, 280);
+    ensureLoop();
+    spawnTimer = setInterval(function () { spawnBatch(side); ensureLoop(); }, 280);
   }
 
   function stopSpawning() {
@@ -86,32 +87,35 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (var i = 0; i < particles.length; i++) {
       var p = particles[i];
-      ctx.save();
+      ctx.fillStyle = p.color;
+      // halo barato (círculo grande translúcido) en vez de shadowBlur, que es lo más caro del canvas
+      ctx.globalAlpha = p.life * 0.18;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * 1.3, 0, Math.PI * 2);
+      ctx.fill();
       ctx.globalAlpha = p.life * 0.75;
-      ctx.fillStyle   = p.color;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur  = 8;
-
       if (p.shape === 'square') {
-        ctx.translate(p.x, p.y);
+        ctx.setTransform(1, 0, 0, 1, p.x, p.y);
         ctx.rotate(p.rot);
         ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
       } else {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
         ctx.fill();
       }
-      ctx.restore();
     }
+    ctx.globalAlpha = 1;
   }
 
-  /* Loop de animación */
+  /* Loop de animación: solo mientras haya partículas (antes repintaba el canvas entero 60 veces/s para siempre) */
+  var rafId = null;
   function loop() {
     tickParticles();
     drawParticles();
-    requestAnimationFrame(loop);
+    rafId = particles.length ? requestAnimationFrame(loop) : null;
   }
-  loop();
+  function ensureLoop() { if (!rafId) rafId = requestAnimationFrame(loop); }
 
   /* ── HOVER — cambio de estado ──────────────────────────── */
   zoneLeft.addEventListener('mouseenter', function () {
@@ -212,11 +216,13 @@
   /* ── CHARACTER SELECTION ────────────────────────────────── */
   var pselOverlay = document.getElementById('pselOverlay');
   var pselFlash   = document.getElementById('pselFlash');
+  var pselVideos  = document.querySelectorAll('.psel__img');
 
   var PLAYER_COLORS = { David: '#3b82f6', Javi: '#9b1742', Mery: '#9b59ff' };
 
   function openPlayerSelect() {
     pselOverlay.classList.add('open');
+    pselVideos.forEach(function(v) { v.play().catch(function() {}); });
     document.querySelectorAll('.psel__card').forEach(function(c) { c.classList.remove('choosing'); });
     pselFlash.style.background = '';
     pselFlash.classList.remove('active');
@@ -224,6 +230,7 @@
 
   function closePlayerSelect() {
     pselOverlay.classList.remove('open');
+    pselVideos.forEach(function(v) { v.pause(); });
   }
 
   document.getElementById('pselBack').addEventListener('click', closePlayerSelect);
