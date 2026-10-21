@@ -72,11 +72,16 @@
 
   <div id="step1">
     <h1 class="page-hero__title" style="font-size:1.5rem;margin:0 0 .4rem">📥 IMPORTAR JUEGOS</h1>
-    <p style="color:var(--txt2);font-size:.88rem;margin:0 0 1.5rem">Pega la lista de juegos (uno por línea). Buscaremos portada, fecha, desarrolladora, duración, géneros y plataformas en RAWG.</p>
+    <p style="color:var(--txt2);font-size:.88rem;margin:0 0 1.5rem">Pega la lista de juegos (uno por línea). Buscaremos portada, fecha, desarrolladora, duración, géneros y plataformas en IGDB o RAWG, a tu elección.</p>
+    <div style="display:flex;gap:1.25rem;align-items:center;margin-bottom:.75rem;font-size:.85rem;color:var(--txt2)">
+      <span>Buscar en:</span>
+      <label style="display:flex;gap:.35rem;align-items:center;cursor:pointer"><input type="radio" name="fuente" value="igdb" checked> IGDB</label>
+      <label style="display:flex;gap:.35rem;align-items:center;cursor:pointer"><input type="radio" name="fuente" value="rawg"> RAWG</label>
+    </div>
     <textarea class="imp-textarea" id="titleInput" placeholder="Elden Ring&#10;Hollow Knight&#10;Resident Evil 4&#10;Hades&#10;..."></textarea>
-    <div class="imp-hint">💡 Cuanto más exacto el título (mejor en inglés), mejor resultado. La duración es la media de RAWG; ajústala luego desde Biblioteca si hace falta.</div>
+    <div class="imp-hint">💡 Cuanto más exacto el título (mejor en inglés), mejor resultado. La duración es una media de la fuente elegida; ajústala luego desde Biblioteca si hace falta.</div>
     <div class="imp-actions">
-      <button class="btn btn-primary" id="btnBuscar">🔍 Buscar en RAWG</button>
+      <button class="btn btn-primary" id="btnBuscar">🔍 Buscar</button>
       <span id="btnHint" style="font-size:.78rem;color:var(--txt3)"></span>
     </div>
   </div>
@@ -119,7 +124,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260529l"            defer></script>
-<script src="rawg.js?v=20261021c"            defer></script>
-<script src="importar.js?v=20261021a"        defer></script>
+<script src="rawg.js?v=20261022a"            defer></script>
+<script src="igdb.js?v=20261022a"            defer></script>
+<script src="importar.js?v=20261022c"        defer></script>
 </body>
 </html>

@@ -1,11 +1,10 @@
 /* ============================================================
-   GAMETRACKER — Importar varios juegos desde RAWG
+   GAMETRACKER — Importar varios juegos desde IGDB o RAWG
    ============================================================ */
 (function () {
   'use strict';
 
   var Utils = window.GT.Utils;
-  var Rawg  = window.GT.Rawg;
   var _results = [];
 
   function $(id) { return document.getElementById(id); }
@@ -15,15 +14,32 @@
     return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
   }
 
+  var _fuente = 'IGDB';
+
+  // Nombre exacto → el más popular (evita ports/homónimos viejos). Sin exacto, el primero muy parecido;
+  // si ninguno se parece, null: la fuente devolvió otra cosa y es mejor "no encontrado" que un juego equivocado
+  function pickBest(hits, titulo) {
+    var t = normTitle(titulo);
+    var best = function (list) { return list.reduce(function (a, b) { return b.popularity > a.popularity ? b : a; }); };
+    var exact = hits.filter(function (h) { return normTitle(h.name) === t; });
+    if (exact.length) return best(exact);
+    return hits.filter(function (h) {
+      var n = normTitle(h.name);
+      // contiene (o está contenido) y se parece en longitud: "murals" no debe casar con "Leeroy's House of Floor Murals"
+      return (n.indexOf(t) !== -1 || t.indexOf(n) !== -1) && Math.min(n.length, t.length) / Math.max(n.length, t.length) >= 0.5;
+    })[0] || null;
+  }
+
   async function buscarJuego(titulo) {
-    var hits = await Rawg.search(titulo, 1);
-    if (!hits.length) return { titulo: titulo, found: false };
-    var d;
-    try { d = await Rawg.detail(hits[0].id); } catch (e) { d = hits[0]; } // sin detalle: faltan desarrolladora/horas/tags
-    return Object.assign({ found: true }, Rawg.toGame(d));
+    var src = _fuente === 'IGDB' ? window.GT.Igdb : window.GT.Rawg;
+    var hits = await src.lookup(titulo, 8);
+    var hit = pickBest(hits, titulo);
+    if (!hit) return { titulo: titulo, found: false };
+    return Object.assign({ found: true }, await hit.load());
   }
 
   async function onBuscar() {
+    _fuente = document.querySelector('input[name=fuente]:checked').value === 'rawg' ? 'RAWG' : 'IGDB';
     var titles = $('titleInput').value.split('\n').map(function (t) { return t.trim(); }).filter(Boolean);
     if (!titles.length) return;
 
@@ -56,7 +72,7 @@
     $('resTitle').textContent = found + ' encontrados' + (lost ? ' · ' + lost + ' no encontrados' : '');
 
     $('resultList').innerHTML = _results.map(function (r, idx) {
-      if (!r.found) return '<div class="imp-row imp-row--notfound">❌ No encontrado en RAWG: <em>' + Utils.escapeHtml(r.titulo) + '</em></div>';
+      if (!r.found) return '<div class="imp-row imp-row--notfound">❌ No encontrado en ' + _fuente + ': <em>' + Utils.escapeHtml(r.titulo) + '</em></div>';
       var tags = (r.fechaLanzamiento ? '<span class="imp-tag">' + Utils.escapeHtml(r.fechaLanzamiento.slice(0, 4)) + '</span>' : '') +
         (r.duracion ? '<span class="imp-tag">~' + r.duracion + ' h</span>' : '') +
         (r.desarrollador ? '<span style="font-size:.72rem;color:var(--txt3)">· ' + Utils.escapeHtml(r.desarrollador) + '</span>' : '');
@@ -88,8 +104,8 @@
       var r = _results[idx];
       window.GT.Biblioteca.add({
         titulo: r.titulo, portadaUrl: r.portadaUrl, desarrollador: r.desarrollador,
-        fechaLanzamiento: r.fechaLanzamiento, duracion: r.duracion, generos: r.generos, plataformas: r.plataformas,
-        pendientePor: [], pendiente: false, tipoLanzamiento: '', earlyAccess: false, saga: '', hype: 0
+        fechaLanzamiento: r.fechaLanzamiento, duracion: r.duracion, saga: r.saga || '', generos: r.generos, plataformas: r.plataformas,
+        pendientePor: [], pendiente: false, tipoLanzamiento: '', earlyAccess: false, hype: 0
       });
     });
     $('stepResults').style.display = 'none';

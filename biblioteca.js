@@ -136,52 +136,58 @@
   var ALL_ALPHA = ['#','A','B','C','D','E','F','G','H','I','J','K','L','M',
                    'N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
 
-  /* ── RAWG API ───────────────────────────────────────────── */
-  var RAWG_BTN_INNER = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg> Autorrellenar con RAWG';
+  /* ── BUSCADORES (IGDB / RAWG) ─────────────────────────── */
+  var SEARCH_SOURCES = {
+    igdb: { name: 'IGDB', btn: 'btnIgdbSearch', mod: function() { return window.GT.Igdb; } },
+    rawg: { name: 'RAWG', btn: 'btnRawgSearch', mod: function() { return window.GT.Rawg; } }
+  };
+  var SEARCH_ICON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg> Autorrellenar con ';
+  var searchHits = [];
 
-  function searchRawg() {
+  function setSearchBusy(busyKey) {
+    Object.keys(SEARCH_SOURCES).forEach(function(k) {
+      var btn = document.getElementById(SEARCH_SOURCES[k].btn);
+      btn.disabled  = !!busyKey;
+      btn.innerHTML = k === busyKey ? '⏳ Buscando...' : SEARCH_ICON + SEARCH_SOURCES[k].name;
+    });
+  }
+
+  function runSearch(key) {
+    var src = SEARCH_SOURCES[key];
     var titulo = document.getElementById('fTitulo').value.trim();
     if (!titulo) { Toast.show('Escribe el título del juego primero', 'error'); return; }
-    var btn       = document.getElementById('btnRawgSearch');
     var resultsEl = document.getElementById('rawgResults');
-    btn.disabled     = true;
-    btn.innerHTML    = '⏳ Buscando...';
+    setSearchBusy(key);
     resultsEl.style.display = 'none';
-    window.GT.Rawg.search(titulo, 8, true)
-      .then(function(results) {
-        btn.disabled  = false;
-        btn.innerHTML = RAWG_BTN_INNER;
-        var games = results.filter(function(g) { return g.background_image; });
-        if (!games.length) {
-          Toast.show('Sin resultados con portada en RAWG', 'error');
+    src.mod().lookup(titulo, 8, true)
+      .then(function(hits) {
+        setSearchBusy(null);
+        hits = hits.filter(function(h) { return h.thumb; });
+        if (!hits.length) {
+          Toast.show('Sin resultados con imagen en ' + src.name, 'error');
           return;
         }
-        rawgGames = games;
+        searchHits = hits;
         resultsEl.innerHTML = '<div class="rawg-grid">' +
-          games.map(function(g, i) {
-            var year    = g.released ? g.released.slice(0, 4) : '';
-            return '<div class="rawg-result" onclick="window.GT_Bib.pickRawg(' + i + ')">' +
-              '<div class="rawg-result__img"><img src="' + Utils.escapeHtml(g.background_image) + '" loading="lazy" alt=""></div>' +
-              '<div class="rawg-result__name">' + Utils.escapeHtml(g.name) + '</div>' +
-              (year ? '<div class="rawg-result__year">' + year + '</div>' : '') +
+          hits.map(function(h, i) {
+            return '<div class="rawg-result" onclick="window.GT_Bib.pickHit(' + i + ')">' +
+              '<div class="rawg-result__img"><img src="' + Utils.escapeHtml(h.thumb) + '" loading="lazy" alt=""></div>' +
+              '<div class="rawg-result__name">' + Utils.escapeHtml(h.name) + '</div>' +
+              (h.year ? '<div class="rawg-result__year">' + h.year + '</div>' : '') +
             '</div>';
           }).join('') +
         '</div>';
         resultsEl.style.display = '';
       })
       .catch(function() {
-        btn.disabled  = false;
-        btn.innerHTML = RAWG_BTN_INNER;
-        Toast.show('Error al conectar con RAWG', 'error');
+        setSearchBusy(null);
+        Toast.show('Error al conectar con ' + src.name + (key === 'igdb' ? ' — prueba con RAWG' : ''), 'error');
       });
   }
 
-  var rawgGames = [];
-
   function addUnique(list, v) { if (v && list.indexOf(v) === -1) list.push(v); }
 
-  function fillFromRawg(g) {
-    var d = window.GT.Rawg.toGame(g);
+  function fillForm(d) {
     if (d.titulo) document.getElementById('fTitulo').value = d.titulo;
     if (d.portadaUrl) {
       document.getElementById('fPortada').value = d.portadaUrl;
@@ -190,21 +196,21 @@
     if (d.desarrollador) document.getElementById('fDesarrollador').value = d.desarrollador;
     if (d.fechaLanzamiento) { setDateSelects(d.fechaLanzamiento); updateHypeFormVisibility(); }
     if (d.duracion && !document.getElementById('fDuracion').value) document.getElementById('fDuracion').value = d.duracion;
+    if (d.saga && !document.getElementById('fSaga').value) document.getElementById('fSaga').value = d.saga;
     d.generos.forEach(function(x) { addUnique(selectedGeneros, x); });
     d.plataformas.forEach(function(x) { addUnique(selectedPlataformas, x); });
     renderGeneroChips();
     renderPlataformaChips();
   }
 
-  function pickRawg(i) {
-    var g = rawgGames[i];
-    if (!g) return;
+  function pickHit(i) {
+    var h = searchHits[i];
+    if (!h) return;
     document.getElementById('rawgResults').style.display = 'none';
-    // la lista no trae desarrolladora, tags ni horas: se piden al detalle; si falla se usa lo que hay
-    window.GT.Rawg.detail(g.id)
-      .then(function(d) { fillFromRawg(d && d.id ? d : g); })
-      .catch(function() { fillFromRawg(g); })
-      .then(function() { Toast.show('Datos rellenados desde RAWG ✓'); });
+    h.load().then(function(d) {
+      fillForm(d);
+      Toast.show('Datos rellenados desde ' + h.source + ' ✓');
+    });
   }
 
   function safe(fn, name) {
@@ -1395,7 +1401,8 @@
     });
 
     // RAWG search
-    document.getElementById('btnRawgSearch').addEventListener('click', searchRawg);
+    document.getElementById('btnRawgSearch').addEventListener('click', function() { runSearch('rawg'); });
+    document.getElementById('btnIgdbSearch').addEventListener('click', function() { runSearch('igdb'); });
 
     // Add buttons
     var btnAdd = document.getElementById('btnAddGame');
@@ -1524,7 +1531,7 @@
   window.GT_Bib = {
     openDetail: openDetail,
     openEdit: openEdit,
-    pickRawg: pickRawg,
+    pickHit: pickHit,
     coverFailed: coverFailed,
     goToGame: goToGame,
     removeGalleryImg: function(idx) {

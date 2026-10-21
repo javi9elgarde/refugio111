@@ -159,14 +159,18 @@
         <!-- 2. PORTADA -->
         <div class="form-group" style="grid-column:1/-1">
           <label class="form-label">URL de Portada</label>
-          <div style="display:flex;gap:0.5rem;align-items:center">
-            <input type="url" class="form-input" id="fPortada" placeholder="https://..." style="flex:1;min-width:0">
-            <button type="button" class="btn btn-secondary btn-sm" id="btnRawgSearch" style="white-space:nowrap;flex-shrink:0;gap:0.35rem">
+          <input type="url" class="form-input" id="fPortada" placeholder="https://...">
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnIgdbSearch" style="white-space:nowrap;gap:0.35rem">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg>
+              Autorrellenar con IGDB
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnRawgSearch" style="white-space:nowrap;gap:0.35rem">
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="9" cy="9" r="6"/><path d="m16 16-3.5-3.5"/></svg>
               Autorrellenar con RAWG
             </button>
           </div>
-          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Escribe el título y autorrellena portada, fecha, desarrolladora, duración, géneros y plataformas desde RAWG</small>
+          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Escribe el título y autorrellena portada, fecha, desarrolladora, duración, géneros y plataformas con IGDB o RAWG (prueba el otro si uno no lo encuentra)</small>
           <div id="rawgResults" style="display:none;margin-top:0.8rem"></div>
         </div>
 
@@ -364,7 +368,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260529l"            defer></script>
-<script src="rawg.js?v=20261021c"            defer></script>
-<script src="biblioteca.js?v=20261021e"      defer></script>
+<script src="rawg.js?v=20261022a"            defer></script>
+<script src="igdb.js?v=20261022a"            defer></script>
+<script src="biblioteca.js?v=20261022a"      defer></script>
 </body>
 </html>

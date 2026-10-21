@@ -56,6 +56,7 @@ window.GT.Rawg = (function () {
       portadaUrl:       g.background_image || '',
       desarrollador:    (g.developers && g.developers[0]) ? g.developers[0].name : '',
       fechaLanzamiento: g.released || '',
+      saga:             '',
       duracion:         g.playtime > 0 ? g.playtime : null, // shortcut: media de RAWG (no HowLongToBeat, sin API pública), editable a mano
       generos:          uniq((g.genres || []).map(function (x) { return GENRES[x.slug]; })
                         .concat((g.tags || []).map(function (x) { return TAGS[x.slug]; }))),
@@ -63,5 +64,19 @@ window.GT.Rawg = (function () {
     };
   }
 
-  return { search: search, detail: detail, toGame: toGame };
+  /* Misma forma que GT.Igdb.lookup: la lista no trae desarrolladora, tags ni horas, load() pide el detalle */
+  function lookup(q, size, recent) {
+    return search(q, size, recent).then(function (list) {
+      return list.map(function (g) {
+        return {
+          source: 'RAWG', name: g.name, year: (g.released || '').slice(0, 4), thumb: g.background_image || '', popularity: g.added || 0,
+          load: function () {
+            return detail(g.id).then(function (d) { return toGame(d && d.id ? d : g); }, function () { return toGame(g); });
+          }
+        };
+      });
+    });
+  }
+
+  return { search: search, detail: detail, toGame: toGame, lookup: lookup };
 })();
