@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" sizes="64x64" href="logonavegador.png">
+  <link rel="apple-touch-icon" href="logonuevo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Refugio 111 — Tómbola</title>
+  <link rel="stylesheet" href="styles.css?v=20261023a">
+  <style>
+    .tmb { max-width: 920px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+    .tmb h2 { font-family: 'Orbitron', sans-serif; font-size: 0.95rem; letter-spacing: 0.08em; margin: 0 0 0.75rem; color: var(--txt); }
+    .tmb h2 small { font-family: 'Inter', sans-serif; font-weight: 400; letter-spacing: 0; color: var(--txt3); margin-left: 0.4rem; }
+    .tmb-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.25rem; }
+
+    /* Bombo */
+    .tmb-stage { display: flex; flex-direction: column; align-items: center; gap: 1rem; text-align: center; }
+    .tmb-drum { position: relative; width: 190px; height: 190px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.12), rgba(79,172,254,0.08) 55%, rgba(0,0,0,0.35));
+      border: 6px solid #f5c842; box-shadow: 0 0 30px rgba(245,200,66,0.25), inset 0 0 30px rgba(0,0,0,0.5); }
+    .tmb-balls { position: absolute; inset: 0; }
+    .tmb-ball { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px;
+      border-radius: 50%; background: hsl(calc(var(--i) * 45), 80%, 56%);
+      transform: rotate(calc(var(--i) * 45deg)) translateY(-58px); box-shadow: inset -4px -4px 8px rgba(0,0,0,0.3); }
+    .tmb-drum--spin .tmb-balls { animation: tmbSpin 0.7s linear infinite; }
+    .tmb-drum--spin { animation: tmbShake 0.18s ease-in-out infinite; }
+    @keyframes tmbSpin  { to { transform: rotate(360deg); } }
+    @keyframes tmbShake { 0%,100% { transform: translateX(-2px) rotate(-1deg); } 50% { transform: translateX(2px) rotate(1deg); } }
+
+    .tmb-slot { width: min(320px, 100%); border-radius: 14px; overflow: hidden; background: var(--bg3); border: 1px solid var(--border); }
+    .tmb-slot__img { aspect-ratio: 16 / 9; background: #0b0b16 center / cover no-repeat; }
+    .tmb-slot__name { padding: 0.6rem 0.8rem; font-weight: 700; font-size: 0.95rem; min-height: 2.6rem; }
+    .tmb-slot--win { border-color: #f5c842; box-shadow: 0 0 26px rgba(245,200,66,0.4); animation: tmbPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    @keyframes tmbPop { from { transform: scale(0.85); } to { transform: scale(1); } }
+
+    .tmb-go { font-family: 'Orbitron', sans-serif; font-size: 1.05rem; font-weight: 900; letter-spacing: 0.1em; padding: 0.9rem 2.4rem; border: none; border-radius: 999px;
+      color: #07070f; background: linear-gradient(135deg, #f5c842, #fb923c); box-shadow: 0 8px 28px rgba(245,200,66,0.35); cursor: pointer; }
+    .tmb-go:disabled { opacity: 0.55; cursor: not-allowed; }
+    .tmb-result { display: none; margin-top: 0.25rem; }
+    .tmb-result__meta { color: var(--txt2); font-size: 0.82rem; margin: 0.3rem 0 0.7rem; }
+    .tmb-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+
+    /* Lista y buscador */
+    .tmb-search { position: relative; }
+    .tmb-search input { width: 100%; box-sizing: border-box; }
+    .tmb-suggest { position: absolute; z-index: 20; left: 0; right: 0; top: 100%; margin-top: 0.3rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; max-height: 280px; overflow-y: auto; display: none; }
+    .tmb-suggest button { display: flex; align-items: center; gap: 0.6rem; width: 100%; text-align: left; padding: 0.5rem 0.7rem; background: none; border: 0; color: var(--txt); font-size: 0.85rem; }
+    .tmb-suggest button:hover { background: var(--card-hover); }
+    .tmb-suggest img, .tmb-item img { width: 44px; height: 25px; object-fit: cover; border-radius: 4px; background: #0b0b16; }
+    .tmb-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem; }
+    .tmb-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.4rem 0.3rem 0.35rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 999px; font-size: 0.8rem; }
+    .tmb-item button { background: none; border: 0; color: var(--txt3); font-size: 0.9rem; padding: 0 0.25rem; }
+    .tmb-item button:hover { color: #ef4444; }
+    .tmb-empty { color: var(--txt3); font-size: 0.85rem; }
+    .tmb-hist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem; }
+    .tmb-hist li { display: flex; justify-content: space-between; gap: 0.75rem; color: var(--txt2); }
+    .tmb-hist b { color: var(--txt); }
+    .tmb-warn { display: none; color: #f87171; font-size: 0.82rem; margin-bottom: 1rem; }
+    @media (max-width: 600px) { .tmb { padding: 1rem 0.9rem 2rem; } .tmb-drum { width: 150px; height: 150px; } .tmb-ball { transform: rotate(calc(var(--i) * 45deg)) translateY(-44px); width: 24px; height: 24px; margin: -12px; } }
+    @media (prefers-reduced-motion: reduce) { .tmb-drum--spin, .tmb-drum--spin .tmb-balls { animation: none; } }
+  </style>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#07070f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+
+<div id="gtLoading" style="position:fixed;inset:0;background:#07070f;display:flex;align-items:center;justify-content:center;z-index:9999;color:rgba(232,232,248,.5);font-size:.8rem">Cargando tómbola...</div>
+
+<nav class="nav">
+  <a href="hub.html"          class="nav__link nav__link--hub nav__hub-solo">Hub</a>
+  <div class="nav__links nav__links--left">
+    <a href="biblioteca.html" class="nav__link">Biblioteca</a>
+    <a href="registro.html" class="nav__link">Registro</a>
+    <a href="backlog.html" class="nav__link">Pendientes</a>
+    <a href="halloffame.html" class="nav__link nav__link--hof">G.O.T.Y</a>
+  </div>
+  <a href="index.html" class="nav__logo">
+    <div class="nav__logo-wrap"><img src="logonuevorotar.png" alt="" class="nav__logo-gear"><img src="logonuevosinrotar.png" alt="Refugio 111" class="nav__logo-inner"></div>
+  </a>
+  <div class="nav__links nav__links--right">
+    <a href="eventos.html" class="nav__link">Eventos</a>
+    <a href="jugadores.html" class="nav__link">Jugadores</a>
+    <a href="estadisticas.html" class="nav__link">Estadísticas</a>
+    <div class="nav__dropdown">
+      <button type="button" class="nav__link nav__dropbtn" aria-haspopup="true" aria-expanded="false">Más ▾</button>
+      <div class="nav__dropmenu">
+        <a href="noticias.html" class="nav__link">📰 Noticias</a>
+        <a href="tombola.html" class="nav__link nav__link--active">🎰 Tómbola</a>
+      </div>
+    </div>
+  </div>
+  <button class="nav__hamburger" id="navHamburger" aria-label="Menú">☰</button>
+</nav>
+<div class="nav__mobile" id="navMobile">
+  <a href="hub.html"          class="nav__link nav__link--hub">&#127968; Hub</a>
+  <a href="index.html"        class="nav__link" data-intab>Inicio</a>
+  <a href="halloffame.html"   class="nav__link nav__link--hof">&#127942; G.O.T.Y</a>
+  <a href="biblioteca.html"   class="nav__link" data-intab>Biblioteca</a>
+  <a href="registro.html"     class="nav__link" data-intab>Registro</a>
+  <a href="backlog.html"      class="nav__link">&#9203; Pendientes</a>
+  <a href="eventos.html"      class="nav__link" data-intab>Eventos</a>
+  <a href="noticias.html"     class="nav__link">&#128240; Noticias</a>
+  <a href="tombola.html"      class="nav__link">&#127920; Tómbola</a>
+  <a href="jugadores.html"    class="nav__link">&#127918; Jugadores</a>
+  <a href="estadisticas.html" class="nav__link">&#128202; Estadísticas</a>
+</div>
+<nav class="tabbar" aria-label="Navegación principal">
+  <a href="index.html" class="tabbar__item"><span>&#127968;</span><span>Inicio</span></a>
+  <a href="biblioteca.html" class="tabbar__item"><span>&#128218;</span><span>Biblioteca</span></a>
+  <a href="registro.html" class="tabbar__item"><span>&#128203;</span><span>Registro</span></a>
+  <a href="eventos.html" class="tabbar__item"><span>&#128197;</span><span>Eventos</span></a>
+  <button type="button" id="tabMore" class="tabbar__item tabbar__item--active" aria-expanded="false"><span>&#9776;</span><span>Más</span></button>
+</nav>
+<div class="page">
+  <div class="page-hero page-hero--pendientes">
+    <div class="page-hero__bg">
+      <div class="page-hero__orb page-hero__orb--1"></div>
+      <div class="page-hero__orb page-hero__orb--2"></div>
+      <div class="page-hero__orb page-hero__orb--3"></div>
+    </div>
+    <h1 class="page-hero__title">TÓMBOLA</h1>
+    <p class="page-hero__sub">Mete juegos en el bombo y deja que decida la suerte</p>
+  </div>
+
+  <div class="tmb">
+    <div class="tmb-warn" id="tmbError">No se pudo leer la tómbola de la base de datos. Revisa tu conexión y recarga.</div>
+
+    <div class="tmb-card tmb-stage">
+      <div class="reg-player-filter" id="tmbPlayers" style="margin-bottom:0">
+        <label class="reg-pcard reg-pcard--david"><input type="radio" name="tmbPlayer" value="David"><div class="reg-pcard__inner"><div class="reg-pcard__avatar">D</div><div class="reg-pcard__name">David</div></div></label>
+        <label class="reg-pcard reg-pcard--javi"><input type="radio" name="tmbPlayer" value="Javi" checked><div class="reg-pcard__inner"><div class="reg-pcard__avatar">J</div><div class="reg-pcard__name">Javi</div></div></label>
+        <label class="reg-pcard reg-pcard--mery"><input type="radio" name="tmbPlayer" value="Mery"><div class="reg-pcard__inner"><div class="reg-pcard__avatar">M</div><div class="reg-pcard__name">Mery</div></div></label>
+      </div>
+
+      <div class="tmb-drum" id="tmbDrum" aria-hidden="true">
+        <div class="tmb-balls">
+          <span class="tmb-ball" style="--i:0"></span><span class="tmb-ball" style="--i:1"></span><span class="tmb-ball" style="--i:2"></span><span class="tmb-ball" style="--i:3"></span>
+          <span class="tmb-ball" style="--i:4"></span><span class="tmb-ball" style="--i:5"></span><span class="tmb-ball" style="--i:6"></span><span class="tmb-ball" style="--i:7"></span>
+        </div>
+      </div>
+
+      <div class="tmb-slot" id="tmbSlot">
+        <div class="tmb-slot__img" id="tmbSlotImg"></div>
+        <div class="tmb-slot__name" id="tmbSlotName">¿Qué te tocará?</div>
+      </div>
+
+      <button type="button" class="tmb-go" id="tmbGo">🎰 ¡GIRAR!</button>
+      <div id="tmbCount" class="tmb-empty"></div>
+
+      <div class="tmb-result" id="tmbResult">
+        <div class="tmb-result__meta" id="tmbResultMeta"></div>
+        <div class="tmb-actions">
+          <button type="button" class="btn btn-primary btn-sm" id="tmbPend">⏳ Añadir a mis pendientes</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="tmbRemove">Quitar de la tómbola</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tmb-card">
+      <h2>EN EL BOMBO <small id="tmbPoolCount"></small></h2>
+      <div class="tmb-search">
+        <input type="text" class="form-input" id="tmbSearch" placeholder="Busca un juego de la biblioteca para añadirlo..." autocomplete="off">
+        <div class="tmb-suggest" id="tmbSuggest"></div>
+      </div>
+      <div style="margin-top:0.6rem"><button type="button" class="btn btn-ghost btn-sm" id="tmbAddPend">➕ Añadir los pendientes de <span id="tmbPlayerName">Javi</span></button></div>
+      <div class="tmb-list" id="tmbList"></div>
+    </div>
+
+    <div class="tmb-card">
+      <h2>ÚLTIMOS SORTEOS</h2>
+      <ul class="tmb-hist" id="tmbHist"><li class="tmb-empty">Aún no hay sorteos</li></ul>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js?v=20260521c" defer></script>
+<script src="main.js?v=20260529l"            defer></script>
+<script src="tombola.js?v=20261023a"         defer></script>
+<script src="app.js?v=20261023a" defer></script>
+</body>
+</html>

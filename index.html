@@ -8,9 +8,14 @@
   <link rel="icon" type="image/png" sizes="64x64" href="logonavegador.png">
   <link rel="icon" type="image/png" sizes="512x512" href="logonuevo.png">
   <link rel="apple-touch-icon" href="logonuevo.png">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Refugio 111 — Menú Principal</title>
-  <link rel="stylesheet" href="styles.css?v=20261002c">
+  <link rel="stylesheet" href="styles.css?v=20261023a">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#07070f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
 
@@ -26,35 +31,48 @@
 <nav class="nav">
   <a href="hub.html"          class="nav__link nav__link--hub nav__hub-solo">Hub</a>
   <div class="nav__links nav__links--left">
-    <a href="halloffame.html"   class="nav__link nav__link--hof">G.O.T.Y</a>
-    <a href="biblioteca.html"   class="nav__link">Biblioteca</a>
-    <a href="registro.html"     class="nav__link">Registro</a>
-    <a href="backlog.html"      class="nav__link">Pendientes</a>
+    <a href="biblioteca.html" class="nav__link">Biblioteca</a>
+    <a href="registro.html" class="nav__link">Registro</a>
+    <a href="backlog.html" class="nav__link">Pendientes</a>
+    <a href="halloffame.html" class="nav__link nav__link--hof">G.O.T.Y</a>
   </div>
   <a href="index.html" class="nav__logo">
     <div class="nav__logo-wrap"><img src="logonuevorotar.png" alt="" class="nav__logo-gear"><img src="logonuevosinrotar.png" alt="Refugio 111" class="nav__logo-inner"></div>
   </a>
   <div class="nav__links nav__links--right">
-    <a href="eventos.html"      class="nav__link">Eventos</a>
-    <a href="noticias.html"     class="nav__link">Noticias</a>
-    <a href="jugadores.html"   class="nav__link">Jugadores</a>
+    <a href="eventos.html" class="nav__link">Eventos</a>
+    <a href="jugadores.html" class="nav__link">Jugadores</a>
     <a href="estadisticas.html" class="nav__link">Estadísticas</a>
+    <div class="nav__dropdown">
+      <button type="button" class="nav__link nav__dropbtn" aria-haspopup="true" aria-expanded="false">Más ▾</button>
+      <div class="nav__dropmenu">
+        <a href="noticias.html" class="nav__link">📰 Noticias</a>
+        <a href="tombola.html" class="nav__link">🎰 Tómbola</a>
+      </div>
+    </div>
   </div>
   <button class="nav__hamburger" id="navHamburger" aria-label="Menú">☰</button>
 </nav>
 <div class="nav__mobile" id="navMobile">
   <a href="hub.html"          class="nav__link nav__link--hub">&#127968; Hub</a>
-  <a href="index.html"        class="nav__link">Inicio</a>
+  <a href="index.html"        class="nav__link" data-intab>Inicio</a>
   <a href="halloffame.html"   class="nav__link nav__link--hof">&#127942; G.O.T.Y</a>
-  <a href="biblioteca.html"   class="nav__link">Biblioteca</a>
-  <a href="registro.html"     class="nav__link">Registro</a>
-  <a href="backlog.html"      class="nav__link">Pendientes</a>
-  <a href="eventos.html"      class="nav__link">Eventos</a>
-  <a href="noticias.html"     class="nav__link">Noticias</a>
-  <a href="jugadores.html"    class="nav__link">Jugadores</a>
-  <a href="estadisticas.html" class="nav__link">Estadísticas</a>
+  <a href="biblioteca.html"   class="nav__link" data-intab>Biblioteca</a>
+  <a href="registro.html"     class="nav__link" data-intab>Registro</a>
+  <a href="backlog.html"      class="nav__link">&#9203; Pendientes</a>
+  <a href="eventos.html"      class="nav__link" data-intab>Eventos</a>
+  <a href="noticias.html"     class="nav__link">&#128240; Noticias</a>
+  <a href="tombola.html"      class="nav__link">&#127920; Tómbola</a>
+  <a href="jugadores.html"    class="nav__link">&#127918; Jugadores</a>
+  <a href="estadisticas.html" class="nav__link">&#128202; Estadísticas</a>
 </div>
-
+<nav class="tabbar" aria-label="Navegación principal">
+  <a href="index.html" class="tabbar__item tabbar__item--active"><span>&#127968;</span><span>Inicio</span></a>
+  <a href="biblioteca.html" class="tabbar__item"><span>&#128218;</span><span>Biblioteca</span></a>
+  <a href="registro.html" class="tabbar__item"><span>&#128203;</span><span>Registro</span></a>
+  <a href="eventos.html" class="tabbar__item"><span>&#128197;</span><span>Eventos</span></a>
+  <button type="button" id="tabMore" class="tabbar__item" aria-expanded="false"><span>&#9776;</span><span>Más</span></button>
+</nav>
 <div class="page">
   <!-- HERO -->
   <!-- Hero: solo fondo, sin paneles encima -->
@@ -362,17 +380,51 @@
   </script>
 
 
-  <!-- PRÓXIMOS ESTRENOS (próximos 30 días) -->
+  <!-- UN VISTAZO: estrenos próximos + eventos próximos -->
+  <style>
+    /* ══ INICIO COMPACTO ═══════════════════════════════════════ */
+    @media (min-width: 641px) {
+      .hero.hero--bg { min-height: 0 !important; height: clamp(250px, 32vh, 320px); padding: 0 !important; background-position: center 12% !important; }
+    }
+    @media (min-width: 901px) {
+      .hero__spotlight { margin-top: -95px !important; }
+    }
+    @media (max-width: 640px) {
+      .hero.hero--bg { aspect-ratio: auto !important; height: 190px !important; background-size: cover !important; background-position: top center !important; }
+    }
+    .home-glance { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 1.25rem; align-items: start; }
+    .home-glance .section__header { margin-bottom: 0.75rem !important; }
+    .home-glance .upcoming-grid { display: flex; gap: 0.7rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 0.45rem; scrollbar-width: thin; }
+    .home-glance .upcoming-card { flex: 0 0 148px; scroll-snap-align: start; }
+    .evt-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .evt-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 0.7rem; text-decoration: none; color: inherit;
+      background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--evt-accent, #f5c842); border-radius: 10px; }
+    .evt-row:hover { border-color: var(--evt-accent, #f5c842); }
+    .evt-row__date { flex: 0 0 44px; text-align: center; font-family: 'Orbitron', sans-serif; line-height: 1.1; }
+    .evt-row__date b { display: block; font-size: 1.15rem; color: var(--evt-accent, #f5c842); }
+    .evt-row__date span { font-size: 0.58rem; letter-spacing: 0.08em; color: var(--txt3); }
+    .evt-row__name { font-weight: 700; font-size: 0.85rem; color: var(--txt1); }
+    .evt-row__sub { font-size: 0.7rem; color: var(--txt3); margin-top: 0.1rem; }
+    .evt-empty { color: var(--txt3); font-size: 0.82rem; padding: 0.6rem 0; }
+    @media (max-width: 900px) { .home-glance { grid-template-columns: minmax(0, 1fr); } }
+  </style>
   <section class="section" style="padding-bottom:0">
-    <div class="upcoming-wrapper">
-      <!-- Panel YA A LA VENTA (izquierda, visible solo el día del lanzamiento) -->
-      <div id="todayLaunchPanel" style="display:none"></div>
-      <!-- Próximos estrenos (derecha) -->
-      <div class="upcoming-main">
-        <div class="section__header" style="margin-bottom:1rem">
-          <div><h2 class="section__title">🔜 Próximos <span>Estrenos</span></h2><p class="section__subtitle">Lanzamientos en los próximos 30 días · pincha para ver ficha</p></div>
+    <div class="home-glance">
+      <div class="upcoming-wrapper">
+        <!-- Panel YA A LA VENTA (izquierda, visible solo el día del lanzamiento) -->
+        <div id="todayLaunchPanel" style="display:none"></div>
+        <div class="upcoming-main">
+          <div class="section__header">
+            <div><h2 class="section__title">🔜 Próximos <span>Estrenos</span></h2><p class="section__subtitle">Próximos 30 días · pincha para ver la ficha</p></div>
+          </div>
+          <div id="upcomingCardsGrid" class="upcoming-grid"></div>
         </div>
-        <div id="upcomingCardsGrid" class="upcoming-grid"></div>
+      </div>
+      <div>
+        <div class="section__header">
+          <div><h2 class="section__title">🎮 Próximos <span>Eventos</span></h2><p class="section__subtitle"><a href="eventos.html" style="color:inherit">Ver todos →</a></p></div>
+        </div>
+        <div id="upcomingEventsList" class="evt-list"><div class="evt-empty">Cargando...</div></div>
       </div>
     </div>
   </section>
@@ -456,6 +508,23 @@
       else wrap.appendChild(img);
     };
     img.src = url;
+  }
+
+  /* ── Lista de próximos eventos (inicio compacto) ───────────── */
+  function renderEventList(list, now) {
+    var el = document.getElementById('upcomingEventsList');
+    if (!el) return;
+    if (!list.length) { el.innerHTML = '<div class="evt-empty">No hay eventos próximamente</div>'; return; }
+    el.innerHTML = list.map(function (ev) {
+      var d    = new Date(ev.isoDate);
+      var days = Math.ceil((d.getTime() - now) / 86400000);
+      var when = days <= 0 ? 'hoy' : days === 1 ? 'mañana' : 'en ' + days + ' días';
+      var esc  = function (t) { var x = document.createElement('div'); x.textContent = t || ''; return x.innerHTML; };
+      return '<a class="evt-row" href="eventos.html" style="--evt-accent:' + (/^#[0-9a-f]{3,8}$/i.test(ev.accentColor || '') ? ev.accentColor : '#f5c842') + '">' +
+        '<div class="evt-row__date"><b>' + d.getDate() + '</b><span>' + MONTHS[d.getMonth()].toUpperCase() + '</span></div>' +
+        '<div><div class="evt-row__name">' + esc(ev.nombre) + '</div><div class="evt-row__sub">' + when + (ev.fechaLabel ? ' · ' + esc(ev.fechaLabel) : '') + '</div></div>' +
+      '</a>';
+    }).join('');
   }
 
   /* ── Esperar a Firestore ───────────────────────────────────── */
@@ -583,6 +652,7 @@
       /* Ordenar por fecha antes de buscar el próximo */
       events.sort(function (a, b) { return new Date(a.isoDate).getTime() - new Date(b.isoDate).getTime(); });
       var next   = events.find(function (ev) { return new Date(ev.isoDate).getTime() > now; });
+      renderEventList(events.filter(function (ev) { return new Date(ev.isoDate).getTime() > now; }).slice(0, 5), now);
       if (!next) {
         var _ne = document.getElementById('nextEvtName');
         var _de = document.getElementById('nextEvtDate');
@@ -695,5 +765,6 @@
 
 })();
 </script>
+<script src="app.js?v=20261023a" defer></script>
 </body>
 </html>
