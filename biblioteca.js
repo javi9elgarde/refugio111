@@ -39,6 +39,7 @@
   var coverPreview = null;
   var _alphaObserver = null;
   var _activeAlpha   = '';
+  var _brokenCovers  = {}; // id → URL que falló al cargar (se ignora si la portada cambia)
   var _skipAnim      = false; // true mientras repinta un cambio remoto/de datos: sin re-animar todas las tarjetas
 
   /* ── DATE HELPERS ───────────────────────────────────────── */
@@ -217,7 +218,7 @@
     var objPos = Utils.escapeHtml(game.portadaPos || 'center top');
 
     var coverContent = game.portadaUrl
-      ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\';this.parentElement.querySelector(\'.game-card__ph\').style.display=\'flex\'">' +
+      ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\';this.parentElement.querySelector(\'.game-card__ph\').style.display=\'flex\';window.GT_Bib.coverFailed(\'' + game.id + '\')">' +
         '<div class="game-card__ph" style="display:none"><span class="game-card__ph-letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span></div>'
       : '<div class="game-card__ph"><span class="game-card__ph-letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span></div>';
 
@@ -303,7 +304,11 @@
       return !g.portadaUrl || g.portadaUrl.trim() === '';
     });
 
-    if (!noDur.length && !noCover.length) { el.innerHTML = ''; return; }
+    var brokenCover = all.filter(function(g) {
+      return g.portadaUrl && _brokenCovers[g.id] === g.portadaUrl;
+    });
+
+    if (!noDur.length && !noCover.length && !brokenCover.length) { el.innerHTML = ''; return; }
 
     function chips(games) {
       return games.map(function(g) {
@@ -335,7 +340,28 @@
           '<div class="nodur-notice__chips">' + chips(noCover) + '</div>' +
         '</div>';
     }
+    if (brokenCover.length) {
+      html +=
+        '<div class="nodur-notice nodur-notice--cover">' +
+          '<div class="nodur-notice__header">' +
+            '<span class="nodur-notice__icon">🖼️</span>' +
+            '<strong class="nodur-notice__count nodur-notice__count--cover">' + brokenCover.length + ' juego' + (brokenCover.length !== 1 ? 's' : '') + '</strong>' +
+            '<span class="nodur-notice__label"> con la portada rota (la imagen ya no carga) — pincha para cambiarla:</span>' +
+          '</div>' +
+          '<div class="nodur-notice__chips">' + chips(brokenCover) + '</div>' +
+        '</div>';
+    }
     el.innerHTML = html;
+  }
+
+  // shortcut: solo detecta portadas rotas de las tarjetas que ya se han cargado (lazy-load), no comprueba las 600+ de golpe
+  var _coverTimer = null;
+  function coverFailed(id) {
+    var g = Biblioteca.getById(id);
+    if (!g || !g.portadaUrl || _brokenCovers[id] === g.portadaUrl) return;
+    _brokenCovers[id] = g.portadaUrl;
+    clearTimeout(_coverTimer);
+    _coverTimer = setTimeout(renderNoduNotice, 300); // agrupa los fallos que llegan seguidos
   }
 
   function goToGame(id) {
@@ -1499,6 +1525,7 @@
     openDetail: openDetail,
     openEdit: openEdit,
     pickRawg: pickRawg,
+    coverFailed: coverFailed,
     goToGame: goToGame,
     removeGalleryImg: function(idx) {
       var id = state.detailId;
