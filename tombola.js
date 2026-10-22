@@ -1,6 +1,6 @@
 /* ============================================================
    GAMETRACKER — Tómbola: juegos en un bombo y un sorteo por jugador
-   Firestore: tombola/{juegoId}  y  tombola_historial/{auto}
+   Firestore: tombola/{juegoId} (bombo), tombola_asignaciones/{auto} (juego de cada jugador) y tombola_historial/{auto}
    ============================================================ */
 (function () {
   'use strict';
@@ -10,13 +10,15 @@
   var Toast      = window.GT.Toast;
 
   var pool = [];        // [{id, titulo, portadaUrl, ...}] del bombo
+  var assigns = [];     // juego asignado a cada jugador: {id, jugador, juegoId, titulo, anioJuego, estado: 'pendiente'|'jugado', ...}
   var busy = false;
-  var winner = null;    // juego sorteado, para los botones del resultado
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return Utils.escapeHtml(s || ''); }
   function player() { var r = document.querySelector('input[name=tmbPlayer]:checked'); return r ? r.value : 'Javi'; }
-  function coll(name) { return window.GT.db.collection(name); }
+  // con ?tmbtest las colecciones llevan sufijo: sirve para probar sin tocar los datos reales
+  var SUF = /[?&]tmbtest\b/.test(location.search) ? '_test' : '';
+  function coll(name) { return window.GT.db.collection(name + SUF); }
 
   /* El título/portada salen de la biblioteca (siempre al día); lo guardado en la tómbola es solo respaldo */
   function gameOf(entry) {
@@ -25,15 +27,21 @@
   }
 
   /* ── BOMBO ──────────────────────────────────────────────── */
+  function pendingOf(p) { var c = current(p); return c && c.estado === 'pendiente' ? c : null; }
+  function assignedTo() { var m = {}; assigns.forEach(function (a) { if (a.estado === 'pendiente') m[a.juegoId] = a.jugador; }); return m; }
+  function available() { var m = assignedTo(); return pool.filter(function (e) { return !m[e.id]; }); }
+
   function renderPool() {
+    var m = assignedTo(), free = available().length;
     $('tmbPoolCount').textContent = pool.length ? '(' + pool.length + ')' : '';
-    $('tmbCount').textContent = pool.length ? pool.length + ' juego' + (pool.length !== 1 ? 's' : '') + ' en el bombo' : 'El bombo está vacío: añade juegos abajo';
-    $('tmbGo').disabled = busy || !pool.length;
+    $('tmbCount').textContent = !pool.length ? 'El bombo está vacío: añade juegos abajo'
+      : free + ' juego' + (free !== 1 ? 's' : '') + ' disponible' + (free !== 1 ? 's' : '') + ' para sortear' + (free !== pool.length ? ' (' + (pool.length - free) + ' ya asignado' + (pool.length - free !== 1 ? 's' : '') + ')' : '');
     $('tmbList').innerHTML = pool.length
       ? pool.map(function (e) {
-          var g = gameOf(e);
-          return '<span class="tmb-item">' + (g.portadaUrl ? '<img src="' + esc(g.portadaUrl) + '" alt="" loading="lazy">' : '') +
-            esc(g.titulo) + '<button type="button" data-rm="' + esc(e.id) + '" title="Quitar" aria-label="Quitar ' + esc(g.titulo) + '">✕</button></span>';
+          var g = gameOf(e), who = m[e.id];
+          return '<span class="tmb-item' + (who ? ' tmb-item--assigned' : '') + '">' + (g.portadaUrl ? '<img src="' + esc(g.portadaUrl) + '" alt="" loading="lazy">' : '') +
+            esc(g.titulo) + (who ? ' <small style="color:var(--txt3)">🔒 ' + esc(who) + '</small>' : '') +
+            '<button type="button" data-rm="' + esc(e.id) + '" title="Quitar" aria-label="Quitar ' + esc(g.titulo) + '">✕</button></span>';
         }).join('')
       : '<span class="tmb-empty">Nada todavía</span>';
   }
@@ -66,7 +74,7 @@
   function clearPool() {
     if (!pool.length) { Toast.show('El bombo ya está vacío'); return; }
     if (!confirm('¿Vaciar el bombo? Se quitan los ' + pool.length + ' juegos (no se borran de la biblioteca).')) return;
-    wipe('tombola').then(function () { Toast.show('Bombo vaciado ✓'); $('tmbResult').style.display = 'none'; winner = null; })
+    wipe('tombola').then(function () { Toast.show('Bombo vaciado ✓'); })
       .catch(function () { Toast.show('No se pudo vaciar el bombo', 'error'); });
   }
 
@@ -142,13 +150,87 @@
     $('tmbSlot').classList.toggle('tmb-slot--win', !!win);
   }
 
+  /* ── JUEGO ASIGNADO A CADA JUGADOR ──────────────────────── */
+  function current(p) {
+    return assigns.filter(function (a) { return a.jugador === p; })
+      .sort(function (a, b) { return String(b.sorteadoEn).localeCompare(String(a.sorteadoEn)); })[0] || null;
+  }
+
+  function fmtDay(iso) { var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }); }
+
+  function setSlotEmpty() {
+    $('tmbSlotImg').style.backgroundImage = 'none';
+    $('tmbSlotName').textContent = '¿Qué te tocará?';
+    $('tmbSlot').classList.remove('tmb-slot--win');
+  }
+
+  /* Lo que ve el jugador elegido: su juego (pendiente o jugado) o el bombo listo para girar. Cada jugador es independiente. */
+  function renderPlayerView() {
+    if (busy) return;
+    var p = player(), cur = current(p);
+    $('tmbPlayerName').textContent = p;
+    if (!cur) {
+      setSlotEmpty();
+      $('tmbResult').style.display = 'none';
+      $('tmbGo').textContent = '🎰 ¡GIRAR!';
+      $('tmbGo').disabled = !available().length;
+      $('tmbLock').textContent = '';
+      return;
+    }
+    var g = gameOf({ id: cur.juegoId, titulo: cur.titulo, portadaUrl: cur.portadaUrl, libre: cur.libre });
+    var pending = cur.estado === 'pendiente';
+    showSlot(g, pending);
+    $('tmbWin').textContent = pending ? '🎯 Tu juego: a jugarlo en ' + cur.anioJuego : '✅ ¡Pasado, ' + p + '!';
+    $('tmbResultMeta').textContent = pending
+      ? [g.desarrollador, (g.plataformas || []).join(' · '), g.duracion ? '~' + g.duracion + ' h' : ''].filter(Boolean).join(' — ') + ' · márcalo aquí cuando te lo pases'
+      : 'Jugado el ' + fmtDay(cur.jugadoEn);
+    $('tmbDone').style.display = $('tmbCancel').style.display = pending ? '' : 'none';
+    $('tmbResult').style.display = 'block';
+    $('tmbGo').textContent = pending ? '🔒 YA TIENES JUEGO' : '🎰 SORTEAR OTRO';
+    $('tmbGo').disabled = pending || !available().length;
+    $('tmbLock').textContent = pending ? 'Hasta que no lo marques como jugado (o anules el sorteo) no puedes sacar otro.' : '';
+  }
+
+  function renderBoard() {
+    $('tmbYear').textContent = '(sorteo ' + new Date().getFullYear() + ' → a jugar en ' + (new Date().getFullYear() + 1) + ')';
+    $('tmbBoard').innerHTML = ['David', 'Javi', 'Mery'].map(function (p) {
+      var c = current(p);
+      if (!c) return '<div class="tmb-bcard tmb-bcard--' + p + ' tmb-bcard--empty"><div class="tmb-bcard__who">' + p.toUpperCase() + '</div><div class="tmb-bcard__img"></div><div class="tmb-bcard__name">Aún sin sortear</div><div class="tmb-bcard__state">&nbsp;</div></div>';
+      var g = gameOf({ id: c.juegoId, titulo: c.titulo, portadaUrl: c.portadaUrl, libre: c.libre });
+      var done = c.estado === 'jugado';
+      return '<div class="tmb-bcard tmb-bcard--' + p + (done ? ' tmb-bcard--done' : '') + '"><div class="tmb-bcard__who">' + p.toUpperCase() + '</div>' +
+        '<div class="tmb-bcard__img" style="background-image:' + (g.portadaUrl ? 'url(&quot;' + esc(String(g.portadaUrl).replace(/"/g, '%22')) + '&quot;)' : 'none') + '"></div>' +
+        '<div class="tmb-bcard__name">' + esc(g.titulo) + '</div>' +
+        '<div class="tmb-bcard__state">' + (done ? '✅ Jugado el ' + esc(fmtDay(c.jugadoEn)) : '⏳ A jugar en ' + c.anioJuego) + '</div></div>';
+    }).join('');
+  }
+
+  function markDone() {
+    var cur = pendingOf(player());
+    if (!cur) return;
+    if (!confirm('¿Marcar «' + cur.titulo + '» como jugado y pasado?')) return;
+    coll('tombola_asignaciones').doc(cur.id).update({ estado: 'jugado', jugadoEn: new Date().toISOString() })
+      .then(function () { Toast.show('¡Enhorabuena! «' + cur.titulo + '» pasado ✓'); confetti(); fanfare(); })
+      .catch(function () { Toast.show('No se pudo marcar como jugado', 'error'); });
+  }
+
+  function cancelAssign() {
+    var cur = pendingOf(player());
+    if (!cur) return;
+    if (!confirm('¿Anular tu sorteo? «' + cur.titulo + '» vuelve al bombo y podrás volver a girar.')) return;
+    coll('tombola_asignaciones').doc(cur.id).delete()
+      .then(function () { Toast.show('Sorteo anulado'); })
+      .catch(function () { Toast.show('No se pudo anular', 'error'); });
+  }
+
   function draw() {
-    if (busy || !pool.length) return;
+    var p = player();
+    var free = available();
+    if (busy || !free.length || pendingOf(p)) return;
     busy = true;
-    winner = null;
     $('tmbGo').disabled = true;
     $('tmbResult').style.display = 'none';
-    var picked = gameOf(pool[rand(pool.length)]);
+    var picked = gameOf(free[rand(free.length)]);
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var drum = $('tmbDrum');
     ac(); // el audio solo arranca con un gesto del usuario: este clic
@@ -156,17 +238,20 @@
     function finish() {
       drum.classList.remove('tmb-drum--spin');
       showSlot(picked, true);
-      winner = picked;
-      busy = false;
-      renderPool();
-      $('tmbResultMeta').textContent = [picked.desarrollador, (picked.plataformas || []).join(' · '), picked.duracion ? '~' + picked.duracion + ' h' : ''].filter(Boolean).join(' — ');
-      $('tmbWin').textContent = '🎉 ¡' + player() + ', te ha tocado!';
       fanfare();
       confetti();
-      $('tmbPend').style.display = picked.libre ? 'none' : '';
+      var year = new Date().getFullYear() + 1;
+      $('tmbWin').textContent = '🎉 ¡' + p + ', te ha tocado!';
+      $('tmbResultMeta').textContent = 'A jugarlo en ' + year + ' y pasártelo';
+      $('tmbDone').style.display = $('tmbCancel').style.display = 'none';
       $('tmbResult').style.display = 'block';
-      $('tmbGo').textContent = '🎰 ¡OTRA VEZ!';
-      coll('tombola_historial').add({ jugador: player(), juegoId: picked.id, titulo: picked.titulo, fecha: new Date().toISOString() })
+      // se guarda su juego; cuando llega, la vista pasa al estado "tienes juego" (con los botones de marcar/anular)
+      coll('tombola_asignaciones').add({
+        jugador: p, juegoId: picked.id, titulo: picked.titulo, portadaUrl: picked.portadaUrl || '', libre: !!picked.libre,
+        sorteadoEn: new Date().toISOString(), anioJuego: year, estado: 'pendiente'
+      }).catch(function (e) { console.error('tombola_asignaciones:', e); Toast.show('No se pudo guardar tu sorteo', 'error'); })
+        .then(function () { busy = false; renderPlayerView(); });
+      coll('tombola_historial').add({ jugador: p, juegoId: picked.id, titulo: picked.titulo, fecha: new Date().toISOString() })
         .catch(function (e) { console.error('tombola_historial:', e); });
     }
 
@@ -176,7 +261,7 @@
     var delay = 70, elapsed = 0;
     (function tick() {
       if (elapsed >= 2400) { finish(); return; }
-      showSlot(gameOf(pool[rand(pool.length)]), false);
+      showSlot(gameOf(free[rand(free.length)]), false);
       blip(260 + Math.random() * 520, 0.05, 'square', 0.035);
       elapsed += delay;
       delay = Math.round(delay * 1.12);
@@ -204,14 +289,22 @@
     if (r) r.checked = true;
     $('tmbPlayerName').textContent = player();
     document.querySelectorAll('input[name=tmbPlayer]').forEach(function (i) {
-      i.addEventListener('change', function () { $('tmbPlayerName').textContent = player(); });
+      i.addEventListener('change', renderPlayerView);
     });
 
     coll('tombola').onSnapshot(function (snap) {
       pool = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
       renderPool();
       renderSuggest();
+      renderPlayerView();
     }, function (e) { console.error('tombola:', e); $('tmbError').style.display = 'block'; });
+
+    coll('tombola_asignaciones').onSnapshot(function (snap) {
+      assigns = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+      renderPool();
+      renderBoard();
+      renderPlayerView();
+    }, function (e) { console.error('tombola_asignaciones:', e); $('tmbError').style.display = 'block'; });
 
     coll('tombola_historial').orderBy('fecha', 'desc').limit(8).onSnapshot(function (snap) {
       renderHistory(snap.docs.map(function (d) { return d.data(); }));
@@ -265,31 +358,18 @@
     });
 
     $('tmbClearAll').addEventListener('click', clearPool);
-    $('tmbClearAfter').addEventListener('click', clearPool);
     $('tmbClearHist').addEventListener('click', function () {
       if (!confirm('¿Borrar el historial de sorteos?')) return;
       wipe('tombola_historial').then(function () { Toast.show('Historial borrado ✓'); })
         .catch(function () { Toast.show('No se pudo borrar el historial', 'error'); });
     });
 
-    $('tmbRemove').addEventListener('click', function () {
-      if (!winner) return;
-      var t = winner.titulo;
-      removeFromPool(winner.id).then(function () { Toast.show('“' + t + '” fuera del bombo'); $('tmbResult').style.display = 'none'; winner = null; });
-    });
-
-    $('tmbPend').addEventListener('click', function () {
-      if (!winner) return;
-      var g = Biblioteca.getById(winner.id);
-      if (!g) return;
-      var p = player();
-      var list = (g.pendientePor || []).slice();
-      if (list.indexOf(p) === -1) list.push(p);
-      Biblioteca.update(g.id, { pendientePor: list, pendiente: true });
-      Toast.show('“' + g.titulo + '” en los pendientes de ' + p + ' ✓');
-    });
+    $('tmbDone').addEventListener('click', markDone);
+    $('tmbCancel').addEventListener('click', cancelAssign);
 
     renderPool();
+    renderBoard();
+    renderPlayerView();
   }
 
   document.addEventListener('DOMContentLoaded', function () {

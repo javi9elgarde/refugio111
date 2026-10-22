@@ -56,6 +56,19 @@
     .tmb-hist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem; }
     .tmb-hist li { display: flex; justify-content: space-between; gap: 0.75rem; color: var(--txt2); }
     .tmb-hist b { color: var(--txt); }
+    .tmb-lock { font-size: 0.8rem; color: var(--txt3); min-height: 1em; }
+    .tmb-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; }
+    @media (max-width: 700px) { .tmb-board { grid-template-columns: minmax(0, 1fr); } }
+    .tmb-bcard { background: var(--bg3); border: 1px solid var(--border); border-top: 3px solid var(--pc, var(--cyan)); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+    .tmb-bcard--David { --pc: #3b82f6; } .tmb-bcard--Javi { --pc: #f43f7a; } .tmb-bcard--Mery { --pc: #9b59ff; }
+    .tmb-bcard__who { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.8rem; letter-spacing: 0.06em; color: var(--pc); padding: 0.6rem 0.8rem 0.45rem; }
+    .tmb-bcard__img { aspect-ratio: 16 / 9; background: #0b0b16 center / cover no-repeat; }
+    .tmb-bcard__name { padding: 0.6rem 0.8rem 0.15rem; font-weight: 700; font-size: 0.92rem; }
+    .tmb-bcard__state { padding: 0 0.8rem 0.7rem; font-size: 0.76rem; color: var(--txt3); }
+    .tmb-bcard--done .tmb-bcard__state { color: #43e97b; }
+    .tmb-bcard--empty { border-style: dashed; border-top-style: dashed; }
+    .tmb-bcard--empty .tmb-bcard__name { color: var(--txt3); font-weight: 500; }
+    .tmb-item--assigned { border-color: rgba(245,200,66,0.5); }
     .tmb-warn { display: none; color: #f87171; font-size: 0.82rem; margin-bottom: 1rem; }
     @media (max-width: 600px) { .tmb { padding: 1rem 0.9rem 2rem; } }
     @media (prefers-reduced-motion: reduce) { .tmb-drum--spin, .tmb-drum--spin #tmbCage, .tmb-drum--spin #tmbGear, .tmb-spark { animation: none; } }
@@ -123,7 +136,7 @@
       <div class="page-hero__orb page-hero__orb--3"></div>
     </div>
     <h1 class="page-hero__title">TÓMBOLA</h1>
-    <p class="page-hero__sub">Mete juegos en el bombo y deja que decida la suerte</p>
+    <p class="page-hero__sub">Un sorteo para cada uno: el juego que te toque, a por él el año que viene</p>
   </div>
 
   <div class="tmb">
@@ -183,16 +196,21 @@
 
       <button type="button" class="tmb-go" id="tmbGo">🎰 ¡GIRAR!</button>
       <div id="tmbCount" class="tmb-empty"></div>
+      <div id="tmbLock" class="tmb-lock"></div>
 
       <div class="tmb-result" id="tmbResult">
         <div class="tmb-win" id="tmbWin"></div>
         <div class="tmb-result__meta" id="tmbResultMeta"></div>
         <div class="tmb-actions">
-          <button type="button" class="btn btn-primary btn-sm" id="tmbPend">⏳ Añadir a mis pendientes</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="tmbRemove">Quitar este juego</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="tmbClearAfter">🧹 Vaciar bombo</button>
+          <button type="button" class="btn btn-primary btn-sm" id="tmbDone">✅ Marcar como jugado</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="tmbCancel">↺ Anular mi sorteo</button>
         </div>
       </div>
+    </div>
+
+    <div class="tmb-card">
+      <h2>🎁 EL JUEGO DE CADA UNO <small id="tmbYear"></small></h2>
+      <div class="tmb-board" id="tmbBoard"></div>
     </div>
 
     <div class="tmb-card">
@@ -216,7 +234,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260529l"            defer></script>
-<script src="tombola.js?v=20261025b"         defer></script>
+<script src="tombola.js?v=20261026a"         defer></script>
 <script src="app.js?v=20261023a" defer></script>
 </body>
 </html>
