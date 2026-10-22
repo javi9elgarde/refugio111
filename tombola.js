@@ -89,6 +89,51 @@
   }
 
   /* ── SORTEO ─────────────────────────────────────────────── */
+  /* ── SONIDO Y CONFETI ───────────────────────────────────── */
+  var audio = null;
+  var muted = false;
+  try { muted = localStorage.getItem('GT_tmb_mute') === '1'; } catch (e) {}
+
+  function ac() {
+    try {
+      if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+      if (audio.state === 'suspended') audio.resume();
+    } catch (e) { audio = null; }
+    return audio;
+  }
+
+  function blip(freq, dur, type, vol) {
+    if (muted) return;
+    var a = ac();
+    if (!a) return;
+    var o = a.createOscillator(), g = a.createGain(), t = a.currentTime;
+    o.type = type || 'square';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(vol || 0.05, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(a.destination);
+    o.start(t); o.stop(t + dur);
+  }
+
+  function fanfare() { [523, 659, 784, 1047, 1319].forEach(function (f, i) { setTimeout(function () { blip(f, 0.22, 'triangle', 0.09); }, i * 90); }); }
+
+  var CONFETTI = ['#e03a4e', '#f5b830', '#2f55d4', '#3fb55e', '#8b3fd0', '#1fa0d8', '#f08a30'];
+  function confetti() {
+    if (!Element.prototype.animate || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+    var wrap = $('tmbDrumWrap');
+    for (var i = 0; i < 30; i++) {
+      var el = document.createElement('i');
+      el.style.cssText = 'position:absolute;left:50%;top:44%;width:8px;height:12px;border-radius:2px;pointer-events:none;background:' + CONFETTI[i % CONFETTI.length];
+      wrap.appendChild(el);
+      var ang = Math.random() * Math.PI * 2, d = 110 + Math.random() * 140;
+      var anim = el.animate([
+        { transform: 'translate(-50%,-50%) rotate(0deg)', opacity: 1 },
+        { transform: 'translate(calc(-50% + ' + Math.cos(ang) * d + 'px), calc(-50% + ' + (Math.sin(ang) * d + 90) + 'px)) rotate(' + Math.round(Math.random() * 720) + 'deg)', opacity: 0 }
+      ], { duration: 1100 + Math.random() * 600, easing: 'cubic-bezier(.2,.7,.3,1)' });
+      (function (node, an) { an.onfinish = function () { node.remove(); }; })(el, anim);
+    }
+  }
+
   function rand(n) { var a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; }
 
   function showSlot(g, win) {
@@ -106,6 +151,7 @@
     var picked = gameOf(pool[rand(pool.length)]);
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var drum = $('tmbDrum');
+    ac(); // el audio solo arranca con un gesto del usuario: este clic
 
     function finish() {
       drum.classList.remove('tmb-drum--spin');
@@ -114,6 +160,9 @@
       busy = false;
       renderPool();
       $('tmbResultMeta').textContent = [picked.desarrollador, (picked.plataformas || []).join(' · '), picked.duracion ? '~' + picked.duracion + ' h' : ''].filter(Boolean).join(' — ');
+      $('tmbWin').textContent = '🎉 ¡' + player() + ', te ha tocado!';
+      fanfare();
+      confetti();
       $('tmbPend').style.display = picked.libre ? 'none' : '';
       $('tmbResult').style.display = 'block';
       $('tmbGo').textContent = '🎰 ¡OTRA VEZ!';
@@ -128,6 +177,7 @@
     (function tick() {
       if (elapsed >= 2400) { finish(); return; }
       showSlot(gameOf(pool[rand(pool.length)]), false);
+      blip(260 + Math.random() * 520, 0.05, 'square', 0.035);
       elapsed += delay;
       delay = Math.round(delay * 1.12);
       setTimeout(tick, delay);
@@ -167,6 +217,12 @@
       renderHistory(snap.docs.map(function (d) { return d.data(); }));
     }, function (e) { console.error('tombola_historial:', e); });
 
+    $('tmbMute').textContent = muted ? '🔇' : '🔊';
+    $('tmbMute').addEventListener('click', function () {
+      muted = !muted;
+      try { localStorage.setItem('GT_tmb_mute', muted ? '1' : '0'); } catch (e) {}
+      this.textContent = muted ? '🔇' : '🔊';
+    });
     $('tmbGo').addEventListener('click', draw);
     $('tmbSearch').addEventListener('input', renderSuggest);
     document.addEventListener('click', function (e) { if (!e.target.closest('.tmb-search')) $('tmbSuggest').style.display = 'none'; });
