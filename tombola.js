@@ -10,8 +10,8 @@
   var Toast      = window.GT.Toast;
 
   var pool = [];        // [{id, titulo, portadaUrl, ...}] del bombo
-  var mode = 'anual';   // pestaña: 'anual' (evento del año que viene) | 'rapida' (sorteo de una noche)
-  var quick = [];       // bombo de esta noche: solo en este dispositivo (localStorage)
+  var mode = 'anual';   // pestaña: 'anual' (evento del año que viene) | 'rapida' (sorteo Aleatorio)
+  var quick = [];       // bombo Aleatorio: solo en este dispositivo (localStorage)
   var quickLast = null; // último juego que salió en la pestaña rápida
   var assigns = [];     // juego asignado a cada jugador: {id, jugador, juegoId, titulo, anioJuego, estado: 'pendiente'|'jugado', ...}
   var busy = false;
@@ -280,7 +280,7 @@
     });
   }
 
-  /* ── PARA ESTA NOCHE: bombo propio, sin base de datos ──────── */
+  /* ── ALEATORIO: bombo propio, sin base de datos ──────── */
   function qLoad() {
     try {
       var a = JSON.parse(localStorage.getItem('GT_tmb_quick') || '[]');
@@ -313,12 +313,12 @@
   function renderQuickView() {
     if (busy || mode !== 'rapida') return;
     var n = quick.length;
-    $('tmbCount').textContent = n ? n + ' juego' + (n !== 1 ? 's' : '') + ' en el bombo de esta noche' : 'Añade los juegos que os apetecen ahora (mínimo 2)';
+    $('tmbCount').textContent = n ? n + ' juego' + (n !== 1 ? 's' : '') + ' en el bombo Aleatorio' : 'Añade los juegos que os apetecen ahora (mínimo 2)';
     $('tmbLock').textContent = n === 1 ? 'Falta al menos otro juego para poder sortear.' : '';
     if (quickLast && quick.some(function (e) { return e.id === quickLast.id; })) {
       var g = gameOf(quickLast);
       showSlot(g, true);
-      $('tmbWin').textContent = '🎲 ¡Esta noche toca!';
+      $('tmbWin').textContent = '🎲 ¡Ha salido!';
       $('tmbResultMeta').textContent = [g.desarrollador, (g.plataformas || []).join(' · '), g.duracion ? '~' + g.duracion + ' h' : ''].filter(Boolean).join(' — ');
       $('tmbResult').style.display = 'block';
       $('tmbGo').textContent = '🎰 ¡OTRA VEZ!';
@@ -467,7 +467,7 @@
       qSave(); renderQuickView();
     });
     $('qClear').addEventListener('click', function () {
-      if (!quick.length || !confirm('¿Vaciar el bombo de esta noche?')) return;
+      if (!quick.length || !confirm('¿Vaciar el bombo Aleatorio?')) return;
       quick = []; quickLast = null; qSave(); renderQuickView();
     });
     $('tmbQDrop').addEventListener('click', function () {
