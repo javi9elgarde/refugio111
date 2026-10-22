@@ -69,6 +69,12 @@
     .tmb-bcard--empty { border-style: dashed; border-top-style: dashed; }
     .tmb-bcard--empty .tmb-bcard__name { color: var(--txt3); font-weight: 500; }
     .tmb-item--assigned { border-color: rgba(245,200,66,0.5); }
+    .tmb [hidden] { display: none !important; }
+    .tmb-tabs { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.1rem; }
+    .tmb-tab { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--txt2); border-radius: 999px; padding: 0.6rem 1.2rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+    .tmb-tab:hover { color: var(--txt); }
+    .tmb-tab--on { background: rgba(245,200,66,0.14); border-color: rgba(245,200,66,0.55); color: #f5c842; }
+    .tmb-hint { color: var(--txt3); font-size: 0.8rem; margin: 0 0 0.75rem; }
     .tmb-warn { display: none; color: #f87171; font-size: 0.82rem; margin-bottom: 1rem; }
     @media (max-width: 600px) { .tmb { padding: 1rem 0.9rem 2rem; } }
     @media (prefers-reduced-motion: reduce) { .tmb-drum--spin, .tmb-drum--spin #tmbCage, .tmb-drum--spin #tmbGear, .tmb-spark { animation: none; } }
@@ -136,14 +142,19 @@
       <div class="page-hero__orb page-hero__orb--3"></div>
     </div>
     <h1 class="page-hero__title">TÓMBOLA</h1>
-    <p class="page-hero__sub">Un sorteo para cada uno: el juego que te toque, a por él el año que viene</p>
+    <p class="page-hero__sub">El Evento Mierdijuego (el juego del año que viene) y los sorteos de una noche</p>
   </div>
 
   <div class="tmb">
     <div class="tmb-warn" id="tmbError">No se pudo leer la tómbola de la base de datos. Revisa tu conexión y recarga.</div>
 
+    <div class="tmb-tabs" role="tablist">
+      <button type="button" class="tmb-tab tmb-tab--on" data-tabbtn="anual" role="tab">🎁 Evento Mierdijuego</button>
+      <button type="button" class="tmb-tab" data-tabbtn="rapida" role="tab">🎲 Para esta noche</button>
+    </div>
+
     <div class="tmb-card tmb-stage">
-      <div class="reg-player-filter" id="tmbPlayers" style="margin-bottom:0">
+      <div class="reg-player-filter" id="tmbPlayers" data-tab="anual" style="margin-bottom:0">
         <label class="reg-pcard reg-pcard--david"><input type="radio" name="tmbPlayer" value="David"><div class="reg-pcard__inner"><div class="reg-pcard__avatar">D</div><div class="reg-pcard__name">David</div></div></label>
         <label class="reg-pcard reg-pcard--javi"><input type="radio" name="tmbPlayer" value="Javi" checked><div class="reg-pcard__inner"><div class="reg-pcard__avatar">J</div><div class="reg-pcard__name">Javi</div></div></label>
         <label class="reg-pcard reg-pcard--mery"><input type="radio" name="tmbPlayer" value="Mery"><div class="reg-pcard__inner"><div class="reg-pcard__avatar">M</div><div class="reg-pcard__name">Mery</div></div></label>
@@ -202,18 +213,19 @@
         <div class="tmb-win" id="tmbWin"></div>
         <div class="tmb-result__meta" id="tmbResultMeta"></div>
         <div class="tmb-actions">
-          <button type="button" class="btn btn-primary btn-sm" id="tmbDone">✅ Marcar como jugado</button>
-          <button type="button" class="btn btn-ghost btn-sm" id="tmbCancel">↺ Anular mi sorteo</button>
+          <button type="button" class="btn btn-primary btn-sm" id="tmbDone" data-tab="anual">✅ Marcar como jugado</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="tmbCancel" data-tab="anual">↺ Anular mi sorteo</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="tmbQDrop" data-tab="rapida">Quitar este juego del bombo</button>
         </div>
       </div>
     </div>
 
-    <div class="tmb-card">
-      <h2>🎁 EL JUEGO DE CADA UNO <small id="tmbYear"></small></h2>
+    <div class="tmb-card" data-tab="anual">
+      <h2>🎁 EVENTO MIERDIJUEGO <small id="tmbYear"></small></h2>
       <div class="tmb-board" id="tmbBoard"></div>
     </div>
 
-    <div class="tmb-card">
+    <div class="tmb-card" data-tab="anual">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.75rem"><h2 style="margin:0">EN EL BOMBO <small id="tmbPoolCount"></small></h2><button type="button" class="btn btn-ghost btn-sm" id="tmbClearAll">🧹 Vaciar bombo</button></div>
       <div class="tmb-search">
         <input type="text" class="form-input" id="tmbSearch" placeholder="Busca cualquier juego de la biblioteca (o escribe un nombre nuevo)..." autocomplete="off">
@@ -223,9 +235,19 @@
       <div class="tmb-list" id="tmbList"></div>
     </div>
 
-    <div class="tmb-card">
+    <div class="tmb-card" data-tab="anual">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.75rem"><h2 style="margin:0">ÚLTIMOS SORTEOS</h2><button type="button" class="btn btn-ghost btn-sm" id="tmbClearHist">🗑 Borrar historial</button></div>
       <ul class="tmb-hist" id="tmbHist"><li class="tmb-empty">Aún no hay sorteos</li></ul>
+    </div>
+
+    <div class="tmb-card" data-tab="rapida" hidden>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-bottom:0.5rem"><h2 style="margin:0">🎲 PARA ESTA NOCHE <small id="qCount"></small></h2><button type="button" class="btn btn-ghost btn-sm" id="qClear">🧹 Vaciar</button></div>
+      <p class="tmb-hint">Mete los juegos que os apetecen ahora (mínimo 2) y deja que la tómbola elija. No tiene nada que ver con el Evento Mierdijuego y se guarda solo en este dispositivo.</p>
+      <div class="tmb-search">
+        <input type="text" class="form-input" id="qSearch" placeholder="Busca un juego de la biblioteca (o escribe un nombre nuevo)..." autocomplete="off">
+        <div class="tmb-suggest" id="qSuggest"></div>
+      </div>
+      <div class="tmb-list" id="qList"></div>
     </div>
   </div>
 </div>
@@ -234,7 +256,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
 <script src="main.js?v=20260529l"            defer></script>
-<script src="tombola.js?v=20261026a"         defer></script>
+<script src="tombola.js?v=20261027b"         defer></script>
 <script src="app.js?v=20261023a" defer></script>
 </body>
 </html>

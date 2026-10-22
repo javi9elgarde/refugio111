@@ -10,6 +10,9 @@
   var Toast      = window.GT.Toast;
 
   var pool = [];        // [{id, titulo, portadaUrl, ...}] del bombo
+  var mode = 'anual';   // pestaña: 'anual' (evento del año que viene) | 'rapida' (sorteo de una noche)
+  var quick = [];       // bombo de esta noche: solo en este dispositivo (localStorage)
+  var quickLast = null; // último juego que salió en la pestaña rápida
   var assigns = [];     // juego asignado a cada jugador: {id, jugador, juegoId, titulo, anioJuego, estado: 'pendiente'|'jugado', ...}
   var busy = false;
 
@@ -34,7 +37,7 @@
   function renderPool() {
     var m = assignedTo(), free = available().length;
     $('tmbPoolCount').textContent = pool.length ? '(' + pool.length + ')' : '';
-    $('tmbCount').textContent = !pool.length ? 'El bombo está vacío: añade juegos abajo'
+    if (mode === 'anual') $('tmbCount').textContent = !pool.length ? 'El bombo está vacío: añade juegos abajo'
       : free + ' juego' + (free !== 1 ? 's' : '') + ' disponible' + (free !== 1 ? 's' : '') + ' para sortear' + (free !== pool.length ? ' (' + (pool.length - free) + ' ya asignado' + (pool.length - free !== 1 ? 's' : '') + ')' : '');
     $('tmbList').innerHTML = pool.length
       ? pool.map(function (e) {
@@ -81,20 +84,20 @@
   /* ── BUSCADOR PARA AÑADIR ───────────────────────────────── */
   function norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
 
-  function renderSuggest() {
-    var q = norm($('tmbSearch').value.trim());
-    var box = $('tmbSuggest');
+  function suggestInto(inputId, boxId, taken) {
+    var raw = $(inputId).value.trim(), q = norm(raw), box = $(boxId);
     if (!q) { box.style.display = 'none'; return; }
-    var inPool = {};
-    pool.forEach(function (e) { inPool[e.id] = true; });
-    var hits = Biblioteca.getAll().filter(function (g) { return !inPool[g.id] && norm(g.titulo).indexOf(q) !== -1; }).slice(0, 8);
-    var raw = $('tmbSearch').value.trim();
+    var inList = {};
+    taken.forEach(function (e) { inList[e.id] = true; });
+    var hits = Biblioteca.getAll().filter(function (g) { return !inList[g.id] && norm(g.titulo).indexOf(q) !== -1; }).slice(0, 8);
     box.innerHTML = hits.map(function (g) {
         return '<button type="button" data-add="' + esc(g.id) + '">' + (g.portadaUrl ? '<img src="' + esc(g.portadaUrl) + '" alt="" loading="lazy">' : '') + esc(g.titulo) + '</button>';
       }).join('') +
       '<button type="button" data-free="1">➕ Añadir «' + esc(raw) + '» como juego nuevo (no está en la biblioteca)</button>';
     box.style.display = 'block';
   }
+
+  function renderSuggest() { suggestInto('tmbSearch', 'tmbSuggest', pool); }
 
   /* ── SORTEO ─────────────────────────────────────────────── */
   /* ── SONIDO Y CONFETI ───────────────────────────────────── */
@@ -166,7 +169,7 @@
 
   /* Lo que ve el jugador elegido: su juego (pendiente o jugado) o el bombo listo para girar. Cada jugador es independiente. */
   function renderPlayerView() {
-    if (busy) return;
+    if (busy || mode !== 'anual') return;
     var p = player(), cur = current(p);
     $('tmbPlayerName').textContent = p;
     if (!cur) {
@@ -223,7 +226,35 @@
       .catch(function () { Toast.show('No se pudo anular', 'error'); });
   }
 
+  /* Gira el bombo y enseña juegos al azar cada vez más despacio hasta parar en el elegido */
+  function runSpin(free, picked, finish) {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var drum = $('tmbDrum');
+    ac(); // el audio solo arranca con un gesto del usuario: este clic
+
+    function end() {
+      drum.classList.remove('tmb-drum--spin');
+      showSlot(picked, true);
+      fanfare();
+      confetti();
+      finish();
+    }
+
+    if (reduce) { end(); return; }
+    drum.classList.add('tmb-drum--spin');
+    var delay = 70, elapsed = 0;
+    (function tick() {
+      if (elapsed >= 2400) { end(); return; }
+      showSlot(gameOf(free[rand(free.length)]), false);
+      blip(260 + Math.random() * 520, 0.05, 'square', 0.035);
+      elapsed += delay;
+      delay = Math.round(delay * 1.12);
+      setTimeout(tick, delay);
+    })();
+  }
+
   function draw() {
+    if (mode === 'rapida') { drawQuick(); return; }
     var p = player();
     var free = available();
     if (busy || !free.length || pendingOf(p)) return;
@@ -231,15 +262,8 @@
     $('tmbGo').disabled = true;
     $('tmbResult').style.display = 'none';
     var picked = gameOf(free[rand(free.length)]);
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var drum = $('tmbDrum');
-    ac(); // el audio solo arranca con un gesto del usuario: este clic
 
-    function finish() {
-      drum.classList.remove('tmb-drum--spin');
-      showSlot(picked, true);
-      fanfare();
-      confetti();
+    runSpin(free, picked, function () {
       var year = new Date().getFullYear() + 1;
       $('tmbWin').textContent = '🎉 ¡' + p + ', te ha tocado!';
       $('tmbResultMeta').textContent = 'A jugarlo en ' + year + ' y pasártelo';
@@ -253,20 +277,78 @@
         .then(function () { busy = false; renderPlayerView(); });
       coll('tombola_historial').add({ jugador: p, juegoId: picked.id, titulo: picked.titulo, fecha: new Date().toISOString() })
         .catch(function (e) { console.error('tombola_historial:', e); });
-    }
+    });
+  }
 
-    if (reduce) { finish(); return; }
-    drum.classList.add('tmb-drum--spin');
-    // se enseñan juegos al azar cada vez más despacio, hasta parar en el elegido
-    var delay = 70, elapsed = 0;
-    (function tick() {
-      if (elapsed >= 2400) { finish(); return; }
-      showSlot(gameOf(free[rand(free.length)]), false);
-      blip(260 + Math.random() * 520, 0.05, 'square', 0.035);
-      elapsed += delay;
-      delay = Math.round(delay * 1.12);
-      setTimeout(tick, delay);
-    })();
+  /* ── PARA ESTA NOCHE: bombo propio, sin base de datos ──────── */
+  function qLoad() {
+    try {
+      var a = JSON.parse(localStorage.getItem('GT_tmb_quick') || '[]');
+      return Array.isArray(a) ? a.filter(function (x) { return x && x.id && x.titulo; }) : [];
+    } catch (e) { return []; }
+  }
+  function qSave() { try { localStorage.setItem('GT_tmb_quick', JSON.stringify(quick)); } catch (e) {} }
+
+  function quickAdd(g) {
+    if (quick.some(function (e) { return e.id === g.id; })) return;
+    quick.push({ id: g.id, titulo: g.titulo, portadaUrl: g.portadaUrl || '', libre: !!g.libre });
+    qSave(); renderQuickView();
+  }
+  function quickAddFree(nombre) {
+    quick.push({ id: 'libre-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), titulo: nombre, portadaUrl: '', libre: true });
+    qSave(); renderQuickView();
+  }
+
+  function renderQuickList() {
+    $('qCount').textContent = quick.length ? '(' + quick.length + ')' : '';
+    $('qList').innerHTML = quick.length
+      ? quick.map(function (e) {
+          var g = gameOf(e);
+          return '<span class="tmb-item">' + (g.portadaUrl ? '<img src="' + esc(g.portadaUrl) + '" alt="" loading="lazy">' : '') + esc(g.titulo) +
+            '<button type="button" data-qrm="' + esc(e.id) + '" title="Quitar" aria-label="Quitar ' + esc(g.titulo) + '">✕</button></span>';
+        }).join('')
+      : '<span class="tmb-empty">Nada todavía</span>';
+  }
+
+  function renderQuickView() {
+    if (busy || mode !== 'rapida') return;
+    var n = quick.length;
+    $('tmbCount').textContent = n ? n + ' juego' + (n !== 1 ? 's' : '') + ' en el bombo de esta noche' : 'Añade los juegos que os apetecen ahora (mínimo 2)';
+    $('tmbLock').textContent = n === 1 ? 'Falta al menos otro juego para poder sortear.' : '';
+    if (quickLast && quick.some(function (e) { return e.id === quickLast.id; })) {
+      var g = gameOf(quickLast);
+      showSlot(g, true);
+      $('tmbWin').textContent = '🎲 ¡Esta noche toca!';
+      $('tmbResultMeta').textContent = [g.desarrollador, (g.plataformas || []).join(' · '), g.duracion ? '~' + g.duracion + ' h' : ''].filter(Boolean).join(' — ');
+      $('tmbResult').style.display = 'block';
+      $('tmbGo').textContent = '🎰 ¡OTRA VEZ!';
+    } else {
+      quickLast = null;
+      setSlotEmpty();
+      $('tmbResult').style.display = 'none';
+      $('tmbGo').textContent = '🎰 ¡GIRAR!';
+    }
+    $('tmbGo').disabled = n < 2;
+    renderQuickList();
+  }
+
+  function drawQuick() {
+    if (busy || quick.length < 2) return;
+    busy = true;
+    $('tmbGo').disabled = true;
+    $('tmbResult').style.display = 'none';
+    var picked = gameOf(quick[rand(quick.length)]);
+    runSpin(quick, picked, function () { quickLast = picked; busy = false; renderQuickView(); });
+  }
+
+  /* ── PESTAÑAS ───────────────────────────────────────────── */
+  function setTab(m) {
+    if (busy) return;
+    mode = m === 'rapida' ? 'rapida' : 'anual';
+    try { localStorage.setItem('GT_tmb_tab', mode); } catch (e) {}
+    document.querySelectorAll('[data-tab]').forEach(function (el) { el.hidden = el.dataset.tab !== mode; });
+    document.querySelectorAll('[data-tabbtn]').forEach(function (b) { b.classList.toggle('tmb-tab--on', b.dataset.tabbtn === mode); });
+    if (mode === 'anual') { renderPool(); renderPlayerView(); } else { renderQuickView(); }
   }
 
   /* ── HISTORIAL ──────────────────────────────────────────── */
@@ -318,7 +400,7 @@
     });
     $('tmbGo').addEventListener('click', draw);
     $('tmbSearch').addEventListener('input', renderSuggest);
-    document.addEventListener('click', function (e) { if (!e.target.closest('.tmb-search')) $('tmbSuggest').style.display = 'none'; });
+    document.addEventListener('click', function (e) { if (!e.target.closest('.tmb-search')) { $('tmbSuggest').style.display = 'none'; $('qSuggest').style.display = 'none'; } });
 
     $('tmbSuggest').addEventListener('click', function (e) {
       var f = e.target.closest('[data-free]');
@@ -364,12 +446,43 @@
         .catch(function () { Toast.show('No se pudo borrar el historial', 'error'); });
     });
 
+    quick = qLoad();
+    document.querySelectorAll('[data-tabbtn]').forEach(function (b) { b.addEventListener('click', function () { setTab(b.dataset.tabbtn); }); });
+    $('qSearch').addEventListener('input', function () { suggestInto('qSearch', 'qSuggest', quick); });
+    $('qSuggest').addEventListener('click', function (e) {
+      var f = e.target.closest('[data-free]');
+      if (f) { var nombre = $('qSearch').value.trim(); if (nombre) quickAddFree(nombre); }
+      else {
+        var b = e.target.closest('[data-add]'), g = b && Biblioteca.getById(b.dataset.add);
+        if (!g) return;
+        quickAdd(g);
+      }
+      $('qSearch').value = '';
+      $('qSuggest').style.display = 'none';
+    });
+    $('qList').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-qrm]');
+      if (!b) return;
+      quick = quick.filter(function (x) { return x.id !== b.dataset.qrm; });
+      qSave(); renderQuickView();
+    });
+    $('qClear').addEventListener('click', function () {
+      if (!quick.length || !confirm('¿Vaciar el bombo de esta noche?')) return;
+      quick = []; quickLast = null; qSave(); renderQuickView();
+    });
+    $('tmbQDrop').addEventListener('click', function () {
+      if (!quickLast) return;
+      quick = quick.filter(function (x) { return x.id !== quickLast.id; });
+      quickLast = null; qSave(); renderQuickView();
+    });
+
     $('tmbDone').addEventListener('click', markDone);
     $('tmbCancel').addEventListener('click', cancelAssign);
 
-    renderPool();
     renderBoard();
-    renderPlayerView();
+    var tab = null;
+    try { tab = localStorage.getItem('GT_tmb_tab'); } catch (e) {}
+    setTab(tab);
   }
 
   document.addEventListener('DOMContentLoaded', function () {
