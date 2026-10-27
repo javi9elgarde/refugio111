@@ -1056,3 +1056,13 @@ body {
   .mt-player-row--nota { grid-template-columns: auto 96px 1fr; }
   .mt-player-row--nota .mt-nota-picker { display: flex; }
 }
+
+/* iOS hace zoom al enfocar un campo con letra menor de 16px y no vuelve atrás: en pantallas táctiles, todos a 16px.
+   !important porque decenas de reglas de clase (.form-select--sm, .search-input…) fijan su propio tamaño. */
+@media (pointer: coarse) {
+  input, select, textarea { font-size: 16px !important; }
+}
+
+/* Menús fijos de arriba y cajón lateral: sitio para la zona del notch en la app instalada */
+.mt-nav { height: calc(56px + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); }
+.mt-sidebar { padding-top: calc(0.85rem + env(safe-area-inset-top, 0px)); }

@@ -501,7 +501,7 @@ html, body {
 }
 
 .psel__back {
-  position: absolute; top: 1.75rem; left: 1.75rem; z-index: 10;
+  position: absolute; top: calc(1.75rem + env(safe-area-inset-top, 0px)); left: 1.75rem; z-index: 10;
   background: none; border: 1px solid rgba(255,255,255,0.1);
   color: rgba(232,232,248,0.35); font-family: 'Orbitron', sans-serif;
   font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em;

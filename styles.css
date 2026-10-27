@@ -5746,3 +5746,44 @@ button.nav__dropbtn { background: none; border: 0; font: inherit; font-size: 0.8
   .modal-overlay { align-items: flex-end; padding: 0; }
   .modal { max-width: none; border-radius: 18px 18px 0 0; max-height: 90vh; animation: sheetUp 0.25s ease; }
 }
+
+/* iOS hace zoom al enfocar un campo con letra menor de 16px y no vuelve atrás: en pantallas táctiles, todos a 16px.
+   !important porque decenas de reglas de clase (.form-select--sm, .search-input…) fijan su propio tamaño. */
+@media (pointer: coarse) {
+  input, select, textarea { font-size: 16px !important; }
+}
+
+/* Menú fijo de arriba: en la app instalada (barra de estado translúcida) hay que dejar sitio a la zona del notch.
+   --nav-h incluye ese margen, así que alturas, desplazamientos y anclas que lo usan se ajustan solos. */
+:root { --nav-h: calc(68px + env(safe-area-inset-top, 0px)); }
+.nav { padding-top: env(safe-area-inset-top, 0px); }
+
+/* REGISTRO EN MÓVIL: la tabla de 10 columnas mide ~1.370px y no cabe, así que cada fila pasa a ser una tarjeta */
+@media (max-width: 768px) {
+  /* anulan la regla móvil de más arriba (tablas con scroll lateral y min-width: 480px) solo para el Registro */
+  .reg-group .table-wrap { overflow: visible !important; border: 0; border-radius: 0; }
+  .reg-group .table { min-width: 0; width: 100%; }
+  .reg-group .table, .reg-group .table tbody { display: block; }
+  .reg-group .table thead { display: none; }
+  .reg-group .table tbody tr {
+    position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.65rem;
+    padding: 0.75rem 0.8rem 0.75rem 1rem; margin-bottom: 0.6rem;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px;
+  }
+  .reg-group .table td { display: block; padding: 0; border: 0; background: none; }
+  .reg-group .table td:nth-child(3) { order: 1; flex: 1 1 100%; min-width: 0; padding-right: 4.2rem; } /* juego (deja sitio a los botones) */
+  .reg-group .table td:nth-child(2) { order: 2; }                                                      /* jugador */
+  .reg-group .table td:nth-child(1) { order: 3; }                                                      /* mes y año */
+  .reg-group .table td:nth-child(1) br { display: none; }
+  .reg-group .table td:nth-child(1) span span { margin-left: 0.3rem; }
+  .reg-group .table td:nth-child(5) { order: 4; }                                                      /* estado */
+  .reg-group .table td:nth-child(4) { order: 5; margin-left: auto; }                                   /* nota */
+  .reg-group .table td:nth-child(6) { order: 6; }                                                      /* horas */
+  .reg-group .table td:nth-child(8) { order: 7; }                                                      /* plataforma */
+  .reg-group .table td:nth-child(7) { order: 8; flex: 1 1 100%; }                                      /* géneros */
+  .reg-group .table td:nth-child(9) { display: none; }                                                 /* año de lanzamiento */
+  .reg-group .table td:nth-child(10) { position: absolute; top: 0.5rem; right: 0.5rem; }               /* ✓ y ✏️ */
+  .reg-group .game-cell { min-width: 0; }
+  .reg-group .game-link, .reg-group .game-cell > span { min-width: 0; overflow-wrap: anywhere; }
+  .reg-group .table tbody tr.reg-row--platino { background: rgba(250,204,21,0.075); border-color: rgba(250,204,21,0.3); }
+}

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20260712f">
+  <link rel="stylesheet" href="mt-styles.css?v=20261028b">
   <style>
     body { background: var(--bg1); }
 
@@ -17,7 +17,7 @@
     .gen-topbar {
       position: sticky; top: 0; z-index: 300;
       display: flex; align-items: center; gap: 1.25rem;
-      height: 62px; padding: 0 1.5rem;
+      height: calc(62px + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) 1.5rem 0;
       background: rgba(7,7,15,0.92); backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
     }
