@@ -239,35 +239,47 @@
   .olimpo-year__sel { font-size: 1.2rem; }
 }
 
-/* ── PODIO OLÍMPICO: cada tarjeta sobre su escalón ── */
+/* ── PODIO: escalones discretos y el puesto integrado en la portada ── */
 .hof-card.hof-gold { margin-top: 0 !important; }
-.hof-podium { gap: 0; align-items: end; max-width: 1150px; margin: 2.5rem auto 2.5rem; isolation: isolate; }
+.hof-podium { gap: 0.4rem; align-items: end; max-width: 1150px; margin: 2.2rem auto 2.5rem; isolation: isolate; }
 .hof-place { position: relative; display: flex; flex-direction: column; }
-.hof-place .hof-card { margin: 0 0.8rem 1rem; }
-.hof-place--1::before { content: ''; position: absolute; inset: -70px -30px 30%; z-index: -1; pointer-events: none;
-  background: radial-gradient(ellipse 60% 70% at 50% 40%, rgba(255,215,0,0.24), transparent 70%); }
-.hof-step { display: flex; justify-content: center; padding-top: 0.5rem; border-radius: 6px 6px 0 0; border-top: 5px solid; position: relative; overflow: hidden; }
-.hof-step::after { content: ''; position: absolute; left: 8%; right: 8%; bottom: 18%; height: 2px; background: currentColor; opacity: 0.35; box-shadow: 0 -8px 0 currentColor; }
-.hof-step span { font-family: 'Orbitron', sans-serif; font-weight: 900; line-height: 1; }
-.hof-place--1 .hof-step { height: 170px; color: #f5c842; border-color: #ffe27a; z-index: 1;
-  background: linear-gradient(180deg, #6b4e08, #3a2a04 55%, #1c1402); box-shadow: 0 0 40px rgba(245,200,66,0.3), inset 0 1px 0 #fff1b0; }
-.hof-place--1 .hof-step span { font-size: 4.2rem; color: #ffd84d; text-shadow: 0 0 24px rgba(255,215,0,0.8), 0 3px 0 #6b4e08; }
-.hof-place--2 .hof-step { height: 115px; color: #d0d4da; border-color: #eef1f5;
-  background: linear-gradient(180deg, #4d525b, #2a2d33 55%, #15171a); box-shadow: inset 0 1px 0 #fff, inset -6px 0 12px rgba(0,0,0,0.35); }
-.hof-place--2 .hof-step span { font-size: 3rem; color: #eef1f5; text-shadow: 0 0 16px rgba(220,225,235,0.6); }
-.hof-place--3 .hof-step { height: 80px; color: #cd7f32; border-color: #e9a065;
-  background: linear-gradient(180deg, #5e3816, #33200c 55%, #1a1006); box-shadow: inset 0 1px 0 #f3c08f, inset 6px 0 12px rgba(0,0,0,0.35); }
-.hof-place--3 .hof-step span { font-size: 2.5rem; color: #f0a868; text-shadow: 0 0 16px rgba(205,127,50,0.6); }
+.hof-place .hof-card { margin: 0 0.6rem; }
+/* escalón: una peana fina y metálica, más alta cuanto mejor el puesto */
+.hof-plinth { position: relative; margin-top: 0.7rem; border-radius: 4px 4px 2px 2px; clip-path: polygon(3% 0, 97% 0, 100% 100%, 0 100%); }
+.hof-plinth::after { content: ''; position: absolute; left: 10%; right: 10%; bottom: -14px; height: 14px; border-radius: 50%; background: radial-gradient(ellipse, var(--glow), transparent 70%); }
+.hof-place--1 .hof-plinth { height: 54px; --glow: rgba(245,200,66,0.35); background: linear-gradient(180deg, #ffe9a0 0, #d9a52a 3px, #6b4e08 4px, #3a2a04 60%, #1c1402); }
+.hof-place--2 .hof-plinth { height: 34px; --glow: rgba(210,215,225,0.2); background: linear-gradient(180deg, #ffffff 0, #c5cad2 3px, #4d525b 4px, #23262b 60%, #131518); }
+.hof-place--3 .hof-plinth { height: 20px; --glow: rgba(205,127,50,0.22); background: linear-gradient(180deg, #ffd2a8 0, #c9803e 3px, #5e3816 4px, #2b1a0a 60%, #170e05); }
+.hof-place--1::before { content: ''; position: absolute; inset: -60px -20px 25%; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse 60% 70% at 50% 45%, rgba(255,215,0,0.16), transparent 70%); }
+/* cartelito del puesto, a la derecha del título y la nota */
+.hof-medal {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.1rem;
+  min-width: 58px; padding: 0.35rem 0.6rem; border-radius: 10px;
+  border: 1px solid var(--m-edge); background: linear-gradient(160deg, var(--m-bg1), var(--m-bg2));
+  box-shadow: inset 0 1px 0 var(--m-hi), 0 0 14px var(--m-glow);
+}
+.hof-medal__n {
+  font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.55rem; line-height: 1;
+  background: linear-gradient(180deg, var(--m-hi), var(--m-mid) 50%, var(--m-lo)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.8));
+}
+.hof-medal__l { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.52rem; letter-spacing: 0.2em; color: var(--m-mid); }
+.hof-place--1 .hof-medal { --m-edge: rgba(245,200,66,0.65); --m-bg1: rgba(90,66,8,0.85); --m-bg2: rgba(28,20,2,0.9); --m-hi: #fff6c8; --m-mid: #f5c842; --m-lo: #a8780c; --m-glow: rgba(245,200,66,0.25); min-width: 66px; }
+.hof-place--1 .hof-medal__n { font-size: 1.8rem; }
+.hof-place--2 .hof-medal { --m-edge: rgba(215,220,228,0.5); --m-bg1: rgba(70,75,84,0.8); --m-bg2: rgba(20,22,26,0.9); --m-hi: #ffffff; --m-mid: #cfd4db; --m-lo: #7c828c; --m-glow: rgba(210,215,225,0.12); }
+.hof-place--3 .hof-medal { --m-edge: rgba(212,138,69,0.55); --m-bg1: rgba(94,56,22,0.8); --m-bg2: rgba(26,15,6,0.9); --m-hi: #ffe0c2; --m-mid: #d48a45; --m-lo: #7a4618; --m-glow: rgba(205,127,50,0.15); }
 @media (max-width: 900px) {
-  .hof-podium { display: grid !important; flex-direction: unset !important; grid-template-columns: 1fr 1.25fr 1fr; margin-top: 1.5rem; }
-  .hof-place .hof-card { margin: 0 0.25rem 0.5rem; max-width: none !important; width: auto !important; order: 0 !important; }
+  .hof-podium { display: grid !important; flex-direction: unset !important; grid-template-columns: 1fr 1.25fr 1fr; gap: 0.2rem; margin-top: 1.5rem; }
+  .hof-place .hof-card { margin: 0 0.15rem; max-width: none !important; width: auto !important; order: 0 !important; }
   .hof-card__body { padding: 0.4rem 0.45rem; }
   .hof-card__title { font-size: 0.66rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .hof-card__score { font-size: 0.85rem; }
-  .hof-card__medal, .hof-champion-badge { display: none; }
-  .hof-place--1 .hof-step { height: 90px; } .hof-place--1 .hof-step span { font-size: 2.2rem; }
-  .hof-place--2 .hof-step { height: 62px; } .hof-place--2 .hof-step span { font-size: 1.7rem; }
-  .hof-place--3 .hof-step { height: 44px; } .hof-place--3 .hof-step span { font-size: 1.4rem; }
+  .hof-champion-badge { display: none; }
+  .hof-card__body { flex-direction: column; align-items: stretch; }
+  .hof-medal { flex-direction: row; gap: 0.3rem; min-width: 0 !important; padding: 0.15rem 0.4rem; }
+  .hof-medal__n, .hof-place--1 .hof-medal__n { font-size: 0.95rem; }
+  .hof-place--1 .hof-plinth { height: 30px; } .hof-place--2 .hof-plinth { height: 18px; } .hof-place--3 .hof-plinth { height: 10px; }
 }
 
 /* ── ENTRADA A LA SALA DE HONOR ── */
@@ -594,7 +606,7 @@ body.honor-open { overflow: hidden; }
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260519n" defer></script>
 <script src="main.js?v=20261028t"            defer></script>
-<script src="index.js?v=20261029c"           defer></script>
+<script src="index.js?v=20261029e"           defer></script>
 <script src="app.js?v=20261023a" defer></script>
 </body>
 </html>

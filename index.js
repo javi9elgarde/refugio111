@@ -555,10 +555,11 @@
           '<div class="hof-card__title">' + Utils.escapeHtml(game.titulo) + '</div>' +
           '<span class="hof-card__score" style="color:' + sc + '">' + Utils.formatScore(item.notaMedia) + '</span>' +
         '</div>' +
-        '<div class="hof-card__medal">' + med.emoji + ' ' + med.label + '</div>' +
+        '<div class="hof-medal" aria-label="Puesto ' + (rankIdx + 1) + '"><span class="hof-medal__n">' + (rankIdx + 1) + 'º</span>' +
+          (rankIdx === 0 ? '<span class="hof-medal__l">GOTY</span>' : '') + '</div>' +
       '</div>' +
       '</div>' +
-      '<div class="hof-step"><span>' + (rankIdx + 1) + '</span></div>' +
+      '<div class="hof-plinth"></div>' +
     '</div>';
   }
 
