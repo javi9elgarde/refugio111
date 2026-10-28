@@ -42,7 +42,7 @@
     $('tmbList').innerHTML = pool.length
       ? pool.map(function (e) {
           var g = gameOf(e), who = m[e.id];
-          return '<span class="tmb-item' + (who ? ' tmb-item--assigned' : '') + '">' + (g.portadaUrl ? '<img src="' + esc(g.portadaUrl) + '" alt="" loading="lazy">' : '') +
+          return '<span class="tmb-item' + (who ? ' tmb-item--assigned' : '') + '">' + (g.portadaUrl ? '<img src="' + esc(Utils.thumb(g.portadaUrl)) + '" alt="" loading="lazy">' : '') +
             esc(g.titulo) + (who ? ' <small style="color:var(--txt3)">🔒 ' + esc(who) + '</small>' : '') +
             '<button type="button" data-rm="' + esc(e.id) + '" title="Quitar" aria-label="Quitar ' + esc(g.titulo) + '">✕</button></span>';
         }).join('')
@@ -91,7 +91,7 @@
     taken.forEach(function (e) { inList[e.id] = true; });
     var hits = Biblioteca.getAll().filter(function (g) { return !inList[g.id] && norm(g.titulo).indexOf(q) !== -1; }).slice(0, 8);
     box.innerHTML = hits.map(function (g) {
-        return '<button type="button" data-add="' + esc(g.id) + '">' + (g.portadaUrl ? '<img src="' + esc(g.portadaUrl) + '" alt="" loading="lazy">' : '') + esc(g.titulo) + '</button>';
+        return '<button type="button" data-add="' + esc(g.id) + '">' + (g.portadaUrl ? '<img src="' + esc(Utils.thumb(g.portadaUrl)) + '" alt="" loading="lazy">' : '') + esc(g.titulo) + '</button>';
       }).join('') +
       '<button type="button" data-free="1">➕ Añadir «' + esc(raw) + '» como juego nuevo (no está en la biblioteca)</button>';
     box.style.display = 'block';
@@ -148,7 +148,7 @@
   function rand(n) { var a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; }
 
   function showSlot(g, win) {
-    $('tmbSlotImg').style.backgroundImage = g.portadaUrl ? 'url("' + String(g.portadaUrl).replace(/"/g, '%22') + '")' : 'none';
+    $('tmbSlotImg').style.backgroundImage = g.portadaUrl ? 'url("' + String(Utils.thumb(g.portadaUrl, 640)).replace(/"/g, '%22') + '")' : 'none';
     $('tmbSlotName').textContent = g.titulo;
     $('tmbSlot').classList.toggle('tmb-slot--win', !!win);
   }
@@ -202,7 +202,7 @@
       var g = gameOf({ id: c.juegoId, titulo: c.titulo, portadaUrl: c.portadaUrl, libre: c.libre });
       var done = c.estado === 'jugado';
       return '<div class="tmb-bcard tmb-bcard--' + p + (done ? ' tmb-bcard--done' : '') + '"><div class="tmb-bcard__who">' + p.toUpperCase() + '</div>' +
-        '<div class="tmb-bcard__img" style="background-image:' + (g.portadaUrl ? 'url(&quot;' + esc(String(g.portadaUrl).replace(/"/g, '%22')) + '&quot;)' : 'none') + '"></div>' +
+        '<div class="tmb-bcard__img" style="background-image:' + (g.portadaUrl ? 'url(&quot;' + esc(String(Utils.thumb(g.portadaUrl)).replace(/"/g, '%22')) + '&quot;)' : 'none') + '"></div>' +
         '<div class="tmb-bcard__name">' + esc(g.titulo) + '</div>' +
         '<div class="tmb-bcard__state">' + (done ? '✅ Jugado el ' + esc(fmtDay(c.jugadoEn)) : '⏳ A jugar en ' + c.anioJuego) + '</div></div>';
     }).join('');
@@ -304,7 +304,7 @@
     $('qList').innerHTML = quick.length
       ? quick.map(function (e) {
           var g = gameOf(e);
-          return '<span class="tmb-item">' + (g.portadaUrl ? '<img src="' + esc(g.portadaUrl) + '" alt="" loading="lazy">' : '') + esc(g.titulo) +
+          return '<span class="tmb-item">' + (g.portadaUrl ? '<img src="' + esc(Utils.thumb(g.portadaUrl)) + '" alt="" loading="lazy">' : '') + esc(g.titulo) +
             '<button type="button" data-qrm="' + esc(e.id) + '" title="Quitar" aria-label="Quitar ' + esc(g.titulo) + '">✕</button></span>';
         }).join('')
       : '<span class="tmb-empty">Nada todavía</span>';

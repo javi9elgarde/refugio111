@@ -240,7 +240,7 @@
         cell.innerHTML =
           '<div class="cal-cover cal-cover--full" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')">' +
             (g.portadaUrl
-              ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" class="cal-cover__img" loading="lazy" onerror="this.style.display=\'none\'">'
+              ? '<img src="' + Utils.escapeHtml(Utils.thumb(g.portadaUrl)) + '" class="cal-cover__img" loading="lazy" onerror="this.style.display=\'none\'">'
               : '<div class="cal-cover__ph">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>') +
             '<div class="cal-cover__overlay">' +
               '<span class="cal-cover__num' + numCls + '">' + d + '</span>' +
@@ -255,7 +255,7 @@
           var activeCls = i === 0 ? ' cal-slide--active' : '';
           return '<div class="cal-slide' + activeCls + '" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" title="' + Utils.escapeHtml(g.titulo) + '">' +
             (g.portadaUrl
-              ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" class="cal-cover__img" loading="lazy" onerror="this.style.display=\'none\'">'
+              ? '<img src="' + Utils.escapeHtml(Utils.thumb(g.portadaUrl)) + '" class="cal-cover__img" loading="lazy" onerror="this.style.display=\'none\'">'
               : '<div class="cal-cover__ph">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>') +
             '<div class="cal-cover__overlay">' +
               '<span class="cal-cover__num' + numCls + '">' + d + '</span>' +
@@ -306,7 +306,7 @@
         '</div>' +
         '<div class="today-launch__cover" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" style="cursor:pointer" title="' + Utils.escapeHtml(g.titulo) + '">' +
           (g.portadaUrl
-            ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" alt="' + Utils.escapeHtml(g.titulo) + '" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+            ? '<img src="' + Utils.escapeHtml(Utils.thumb(g.portadaUrl)) + '" alt="' + Utils.escapeHtml(g.titulo) + '" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
             : '<div class="today-launch__ph">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>') +
           '<div class="today-launch__overlay">' +
             '<div class="today-launch__title">' + Utils.escapeHtml(g.titulo) + '</div>' +
@@ -323,7 +323,7 @@
       var objPos = Utils.escapeHtml(g.portadaPos || 'center top');
       return '<div class="today-launch__multi-card" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" style="cursor:pointer" title="' + Utils.escapeHtml(g.titulo) + '">' +
         (g.portadaUrl
-          ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" alt="' + Utils.escapeHtml(g.titulo) + '" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+          ? '<img src="' + Utils.escapeHtml(Utils.thumb(g.portadaUrl)) + '" alt="' + Utils.escapeHtml(g.titulo) + '" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
           : '<div class="today-launch__ph">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>') +
         '<div class="today-launch__multi-overlay">' +
           '<div class="today-launch__multi-title">' + Utils.escapeHtml(g.titulo) + '</div>' +
@@ -395,7 +395,7 @@
       return '<div class="upcoming-card" onclick="window.GT.GameDetailModal.open(\'' + g.id + '\')" style="cursor:pointer">' +
         '<div class="upcoming-card__cover">' +
           (g.portadaUrl
-            ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" alt="' + Utils.escapeHtml(g.titulo) + '" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+            ? '<img src="' + Utils.escapeHtml(Utils.thumb(g.portadaUrl)) + '" alt="' + Utils.escapeHtml(g.titulo) + '" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
             : '<div class="upcoming-card__ph">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>') +
           '<div class="upcoming-card__date">' + Utils.escapeHtml(dateStr) + '</div>' +
         '</div>' +
@@ -547,7 +547,7 @@
         : '') +
       '<div class="hof-card__cover">' +
         (game.portadaUrl
-          ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+          ? '<img src="' + Utils.escapeHtml(Utils.thumb(game.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
           : '<div class="hof-card__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>') +
         (rankIdx === 0 ? '<div class="hof-champion-badge">🏆 CAMPEÓN ' + year + '</div>' : '') +
       '</div>' +
@@ -591,7 +591,7 @@
       return '<div class="hof-card hof-lower-card" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
         '<div class="hof-card__cover">' +
           (game.portadaUrl
-            ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+            ? '<img src="' + Utils.escapeHtml(Utils.thumb(game.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
             : '<div class="hof-card__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>') +
         '</div>' +
         '<div class="hof-card__body">' +
@@ -887,7 +887,7 @@
         '<div class="nuka-card__rank">#' + (idx + 1) + '</div>' +
         '<div class="nuka-card__cover">' +
           (game.portadaUrl
-            ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+            ? '<img src="' + Utils.escapeHtml(Utils.thumb(game.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
             : '<div class="nuka-card__cover-ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>') +
           '<div class="nuka-card__glass"></div>' +
           '<div class="nuka-card__score-overlay">' +
@@ -932,7 +932,7 @@
       return '<div class="nuka-card" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" title="' + Utils.escapeHtml(game.titulo) + '">' +
         '<div class="nuka-card__cover">' +
           (game.portadaUrl
-            ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+            ? '<img src="' + Utils.escapeHtml(Utils.thumb(game.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
             : '<div class="nuka-card__cover-ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>') +
           '<div class="nuka-card__glass"></div>' +
         '</div>' +

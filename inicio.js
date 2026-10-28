@@ -49,7 +49,7 @@
     return PLAYERS.indexOf(p) !== -1 ? p : 'Javi';
   }
   function cover(g, cls) {
-    return g.portadaUrl ? '<img class="' + cls + '" src="' + esc(g.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + esc(g.portadaPos || 'center top') + '">'
+    return g.portadaUrl ? '<img class="' + cls + '" src="' + esc(U.thumb(g.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + esc(g.portadaPos || 'center top') + '">'
       : '<div class="' + cls + ' r1-up__ph"></div>';
   }
 
@@ -71,7 +71,7 @@
       ((parseInt(g.hype, 10) || 0) > 0 ? '<span class="r1-badge r1-badge--ghost">' + '🔥'.repeat(Math.min(5, parseInt(g.hype, 10))) + '</span>' : '');
     var mine = (g.pendientePor || []).indexOf(player()) !== -1;
     return '<div class="r1-slide' + (i === slideIdx ? ' is-on' : '') + '" data-id="' + esc(g.id) + '">' +
-      (g.portadaUrl ? '<img class="r1-slide__bg" data-src="' + esc(g.portadaUrl) + '" alt="" style="object-position:' + esc(g.portadaPos || 'center top') + '">' : '') +
+      (g.portadaUrl ? '<img class="r1-slide__bg" data-src="' + esc(U.thumb(g.portadaUrl, 1280)) + '" alt="" style="object-position:' + esc(g.portadaPos || 'center top') + '">' : '') +
       '<div class="r1-slide__shade"></div>' +
       '<div class="r1-slide__body">' +
         '<div class="r1-badges">' + badges + '</div>' +
@@ -179,7 +179,7 @@
 
     sides.forEach(function (s) {
       s.classList.toggle('is-party', !!star);
-      s.style.setProperty('--side-img', star && star.portadaUrl ? 'url("' + String(star.portadaUrl).replace(/"/g, '%22') + '")' : 'none');
+      s.style.setProperty('--side-img', star && star.portadaUrl ? 'url("' + String(U.thumb(star.portadaUrl, 1280)).replace(/"/g, '%22') + '")' : 'none');
       s.querySelector('.r1-side__txt').textContent = star ? star.titulo : 'REFUGIO 111';
     });
 
@@ -238,7 +238,7 @@
       var isToday = prefix + pad(day) === t;
       var cls = 'r1-day' + (isToday ? ' r1-day--today' : '') + (games.length ? ' r1-day--has' : '') + (games.length > 1 ? ' r1-day--multi' : '') + (evs.length ? ' r1-day--evt' : '');
       html += '<div class="' + cls + '" data-day="' + day + '"' + (games.length ? ' title="' + esc(games.map(function (x) { return x.titulo; }).join(' · ')) + '"' : '') + '>' +
-        (g && g.portadaUrl ? '<img class="r1-day__bg" src="' + esc(g.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + esc(g.portadaPos || 'center top') + '"><div class="r1-day__fade"></div>' : '') +
+        (g && g.portadaUrl ? '<img class="r1-day__bg" src="' + esc(U.thumb(g.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + esc(g.portadaPos || 'center top') + '"><div class="r1-day__fade"></div>' : '') +
         '<div class="r1-day__n"><span>' + day + '</span>' + (isToday ? '<span class="r1-day__hoy">HOY</span>' : '') + '</div>' +
         (games.length > 1 ? '<span class="r1-day__more">+' + (games.length - 1) + '</span>' : '') +
         '<div class="r1-day__info">' +
@@ -258,7 +258,7 @@
     clearTimeout(popTimer);
     pop.innerHTML = games.map(function (g, i) {
       return '<a class="r1-pc" style="--i:' + i + '" href="biblioteca.html?open=' + esc(g.id) + '">' +
-        (g.portadaUrl ? '<img src="' + esc(g.portadaUrl) + '" alt="" style="object-position:' + esc(g.portadaPos || 'center top') + '">' : '<div class="r1-pc__ph"></div>') +
+        (g.portadaUrl ? '<img src="' + esc(U.thumb(g.portadaUrl)) + '" alt="" style="object-position:' + esc(g.portadaPos || 'center top') + '">' : '<div class="r1-pc__ph"></div>') +
         '<div class="r1-pc__t">' + esc(g.titulo) + '</div>' +
         '<div class="r1-pc__p">' + (g.plataformas || []).slice(0, 3).map(function (p) { return '<span class="r1-pl">' + esc(p) + '</span>'; }).join('') + '</div></a>';
     }).join('');

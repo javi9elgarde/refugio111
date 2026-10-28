@@ -273,7 +273,7 @@
         id: 'maratonista', emoji: '🎮', shortName: 'Rey del Maratón',
         badge: '🎮 REY DEL MARATÓN', desc: 'Más horas en un único juego',
         bg: 'linear-gradient(160deg,#050d1f,#0b1c38)',
-        visual: gR && gR.portadaUrl ? { type: 'cover', src: gR.portadaUrl, pos: gR.portadaPos || 'center top' } : { type: 'icon', icon: '🎮' },
+        visual: gR && gR.portadaUrl ? { type: 'cover', src: Utils.thumb(gR.portadaUrl), pos: gR.portadaPos || 'center top' } : { type: 'icon', icon: '🎮' },
         gameId: topR.juegoId,
         detail: gR ? gR.titulo : '—', value: topR.horas + 'h'
       });
@@ -502,7 +502,7 @@
       if (gameId) {
         var g = Biblioteca.getById(gameId);
         var imgHtml = (g && g.portadaUrl)
-          ? '<img src="' + Utils.escapeHtml(g.portadaUrl) + '" class="pp-fav-card__img" ' +
+          ? '<img src="' + Utils.escapeHtml(Utils.thumb(g.portadaUrl)) + '" class="pp-fav-card__img" ' +
               'style="object-position:' + Utils.escapeHtml(g.portadaPos || 'center center') + '" ' +
               'loading="lazy" onerror="this.style.display=\'none\'">'
           : '<div class="pp-fav-card__ph">' + Utils.escapeHtml((g ? g.titulo : '?').charAt(0)) + '</div>';

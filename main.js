@@ -79,7 +79,11 @@ window.GT.Utils = (function () {
     return /^https?:\/\//i.test(game.trailer || '') ? game.trailer
       : 'https://www.youtube.com/results?search_query=' + encodeURIComponent((game.titulo || '') + ' trailer');
   }
-  return { uuid, trailerUrl, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
+  // Portadas de RAWG a tamaño reducido (el original puede pesar 4 MB); las demás webs no lo permiten
+  function thumb(url, w) {
+    return String(url || '').replace(/^(https:\/\/media\.rawg\.io\/media\/)(?!resize\/|crop\/)/, '$1resize/' + (w || 420) + '/-/');
+  }
+  return { uuid, trailerUrl, thumb, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
            playerBadge, statusBadge, escapeHtml, platformBadgesHtml, genreBadgesHtml, MONTHS };
 })();
 
@@ -413,7 +417,7 @@ window.GT.GameDetailModal = (function () {
 
     /* Portada */
     var coverInner = game.portadaUrl
-      ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">'
+      ? '<img src="' + Utils.escapeHtml(Utils.thumb(game.portadaUrl, 1280)) + '" style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">'
       : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Orbitron,sans-serif;font-size:3rem;font-weight:900;color:rgba(79,172,254,0.35)">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>';
 
     /* Bandas sobre la portada */

@@ -195,7 +195,7 @@
         : (game.duracion === 999 ? '⏱ ∞' : '');
 
       var imgHtml = game.portadaUrl
-        ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" ' +
+        ? '<img src="' + Utils.escapeHtml(Utils.thumb(game.portadaUrl)) + '" ' +
             'class="blg-game-card__img" ' +
             'style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center center') + '" ' +
             'loading="lazy" onerror="this.style.display=\'none\'">'

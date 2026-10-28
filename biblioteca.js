@@ -224,7 +224,7 @@
     var objPos = Utils.escapeHtml(game.portadaPos || 'center top');
 
     var coverContent = game.portadaUrl
-      ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\';this.parentElement.querySelector(\'.game-card__ph\').style.display=\'flex\';window.GT_Bib.coverFailed(\'' + game.id + '\')">' +
+      ? '<img src="' + Utils.escapeHtml(Utils.thumb(game.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\';this.parentElement.querySelector(\'.game-card__ph\').style.display=\'flex\';window.GT_Bib.coverFailed(\'' + game.id + '\')">' +
         '<div class="game-card__ph" style="display:none"><span class="game-card__ph-letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span></div>'
       : '<div class="game-card__ph"><span class="game-card__ph-letter">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</span></div>';
 
@@ -1023,7 +1023,7 @@
 
     /* ── Portada 16:9 + badge nota ─────────────────────────── */
     var coverInner = game.portadaUrl
-      ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">'
+      ? '<img src="' + Utils.escapeHtml(Utils.thumb(game.portadaUrl, 1280)) + '" style="object-position:' + Utils.escapeHtml(game.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">'
       : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Orbitron,sans-serif;font-size:3rem;font-weight:900;color:rgba(79,172,254,0.35)">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>';
 
     /* Bandas superpuestas en la portada del modal */
