@@ -1,17 +1,16 @@
 /* ============================================================
    REFUGIO 111 — Menú principal de videojuegos
-   Carrusel de estrenos con cuenta atrás, fiesta el día del estreno,
-   laterales decorativos, calendario con ventanitas y paneles laterales.
+   Carrusel de estrenos (el más cercano primero) con cuenta atrás, el juego
+   más esperado del año, fiesta el día del estreno, laterales decorativos,
+   calendario con ventanitas y próximos eventos.
    Prueba la fiesta con ?simular=AAAA-MM-DD (hace como si hoy fuera ese día).
    ============================================================ */
 (function () {
   'use strict';
 
-  var GT = window.GT, U = GT.Utils, B = GT.Biblioteca, R = GT.Registro;
+  var GT = window.GT, U = GT.Utils, B = GT.Biblioteca;
   var MESES = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
   var MES3 = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-  var PLAYERS = ['David', 'Javi', 'Mery'];
-  var DONE = ['Terminado', 'Platinado', 'Rejugado', 'Jugado'];
 
   var featuredId = null;   // "Juego Más Esperado" elegido a mano (settings/featuredGame)
   var events = [];
@@ -43,46 +42,25 @@
     return B.getAll().filter(function (g) { var d = fullDate(g); return d && d >= t; })
       .sort(function (a, b) { return a.fechaLanzamiento.localeCompare(b.fechaLanzamiento); });
   }
-  function player() {
-    var p = null;
-    try { p = localStorage.getItem('GT_player'); } catch (e) {}
-    return PLAYERS.indexOf(p) !== -1 ? p : 'Javi';
-  }
   function cover(g, cls) {
     return g.portadaUrl ? '<img class="' + cls + '" src="' + esc(U.thumb(g.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + esc(g.portadaPos || 'center top') + '">'
       : '<div class="' + cls + ' r1-up__ph"></div>';
   }
 
   /* ── CARRUSEL ────────────────────────────────────────────── */
-  function buildSlides() {
-    var t = todayIso(), ups = upcoming(), list = [], seen = {};
-    function add(g) { if (g && !seen[g.id] && list.length < 7) { seen[g.id] = 1; list.push(g); } }
-    ups.filter(function (g) { return g.fechaLanzamiento === t; }).forEach(add);   // lo que sale hoy, primero
-    add(featuredId && B.getById(featuredId) && fullDate(B.getById(featuredId)) >= t ? B.getById(featuredId) : null);
-    ups.filter(isEsperado).forEach(add);
-    ups.forEach(add);
-    return list;
-  }
+  function buildSlides() { return upcoming().slice(0, 5); } // ya van por fecha: lo que sale hoy, primero
 
   function slideHtml(g, i) {
-    var d = fullDate(g), today = d === todayIso();
-    var badges = '<span class="r1-badge' + (today ? ' r1-badge--hot' : '') + '">' + (today ? '🎉 SALE HOY' : g.id === featuredId ? '⭐ JUEGO MÁS ESPERADO' : '⚡ ESTRENO DESTACADO') + '</span>' +
-      ((g.generos || []).length ? '<span class="r1-badge r1-badge--ghost">' + esc(g.generos.slice(0, 2).join(' / ').toUpperCase()) + '</span>' : '') +
-      ((parseInt(g.hype, 10) || 0) > 0 ? '<span class="r1-badge r1-badge--ghost">' + '🔥'.repeat(Math.min(5, parseInt(g.hype, 10))) + '</span>' : '');
-    var mine = (g.pendientePor || []).indexOf(player()) !== -1;
+    var d = fullDate(g);
     return '<div class="r1-slide' + (i === slideIdx ? ' is-on' : '') + '" data-id="' + esc(g.id) + '">' +
       (g.portadaUrl ? '<img class="r1-slide__bg" data-src="' + esc(U.thumb(g.portadaUrl, 1280)) + '" alt="" style="object-position:' + esc(g.portadaPos || 'center top') + '">' : '') +
       '<div class="r1-slide__shade"></div>' +
       '<div class="r1-slide__body">' +
-        '<div class="r1-badges">' + badges + '</div>' +
         '<div class="r1-info">' +
-          '<div class="r1-meta"><span>📅 ' + fmtLong(d) + '</span>' + (g.desarrollador ? '<span>' + esc(g.desarrollador.toUpperCase()) + '</span>' : '') + '</div>' +
+          '<div class="r1-meta"><span>' + (d === todayIso() ? '🎉 SALE HOY' : '📅 ' + fmtLong(d)) + '</span></div>' +
           '<h2 class="r1-title">' + esc(g.titulo) + '</h2>' +
-          (g.descripcion ? '<p class="r1-desc">' + esc(g.descripcion) + '</p>' : '') +
-          ((g.plataformas || []).length ? '<div class="r1-chips">' + g.plataformas.map(function (p) { return '<span class="r1-chip">' + esc(p) + '</span>'; }).join('') + '</div>' : '') +
           '<div class="r1-actions">' +
             '<a class="r1-btn r1-btn--y" href="' + esc(trailerUrl(g)) + '" target="_blank" rel="noopener noreferrer">▶ Ver tráiler</a>' +
-            '<button type="button" class="r1-btn" data-pend="' + esc(g.id) + '"' + (mine ? ' disabled' : '') + '>' + (mine ? '✓ En tus pendientes' : '🔖 A mis pendientes') + '</button>' +
             '<a class="r1-btn" href="biblioteca.html?open=' + esc(g.id) + '">ⓘ Más info</a>' +
           '</div>' +
         '</div>' +
@@ -101,8 +79,7 @@
     }
     var keep = slides.findIndex(function (g) { return g.id === prev; });
     slideIdx = keep >= 0 ? keep : 0;
-    hero.innerHTML = slides.map(slideHtml).join('') +
-      '<button type="button" class="r1-pick" id="r1Pick">⭐ Elegir el más esperado</button>';
+    hero.innerHTML = slides.map(slideHtml).join('');
     // flechas y puntos dentro del pie de cada diapositiva
     hero.querySelectorAll('.r1-nav-slot').forEach(function (slot) {
       slot.outerHTML = slides.length < 2 ? '' : '<div class="r1-nav"><button type="button" class="r1-arrow" data-go="-1" aria-label="Anterior">‹</button><div class="r1-dots">' +
@@ -138,8 +115,9 @@
 
   /* cuenta atrás de la diapositiva visible; al llegar a cero, "¡YA A LA VENTA!" */
   function tick() {
-    var s = $('r1Hero').querySelector('.r1-slide.is-on .r1-cd');
-    if (!s) return;
+    document.querySelectorAll('.r1-slide.is-on .r1-cd, #r1Star .r1-cd').forEach(tickOne);
+  }
+  function tickOne(s) {
     var diff = new Date(s.dataset.cd + 'T00:00:00').getTime() - nowMs();
     if (diff <= 0) { s.innerHTML = '<div class="r1-live">🎉 ¡YA A LA VENTA!</div>'; return; }
     var dd = Math.floor(diff / 864e5), hh = Math.floor(diff % 864e5 / 36e5), mm = Math.floor(diff % 36e5 / 6e4), ss = Math.floor(diff % 6e4 / 1e3);
@@ -150,23 +128,12 @@
 
   function initHero() {
     $('r1Hero').addEventListener('click', function (e) {
-      var go = e.target.closest('[data-go]'), dot = e.target.closest('[data-dot]'), pend = e.target.closest('[data-pend]');
+      var go = e.target.closest('[data-go]'), dot = e.target.closest('[data-dot]');
       if (go) { showSlide(slideIdx + parseInt(go.dataset.go, 10)); restartAuto(); }
       if (dot) { showSlide(parseInt(dot.dataset.dot, 10)); restartAuto(); }
-      if (pend) addPending(pend.dataset.pend, pend);
-      if (e.target.closest('#r1Pick')) openPick();
     });
+    $('r1Star').addEventListener('click', function (e) { if (e.target.closest('#r1Pick')) openPick(); });
     tickTimer = setInterval(function () { if (!document.hidden) tick(); }, 1000);
-  }
-
-  function addPending(id, btn) {
-    var g = B.getById(id), p = player();
-    if (!g) return;
-    var list = (g.pendientePor || []).slice();
-    if (list.indexOf(p) === -1) list.push(p);
-    B.update(id, { pendientePor: list, pendiente: true });
-    btn.disabled = true; btn.textContent = '✓ En tus pendientes';
-    if (GT.Toast) GT.Toast.show('«' + g.titulo + '» en los pendientes de ' + p + ' ✓');
   }
 
   /* ── FIESTA EL DÍA DEL ESTRENO + LATERALES ─────────────────── */
@@ -180,7 +147,7 @@
     sides.forEach(function (s) {
       s.classList.toggle('is-party', !!star);
       s.style.setProperty('--side-img', star && star.portadaUrl ? 'url("' + String(U.thumb(star.portadaUrl, 1280)).replace(/"/g, '%22') + '")' : 'none');
-      s.querySelector('.r1-side__txt').textContent = star ? star.titulo : 'REFUGIO 111';
+      s.querySelector('.r1-side__txt').textContent = star ? star.titulo : 'REFUGIO';
     });
 
     if (star) {
@@ -234,16 +201,23 @@
     for (var i = 0; i < first; i++) html += '<div class="r1-day r1-day--pad"></div>';
     for (var day = 1; day <= days; day++) {
       var games = (byDay[day] || []).sort(function (a, b) { return isEsperado(b) - isEsperado(a); });
-      var evs = evByDay[day] || [], g = games[0];
+      var evs = evByDay[day] || [], shown = games.slice(0, 5);
       var isToday = prefix + pad(day) === t;
       var cls = 'r1-day' + (isToday ? ' r1-day--today' : '') + (games.length ? ' r1-day--has' : '') + (games.length > 1 ? ' r1-day--multi' : '') + (evs.length ? ' r1-day--evt' : '');
-      html += '<div class="' + cls + '" data-day="' + day + '"' + (games.length ? ' title="' + esc(games.map(function (x) { return x.titulo; }).join(' · ')) + '"' : '') + '>' +
-        (g && g.portadaUrl ? '<img class="r1-day__bg" src="' + esc(U.thumb(g.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + esc(g.portadaPos || 'center top') + '"><div class="r1-day__fade"></div>' : '') +
+      // con varios juegos, las portadas y nombres van pasando dentro de la casilla (data-k)
+      html += '<div class="' + cls + '" data-day="' + day + '"' + (games.length === 1 ? ' title="' + esc(games[0].titulo) + '"' : '') + '>' +
+        shown.map(function (g, i) {
+          return g.portadaUrl ? '<img class="r1-day__bg' + (i ? '' : ' is-on') + '" data-k="' + i + '" src="' + esc(U.thumb(g.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + esc(g.portadaPos || 'center top') + '">' : '';
+        }).join('') +
+        (games.length ? '<div class="r1-day__fade"></div>' : '') +
         '<div class="r1-day__n"><span>' + day + '</span>' + (isToday ? '<span class="r1-day__hoy">HOY</span>' : '') + '</div>' +
         (games.length > 1 ? '<span class="r1-day__more">+' + (games.length - 1) + '</span>' : '') +
         '<div class="r1-day__info">' +
           evs.map(function (ev) { return '<div class="r1-day__evt" title="' + esc(ev.nombre) + '">🎮 ' + esc(ev.nombre) + '</div>'; }).join('') +
-          (g ? '<div class="r1-day__t">' + esc(g.titulo) + '</div><div class="r1-day__pl">' + (g.plataformas || []).slice(0, 2).map(function (p) { return '<span class="r1-pl">' + esc(p) + '</span>'; }).join('') + '</div>' : '') +
+          (shown.length ? '<div class="r1-day__ts">' + shown.map(function (g, i) {
+            return '<div class="r1-day__g' + (i ? '' : ' is-on') + '" data-k="' + i + '"><div class="r1-day__t">' + esc(g.titulo) + '</div><div class="r1-day__pl">' +
+              (g.plataformas || []).slice(0, 2).map(function (p) { return '<span class="r1-pl">' + esc(p) + '</span>'; }).join('') + '</div></div>';
+          }).join('') + '</div>' : '') +
         '</div></div>';
     }
     $('r1Cal').innerHTML = html;
@@ -251,11 +225,14 @@
   }
 
   /* ventanitas flotantes: al pasar el ratón por un día con varios juegos (o al tocarlo en el móvil) */
+  var popCell = null;
   function showPop(cell) {
     var games = ($('r1Cal')._byDay || {})[cell.dataset.day] || [];
     var pop = $('r1Pop');
-    if (games.length < 2) { pop.hidden = true; return; }
     clearTimeout(popTimer);
+    if (games.length < 2) { pop.hidden = true; return; }
+    if (popCell === cell && !pop.hidden) return; // ya abiertas para este día: no redibujar (si no, parpadean)
+    popCell = cell;
     pop.innerHTML = games.map(function (g, i) {
       return '<a class="r1-pc" style="--i:' + i + '" href="biblioteca.html?open=' + esc(g.id) + '">' +
         (g.portadaUrl ? '<img src="' + esc(U.thumb(g.portadaUrl)) + '" alt="" style="object-position:' + esc(g.portadaPos || 'center top') + '">' : '<div class="r1-pc__ph"></div>') +
@@ -283,7 +260,10 @@
     var canHover = matchMedia('(hover: hover) and (pointer: fine)').matches;
     if (canHover) {
       grid.addEventListener('mouseover', function (e) { var c = e.target.closest('.r1-day--multi'); if (c) showPop(c); });
-      grid.addEventListener('mouseout', function (e) { if (e.target.closest('.r1-day--multi')) hidePopSoon(); });
+      grid.addEventListener('mouseout', function (e) {
+        var c = e.target.closest('.r1-day--multi');
+        if (c && !c.contains(e.relatedTarget)) hidePopSoon(); // moverse entre partes de la misma casilla no cuenta como salir
+      });
       pop.addEventListener('mouseenter', function () { clearTimeout(popTimer); });
       pop.addEventListener('mouseleave', hidePopSoon);
     }
@@ -296,44 +276,50 @@
     });
     document.addEventListener('click', function (e) { if (!e.target.closest('#r1Pop, .r1-day--multi')) pop.hidden = true; });
     addEventListener('scroll', function () { if (!pop.classList.contains('r1-pop--sheet')) pop.hidden = true; }, { passive: true });
+    // días con varios juegos: van pasando sus portadas y nombres
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) setInterval(function () {
+      if (document.hidden) return;
+      grid.querySelectorAll('.r1-day--multi').forEach(function (c) {
+        var n = c.querySelectorAll('.r1-day__g').length, on = c.querySelector('.r1-day__g.is-on');
+        var next = ((on ? +on.dataset.k : -1) + 1) % n;
+        c.querySelectorAll('[data-k]').forEach(function (el) { el.classList.toggle('is-on', +el.dataset.k === next); });
+      });
+    }, 2800);
   }
 
-  /* ── PANELES LATERALES ───────────────────────────────────── */
-  function renderUpcoming() {
-    var list = upcoming().slice(0, 6);
-    $('r1Up').innerHTML = list.length ? list.map(function (g) {
-      var dl = daysLeft(g.fechaLanzamiento);
-      return '<a class="r1-up" href="biblioteca.html?open=' + esc(g.id) + '">' + cover(g, '') +
-        '<div class="r1-up__i"><div class="r1-up__t">' + (isEsperado(g) ? '🔥 ' : '') + esc(g.titulo) + '</div><div class="r1-up__d">' + fmtShort(g.fechaLanzamiento) + '</div></div>' +
-        '<span class="r1-up__left' + (dl === 0 ? ' r1-up__left--hoy' : '') + '">' + (dl === 0 ? 'HOY' : dl + 'd') + '</span></a>';
-    }).join('') : '<div class="r1-none">No hay estrenos con fecha</div>';
+  /* ── EL JUEGO MÁS ESPERADO DEL AÑO ─────────────────────────── */
+  // el elegido a mano; si no hay (o ya salió), el próximo estreno con más hype
+  function starGame() {
+    var f = featuredId && B.getById(featuredId), d = f && fullDate(f);
+    if (f && (!d || d >= todayIso())) return f;
+    return upcoming().filter(function (g) { return (parseInt(g.hype, 10) || 0) > 0; })
+      .sort(function (a, b) { return (parseInt(b.hype, 10) || 0) - (parseInt(a.hype, 10) || 0); })[0] || null;
+  }
+
+  function renderStar() {
+    var g = starGame(), d = g && fullDate(g);
+    $('r1Star').innerHTML = '<div class="r1-ph"><h2 class="r1-h r1-h--y">⭐ EL JUEGO MÁS ESPERADO DEL AÑO</h2><button type="button" class="r1-link" id="r1Pick">Cambiar</button></div>' +
+      (g ? '<a class="r1-star__cover" href="biblioteca.html?open=' + esc(g.id) + '">' +
+          (g.portadaUrl ? '<img src="' + esc(U.thumb(g.portadaUrl, 640)) + '" alt="" style="object-position:' + esc(g.portadaPos || 'center top') + '">' : '') +
+          '<div class="r1-star__shade"></div><div class="r1-star__t">' + esc(g.titulo) + '</div></a>' +
+        '<div class="r1-star__d">' + (d ? '📅 ' + fmtLong(d) : 'FECHA POR CONFIRMAR' + (g.fechaLanzamiento ? ' · ' + esc(g.fechaLanzamiento) : '')) + '</div>' +
+        (d ? '<div class="r1-cd" data-cd="' + d + '"></div>' : '') +
+        '<a class="r1-btn r1-btn--y r1-star__btn" href="' + esc(trailerUrl(g)) + '" target="_blank" rel="noopener noreferrer">▶ Ver tráiler</a>'
+      : '<div class="r1-none">Aún no hay juego más esperado. Pulsa «Cambiar» para elegirlo.</div>');
+    tick();
   }
 
   function renderEvents() {
     var now = nowMs();
     var list = events.filter(function (ev) { return new Date(ev.isoDate).getTime() > now - 864e5; })
-      .sort(function (a, b) { return new Date(a.isoDate) - new Date(b.isoDate); }).slice(0, 4);
+      .sort(function (a, b) { return new Date(a.isoDate) - new Date(b.isoDate); }).slice(0, 3);
     $('r1Evt').innerHTML = list.length ? list.map(function (ev) {
       var d = new Date(ev.isoDate), dl = Math.max(0, Math.ceil((d.getTime() - now) / 864e5));
-      return '<a class="r1-up r1-up--evt" href="eventos.html">' + (/^https?:\/\//i.test(ev.img || '') ? '<img src="' + esc(ev.img) + '" alt="" loading="lazy">' : '<div class="r1-up__ph"></div>') +
-        '<div class="r1-up__i"><div class="r1-up__t">' + esc(ev.nombre) + '</div><div class="r1-up__d">' + esc(ev.fechaLabel || fmtShort(isoOf(d))) + '</div></div>' +
-        '<span class="r1-up__left">' + (dl === 0 ? 'HOY' : dl + 'd') + '</span></a>';
+      return '<a class="r1-ev" href="eventos.html">' + (/^https?:\/\//i.test(ev.img || '') ? '<img src="' + esc(ev.img) + '" alt="" loading="lazy">' : '') +
+        '<div class="r1-ev__shade"></div>' +
+        '<span class="r1-ev__left">' + (dl === 0 ? 'HOY' : 'EN ' + dl + ' DÍA' + (dl === 1 ? '' : 'S')) + '</span>' +
+        '<div class="r1-ev__i"><div class="r1-ev__t">' + esc(ev.nombre) + '</div><div class="r1-ev__d">' + esc(ev.fechaLabel || fmtShort(isoOf(d))) + '</div></div></a>';
     }).join('') : '<div class="r1-none">No hay eventos próximamente</div>';
-  }
-
-  function renderStats() {
-    var p = $('r1StatsP').value;
-    var mine = R.getAll().filter(function (r) { return r.jugador === p; });
-    var uniq = function (pred) { var s = {}; mine.forEach(function (r) { if (pred(r)) s[r.juegoId] = 1; }); return Object.keys(s).length; };
-    var horas = mine.reduce(function (a, r) { return a + (parseFloat(r.horas) || 0); }, 0);
-    var pend = B.getAll().filter(function (g) { return (g.pendientePor || []).indexOf(p) !== -1; }).length;
-    var st = function (ico, rgb, n, l) { return '<div class="r1-stat"><div class="r1-stat__i" style="--c:' + rgb + '">' + ico + '</div><div><div class="r1-stat__n">' + n + '</div><div class="r1-stat__l">' + l + '</div></div></div>'; };
-    var h = horas >= 1000 ? (horas / 1000).toFixed(1).replace('.', ',') + 'k' : Math.round(horas);
-    $('r1Stats').innerHTML =
-      st('🎮', '59,130,246', uniq(function (r) { return DONE.indexOf(r.estado) !== -1; }), 'Juegos jugados') +
-      st('🏆', '255,200,0', uniq(function (r) { return r.estado === 'Platinado'; }), 'Platinos') +
-      st('🕒', '168,85,247', h, 'Horas jugadas') +
-      st('🔖', '52,211,153', pend, 'En pendientes');
   }
 
   /* ── ELEGIR EL JUEGO MÁS ESPERADO (settings/featuredGame) ──── */
@@ -367,12 +353,9 @@
   }
 
   /* ── ARRANQUE ────────────────────────────────────────────── */
-  function renderAll() { renderParty(); renderHero(); renderCal(); renderUpcoming(); renderEvents(); renderStats(); }
+  function renderAll() { renderParty(); renderHero(); renderStar(); renderCal(); renderEvents(); }
 
   function init() {
-    var sel = $('r1StatsP');
-    sel.value = player();
-    sel.addEventListener('change', renderStats);
     initHero(); initCal(); initPick();
     renderAll();
     GT.db.collection('settings').doc('featuredGame').get()
@@ -381,7 +364,7 @@
     GT.db.collection('events').get()
       .then(function (snap) { events = snap.docs.map(function (d) { return d.data(); }).filter(function (ev) { return ev.isoDate; }); renderCal(); renderEvents(); })
       .catch(function () { $('r1Evt').innerHTML = '<div class="r1-none">No se pudieron cargar los eventos</div>'; });
-    GT.onDataChange(function () { renderParty(); renderHero(); renderCal(); renderUpcoming(); renderStats(); });
+    GT.onDataChange(function () { renderParty(); renderHero(); renderStar(); renderCal(); });
   }
 
   document.addEventListener('DOMContentLoaded', function () { GT.onDataReady(init); });
