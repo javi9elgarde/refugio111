@@ -12,7 +12,7 @@
   var MESES = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
 
   var featuredId = null;   // "Juego Más Esperado" elegido a mano (settings/featuredGame): también tiene fiesta
-  var events = [];
+  var events = [], curEv = null;
   var slides = [], slideIdx = 0, slideTimer = null, tickTimer = null;
   var cal = null;          // { y, m }
   var popTimer = null;
@@ -47,16 +47,20 @@
     return '<div class="r1-slide' + (i === slideIdx ? ' is-on' : '') + '" data-id="' + esc(g.id) + '">' +
       (g.portadaUrl ? '<img class="r1-slide__bg" data-src="' + esc(U.thumb(g.portadaUrl, 1280)) + '" alt="" style="object-position:' + esc(g.portadaPos || 'center top') + '">' : '') +
       '<div class="r1-slide__shade"></div>' +
+      // cartel colgado arriba a la izquierda: deja ver el fondo
+      '<div class="r1-sign"><div class="r1-sign__board">' +
+        '<div class="r1-meta"><span>' + (d === todayIso() ? '🎉 SALE HOY' : '📅 ' + fmtLong(d)) + '</span></div>' +
+        '<h2 class="r1-title">' + esc(g.titulo) + '</h2>' +
+        ((g.plataformas || []).length ? '<div class="r1-sign__pl">' + g.plataformas.slice(0, 4).map(function (p) { return '<span class="r1-pl">' + esc(p) + '</span>'; }).join('') + '</div>' : '') +
+      '</div></div>' +
       '<div class="r1-slide__body">' +
-        '<div class="r1-info">' +
-          '<div class="r1-meta"><span>' + (d === todayIso() ? '🎉 SALE HOY' : '📅 ' + fmtLong(d)) + '</span></div>' +
-          '<h2 class="r1-title">' + esc(g.titulo) + '</h2>' +
+        '<div class="r1-foot">' +
           '<div class="r1-actions">' +
             '<a class="r1-btn r1-btn--y" href="' + esc(trailerUrl(g)) + '" target="_blank" rel="noopener noreferrer">▶ Ver tráiler</a>' +
             '<a class="r1-btn" href="biblioteca.html?open=' + esc(g.id) + '">ⓘ Más info</a>' +
           '</div>' +
+          '<div class="r1-cd" data-cd="' + d + '"></div><div class="r1-nav-slot"></div>' +
         '</div>' +
-        '<div class="r1-foot"><div class="r1-cd" data-cd="' + d + '"></div><div class="r1-nav-slot"></div></div>' +
       '</div></div>';
   }
 
@@ -283,26 +287,41 @@
     var now = nowMs();
     var ev = events.filter(function (e) { return new Date(e.isoDate).getTime() > now - 864e5; })
       .sort(function (a, b) { return new Date(a.isoDate) - new Date(b.isoDate); })[0];
+    curEv = ev || null;
+    $('r1EvtEdit').hidden = !ev;
     if (!ev) { $('r1Evt').innerHTML = '<div class="r1-none">No hay eventos próximamente</div>'; return; }
-    var d = new Date(ev.isoDate);
-    $('r1Evt').innerHTML = '<a class="r1-ev" href="eventos.html">' + (/^https?:\/\//i.test(ev.img || '') ? '<img src="' + esc(ev.img) + '" alt="">' : '') +
+    var d = new Date(ev.isoDate), img = ev.homeImg || ev.img || ''; // homeImg: imagen solo para este panel
+    $('r1Evt').innerHTML = '<a class="r1-ev" href="eventos.html">' + (/^https?:\/\//i.test(img) ? '<img src="' + esc(img) + '" alt="">' : '') +
       '<div class="r1-ev__shade"></div>' +
       '<div class="r1-ev__i"><div class="r1-ev__t">' + esc(ev.nombre) + '</div><div class="r1-ev__d">📅 ' + esc(ev.fechaLabel || fmtLong(isoOf(d))) + '</div>' +
       '<div class="r1-cd" data-cd="' + isoOf(d) + '"></div></div></a>';
     tick();
   }
 
+  function initEvtEdit() {
+    $('r1EvtEdit').addEventListener('click', function () {
+      if (!curEv) return;
+      var ev = curEv, url = prompt('Imagen para el panel de «' + ev.nombre + '» (vacío = la de la pestaña Eventos):', ev.homeImg || '');
+      if (url === null) return;
+      url = url.trim();
+      if (url && !/^https?:\/\//i.test(url)) { alert('El enlace tiene que empezar por http:// o https://'); return; }
+      GT.db.collection('events').doc(ev.id).update({ homeImg: url })
+        .then(function () { ev.homeImg = url; renderEvents(); })
+        .catch(function (err) { console.error('homeImg:', err); alert('No se pudo guardar la imagen'); });
+    });
+  }
+
   /* ── ARRANQUE ────────────────────────────────────────────── */
   function renderAll() { renderParty(); renderHero(); renderCal(); renderEvents(); }
 
   function init() {
-    initHero(); initCal();
+    initHero(); initCal(); initEvtEdit();
     renderAll();
     GT.db.collection('settings').doc('featuredGame').get()
       .then(function (doc) { featuredId = doc.exists ? doc.data().juegoId || null : null; renderAll(); })
       .catch(function () {});
     GT.db.collection('events').get()
-      .then(function (snap) { events = snap.docs.map(function (d) { return d.data(); }).filter(function (ev) { return ev.isoDate; }); renderCal(); renderEvents(); })
+      .then(function (snap) { events = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); }).filter(function (ev) { return ev.isoDate; }); renderCal(); renderEvents(); })
       .catch(function () { $('r1Evt').innerHTML = '<div class="r1-none">No se pudieron cargar los eventos</div>'; });
     GT.onDataChange(function () { renderParty(); renderHero(); renderCal(); });
   }
