@@ -21,16 +21,12 @@
 .r1-side__bg { position: absolute; inset: 0; background:
   radial-gradient(ellipse 120% 60% at 50% 30%, rgba(255,200,0,0.10), transparent 70%),
   radial-gradient(ellipse 120% 60% at 50% 80%, rgba(79,172,254,0.10), transparent 70%); }
-/* logo arriba y REFUGIO en vertical debajo, sin solaparse */
-.r1-side__in { position: absolute; inset: 2.5rem 0; display: flex; flex-direction: column; align-items: center; gap: 1.6rem; }
-.r1-side__logo { position: relative; flex-shrink: 0; width: min(62%, 140px); aspect-ratio: 1; filter: drop-shadow(0 0 22px rgba(255,200,0,0.25)); }
-.r1-side__logo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
-.r1-side__logo img:first-child { animation: r1Spin 40s linear infinite; }
-@keyframes r1Spin { to { transform: rotate(360deg); } }
+.r1-side__in { position: absolute; inset: 2.5rem 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .r1-side__txt { min-height: 0; writing-mode: vertical-rl; white-space: nowrap; overflow: hidden;
   font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(2rem, 3vw, 3.6rem); letter-spacing: 0.22em;
   background: linear-gradient(180deg, #ffc800, #4facfe); -webkit-background-clip: text; background-clip: text; color: transparent; opacity: 0.35; }
 .r1-side--l .r1-side__txt { transform: rotate(180deg); }
+.r1-side__txt:empty { display: none; }
 /* día de estreno: fondo del juego y su nombre */
 .r1-side.is-party .r1-side__bg { background: var(--side-img, none) center / cover no-repeat; }
 .r1-side.is-party .r1-side__bg::after { content: ''; position: absolute; inset: 0; }
@@ -47,8 +43,8 @@
 .r1-today { margin-bottom: 1rem; padding: 0.65rem 1rem; border-radius: 12px; border: 1px solid rgba(255,200,0,0.35); background: rgba(255,200,0,0.08); color: var(--r1-y2); font-size: 0.85rem; font-weight: 600; }
 
 /* ── CARRUSEL DE ESTRENOS ───────────────────────────────── */
-.r1-hero { grid-area: hero; position: relative; height: clamp(340px, 46vh, 460px); border-radius: 18px; overflow: hidden; border: 1px solid #232e42; background: #05070d; }
-@media (max-width: 640px) { .r1-hero { height: 400px; border-radius: 14px; } }
+.r1-hero { position: relative; height: clamp(440px, 62vh, 600px); border-radius: 18px; overflow: hidden; border: 1px solid #232e42; background: #05070d; }
+@media (max-width: 640px) { .r1-hero { height: 440px; border-radius: 14px; } }
 .r1-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 0.6s ease; pointer-events: none; }
 .r1-slide.is-on { opacity: 1; pointer-events: auto; }
 .r1-slide__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.78); }
@@ -84,10 +80,9 @@
 .r1-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; height: 100%; padding: 1.5rem; text-align: center; color: var(--txt2); }
 
 /* ── REJILLA: CALENDARIO + PANELES ──────────────────────── */
-.r1-grid { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); grid-template-areas: "hero star" "cal evt"; gap: 1.4rem; align-items: stretch; }
-@media (max-width: 1100px) { .r1-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "hero" "star" "cal" "evt"; } }
-.r1-calp { grid-area: cal; align-self: start; }
-.r1-evtp { grid-area: evt; align-self: start; }
+.r1-grid { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 1.6rem; margin-top: 1.8rem; align-items: stretch; }
+@media (max-width: 1100px) { .r1-grid { grid-template-columns: minmax(0, 1fr); } }
+.r1-evtp { display: flex; flex-direction: column; }
 .r1-panel { padding: 1.2rem; border-radius: 18px; background: var(--r1-panel); border: 1px solid rgba(255,200,0,0.12); }
 @media (max-width: 640px) { .r1-panel { padding: 0.9rem; border-radius: 14px; } }
 .r1-ph { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--r1-line); }
@@ -155,31 +150,23 @@
 .r1-pop--sheet { left: 0.8rem !important; right: 0.8rem; top: auto !important; bottom: calc(72px + env(safe-area-inset-bottom, 0px)); flex-wrap: wrap; justify-content: center; padding: 0.8rem; border-radius: 16px; background: rgba(7,7,15,0.96); border: 1px solid rgba(255,200,0,0.3); }
 .r1-pop--sheet .r1-pc { width: calc(50% - 0.3rem); }
 
-/* el juego más esperado del año */
-.r1-star { grid-area: star; display: flex; flex-direction: column; gap: 0.8rem; border-color: rgba(255,200,0,0.35); box-shadow: 0 0 40px rgba(255,200,0,0.08) inset; }
-.r1-star .r1-ph { margin-bottom: 0; }
-.r1-star__cover { position: relative; flex: 1; min-height: 150px; display: block; overflow: hidden; border-radius: 14px; background: #1e293b; color: #fff; text-decoration: none; }
-.r1-star__cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease-out; }
-.r1-star__shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(5,7,13,0.95) 0%, transparent 60%); }
-.r1-star__t { position: absolute; left: 0.9rem; right: 0.9rem; bottom: 0.7rem; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(1.1rem, 1.6vw, 1.5rem); line-height: 1.1; text-shadow: 0 2px 12px rgba(0,0,0,0.8); overflow-wrap: anywhere; }
-.r1-star__d { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.06em; color: var(--r1-y2); }
-.r1-star .r1-count { justify-content: center; }
-.r1-star .r1-count__lbl { display: none; }
-.r1-star__btn { justify-content: center; }
 .r1-none { padding: 0.8rem 0.4rem; text-align: center; font-size: 0.8rem; color: var(--txt3); }
 .r1-h--b { color: #7cc1ff; text-shadow: 0 0 12px rgba(79,172,254,0.4); }
 
-/* próximos eventos: tarjetas grandes con imagen */
-.r1-evts { display: flex; flex-direction: column; gap: 0.8rem; }
-.r1-ev { position: relative; display: block; height: 130px; overflow: hidden; border-radius: 14px; border: 1px solid rgba(79,172,254,0.25); background: linear-gradient(135deg, #0f1f3a, #05070d); color: #fff; text-decoration: none; }
+/* próximo evento: tarjeta vertical que llena la columna */
+.r1-evts { flex: 1; display: flex; flex-direction: column; }
+.r1-ev { position: relative; flex: 1; display: block; min-height: 340px; overflow: hidden; border-radius: 14px; border: 1px solid rgba(79,172,254,0.3); background: linear-gradient(160deg, #0f1f3a, #05070d); color: #fff; text-decoration: none; }
 .r1-ev img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease-out; }
-.r1-ev__shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(5,7,13,0.95) 0%, rgba(5,7,13,0.2) 70%); }
-.r1-ev__left { position: absolute; top: 0.6rem; right: 0.6rem; padding: 0.25rem 0.55rem; border-radius: 999px; background: #4facfe; color: #05070d; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.62rem; letter-spacing: 0.06em; }
-.r1-ev__i { position: absolute; left: 0.85rem; right: 0.85rem; bottom: 0.65rem; }
-.r1-ev__t { font-weight: 900; font-size: 1rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
-.r1-ev__d { margin-top: 0.15rem; font-family: ui-monospace, monospace; font-size: 0.7rem; color: #a5d4ff; }
+.r1-ev__shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(5,7,13,0.97) 0%, rgba(5,7,13,0.55) 45%, rgba(5,7,13,0.1) 100%); }
+.r1-ev__i { position: absolute; left: 1rem; right: 1rem; bottom: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.r1-ev__t { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(1.2rem, 1.7vw, 1.7rem); line-height: 1.12; overflow-wrap: anywhere; text-shadow: 0 2px 14px rgba(0,0,0,0.85); }
+.r1-ev__d { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.06em; color: #a5d4ff; }
+.r1-ev .r1-count { justify-content: center; }
+.r1-ev .r1-count__lbl { display: none; }
+.r1-ev .r1-count__u b { color: #7cc1ff; text-shadow: 0 0 12px rgba(79,172,254,0.5); }
+.r1-ev .r1-count__sep { color: #7cc1ff; }
 @media (hover: hover) and (pointer: fine) {
-  .r1-star__cover:hover img, .r1-ev:hover img { transform: scale(1.05); }
+  .r1-ev:hover img { transform: scale(1.05); }
   .r1-ev:hover { border-color: rgba(79,172,254,0.6); }
 }
 
@@ -187,7 +174,7 @@
 .r1-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 500; overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
-  .r1-slide.is-on .r1-slide__bg, .r1-pc, .r1-side__logo img:first-child { animation: none; }
+  .r1-slide.is-on .r1-slide__bg, .r1-pc { animation: none; }
   .r1-slide, .r1-day__bg { transition: none; }
 }
 

@@ -902,43 +902,143 @@
     }).join('');
   }
 
-  /* ── SALA DE HONOR (G.O.T.Y): lo mejor valorado de la casa, sin notas ni orden ── */
-  function renderSalaHonor() {
-    var el = document.getElementById('salaHonorGrid');
-    if (!el) return;
-    var byGame = {};
+  /* ── SALA DE HONOR (G.O.T.Y): lo mejor valorado de la casa, sin notas ni orden ──
+     settings/salaHonor = { juegos: [ids] elegidos a mano (o null), fotos: { id: { url, pos } } } */
+  var HONOR_MAX = 20, HONOR_PICK_MIN = 9.6;
+  var honor = { juegos: null, fotos: {} }, honorDraft = null, honorAvgs = {};
+
+  // nota media de cada juego valorado por al menos 2 jugadores
+  function honorAverages() {
+    var byGame = {}, out = {};
     Registro.getAll().forEach(function(r) {
       var n = parseFloat(r.nota);
       if (isNaN(n)) return;
       var b = byGame[r.juegoId] = byGame[r.juegoId] || { sum: 0, n: 0, players: {} };
       b.sum += n; b.n++; b.players[r.jugador] = true;
     });
-    // mismo criterio que la antigua Sala Nuka (nota media de al menos 2 jugadores), con listón en 9,5
-    var games = Object.keys(byGame).filter(function(id) {
+    Object.keys(byGame).forEach(function(id) {
       var b = byGame[id];
-      return Object.keys(b.players).length >= 2 && b.sum / b.n >= 9.5;
-    }).map(function(id) { return Biblioteca.getById(id); }).filter(Boolean);
-    for (var i = games.length - 1; i > 0; i--) { // orden aleatorio: aquí no hay puestos
-      var j = Math.floor(Math.random() * (i + 1)), t = games[i]; games[i] = games[j]; games[j] = t;
+      if (Object.keys(b.players).length >= 2 && Biblioteca.getById(id)) out[id] = b.sum / b.n;
+    });
+    return out;
+  }
+  function honorByAvg(ids) { return ids.slice().sort(function(a, b) { return honorAvgs[b] - honorAvgs[a]; }); }
+
+  function honorIds(st) {
+    if (st.juegos) return st.juegos.filter(function(id) { return Biblioteca.getById(id); }).slice(0, HONOR_MAX);
+    return honorByAvg(Object.keys(honorAvgs)).slice(0, HONOR_MAX); // por defecto, los 20 de mejor media
+  }
+
+  function honorPos(pos) { // "30% 0%" → [30, 0]; cualquier otra cosa → centrado arriba
+    var m = /^(\d+(?:\.\d+)?)% (\d+(?:\.\d+)?)%$/.exec(pos || '');
+    return m ? [+m[1], +m[2]] : [50, 0];
+  }
+
+  function renderSalaHonor() {
+    var el = document.getElementById('salaHonorGrid');
+    if (!el) return;
+    honorAvgs = honorAverages();
+    var editing = !!honorDraft, st = honorDraft || honor;
+    var ids = honorIds(st);
+    if (!editing) {
+      for (var i = ids.length - 1; i > 0; i--) { // orden aleatorio: aquí no hay puestos
+        var j = Math.floor(Math.random() * (i + 1)), t = ids[i]; ids[i] = ids[j]; ids[j] = t;
+      }
     }
-    games = games.slice(0, 24);
-    if (!games.length) {
-      el.innerHTML = '<div class="nuka-empty"><span class="nuka-empty__icon">🔥</span>AÚN NO HAY JUEGOS CON NOTA MEDIA DE 9,5 O MÁS</div>';
+    document.getElementById('salaHonor').classList.toggle('is-editing', editing);
+    document.getElementById('salaHonorEdit').hidden = editing;
+    document.getElementById('salaHonorEditor').hidden = !editing;
+    if (editing) renderHonorEditor(ids);
+    if (!ids.length) {
+      el.innerHTML = '<div class="nuka-empty"><span class="nuka-empty__icon">🔥</span>AÚN NO HAY JUEGOS EN LA SALA DE HONOR</div>';
       return;
     }
-    el.innerHTML = games.map(function(game) {
-      var sid = game.id.replace(/'/g, "\\'");
-      var objPos = Utils.escapeHtml(game.portadaPos || 'center top');
-      return '<div class="nuka-card" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" title="' + Utils.escapeHtml(game.titulo) + '">' +
+    el.innerHTML = ids.map(function(id) {
+      var game = Biblioteca.getById(id), foto = st.fotos[id] || {};
+      var url = foto.url || game.portadaUrl, pos = foto.pos || game.portadaPos || 'center top', xy = honorPos(foto.pos);
+      var sid = id.replace(/'/g, "\\'");
+      return '<div class="nuka-card" data-id="' + Utils.escapeHtml(id) + '"' + (editing ? '' : ' onclick="window.GT.GameDetailModal.open(\'' + sid + '\')"') + ' title="' + Utils.escapeHtml(game.titulo) + '">' +
         '<div class="nuka-card__cover">' +
-          (game.portadaUrl
-            ? '<img src="' + Utils.escapeHtml(Utils.thumb(game.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+          (url
+            ? '<img src="' + Utils.escapeHtml(Utils.thumb(url, 640)) + '" alt="" loading="lazy" style="object-position:' + Utils.escapeHtml(pos) + '" onerror="this.style.display=\'none\'">'
             : '<div class="nuka-card__cover-ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>') +
           '<div class="nuka-card__glass"></div>' +
+          (editing ? '<div class="honor-edit">' +
+            '<label>↔<input type="range" min="0" max="100" value="' + xy[0] + '" data-axis="0" aria-label="Mover imagen en horizontal"></label>' +
+            '<label>↕<input type="range" min="0" max="100" value="' + xy[1] + '" data-axis="1" aria-label="Mover imagen en vertical"></label>' +
+            '<button type="button" data-honor-img>🖼️ Cambiar imagen</button>' +
+          '</div>' : '') +
         '</div>' +
         '<div class="nuka-card__info"><div class="nuka-card__title">' + Utils.escapeHtml(game.titulo) + '</div></div>' +
       '</div>';
     }).join('');
+  }
+
+  function renderHonorEditor(ids) {
+    var cands = honorByAvg(Object.keys(honorAvgs).filter(function(id) { return honorAvgs[id] >= HONOR_PICK_MIN; }));
+    ids.forEach(function(id) { if (cands.indexOf(id) === -1) cands.push(id); }); // los ya elegidos siempre salen
+    var full = ids.length >= HONOR_MAX;
+    document.getElementById('salaHonorCount').textContent = ids.length + ' / ' + HONOR_MAX;
+    document.getElementById('salaHonorPicks').innerHTML = cands.map(function(id) {
+      var on = ids.indexOf(id) !== -1;
+      return '<label class="honor-pick' + (on ? ' is-on' : '') + '"><input type="checkbox" data-pick="' + Utils.escapeHtml(id) + '"' + (on ? ' checked' : '') + (!on && full ? ' disabled' : '') + '>' +
+        Utils.escapeHtml(Biblioteca.getById(id).titulo) + ' <small>' + honorAvgs[id].toFixed(2).replace('.', ',') + '</small></label>';
+    }).join('');
+  }
+
+  function initSalaHonor() {
+    var sec = document.getElementById('salaHonor');
+    if (!sec) return;
+    window.GT.db.collection('settings').doc('salaHonor').get().then(function(doc) {
+      var d = doc.exists ? doc.data() : {};
+      honor = { juegos: Array.isArray(d.juegos) ? d.juegos : null, fotos: d.fotos || {} };
+      renderSalaHonor();
+    }).catch(function(err) { console.error('salaHonor:', err); });
+
+    document.getElementById('salaHonorEdit').addEventListener('click', function() {
+      honorDraft = { juegos: honorIds(honor), fotos: JSON.parse(JSON.stringify(honor.fotos)) };
+      renderSalaHonor();
+    });
+    document.getElementById('salaHonorCancel').addEventListener('click', function() { honorDraft = null; renderSalaHonor(); });
+    document.getElementById('salaHonorSave').addEventListener('click', function() {
+      var btn = this, next = honorDraft;
+      btn.disabled = true;
+      window.GT.db.collection('settings').doc('salaHonor').set(next).then(function() {
+        honor = next; honorDraft = null; renderSalaHonor();
+        if (window.GT.Toast) window.GT.Toast.show('🔥 Sala de Honor guardada');
+      }).catch(function(err) { console.error('salaHonor:', err); alert('No se pudo guardar la Sala de Honor'); })
+        .then(function() { btn.disabled = false; });
+    });
+    document.getElementById('salaHonorPicks').addEventListener('change', function(e) {
+      var id = e.target.dataset.pick;
+      if (!id) return;
+      var list = honorDraft.juegos.filter(function(x) { return x !== id; });
+      if (e.target.checked && list.length < HONOR_MAX) list.push(id);
+      honorDraft.juegos = list;
+      renderSalaHonor();
+    });
+    var grid = document.getElementById('salaHonorGrid');
+    grid.addEventListener('input', function(e) { // mover la imagen dentro de la tarjeta, en vivo
+      var card = e.target.closest('.nuka-card');
+      if (!honorDraft || !card || !e.target.dataset.axis) return;
+      var r = card.querySelectorAll('input[type=range]'), pos = r[0].value + '% ' + r[1].value + '%';
+      var img = card.querySelector('.nuka-card__cover img');
+      if (img) img.style.objectPosition = pos;
+      var f = honorDraft.fotos[card.dataset.id] = honorDraft.fotos[card.dataset.id] || {};
+      f.pos = pos;
+    });
+    grid.addEventListener('click', function(e) {
+      var card = e.target.closest('.nuka-card');
+      if (!honorDraft || !card || !e.target.closest('[data-honor-img]')) return;
+      var f = honorDraft.fotos[card.dataset.id] || {};
+      var url = prompt('Enlace de la imagen para la Sala de Honor (vacío = la portada del juego):', f.url || '');
+      if (url === null) return;
+      url = url.trim();
+      if (url && !/^https?:\/\//i.test(url)) { alert('El enlace tiene que empezar por http:// o https://'); return; }
+      f.url = url;
+      honorDraft.fotos[card.dataset.id] = f;
+      renderSalaHonor();
+    });
   }
 
   /* ── BOOT ────────────────────────────────────────────────── */
@@ -954,6 +1054,7 @@
       safe(initRanking,           'initRanking');
       safe(renderUpcomingCards,   'renderUpcomingCards');
       safe(renderSalaNukaTop,     'renderSalaNukaTop');
+      safe(initSalaHonor,         'initSalaHonor');
       safe(renderSalaHonor,       'renderSalaHonor');
       // Re-render when another user changes data in real time
       window.GT.onDataChange(function () {

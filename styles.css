@@ -5787,3 +5787,14 @@ button.nav__dropbtn { background: none; border: 0; font: inherit; font-size: 0.8
   .reg-group .game-link, .reg-group .game-cell > span { min-width: 0; overflow-wrap: anywhere; }
   .reg-group .table tbody tr.reg-row--platino { background: rgba(250,204,21,0.075); border-color: rgba(250,204,21,0.3); }
 }
+
+/* MENÚ: el engranaje siempre en el centro exacto, aunque «Hub» y la píldora del jugador midan distinto */
+@media (min-width: 1200px) {
+  .nav { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+  .nav > * { grid-row: 1; }
+  .nav__hub-solo     { grid-column: 1; justify-self: start; }
+  .nav__links--left  { grid-column: 1; justify-self: end; }
+  .nav__logo         { grid-column: 2; }
+  .nav__links--right { grid-column: 3; justify-self: start; }
+  .nav__player-pill  { grid-column: 3; justify-self: end; margin-left: 0; }
+}

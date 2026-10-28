@@ -1,8 +1,8 @@
 /* ============================================================
    REFUGIO 111 — Menú principal de videojuegos
-   Carrusel de estrenos (el más cercano primero) con cuenta atrás, el juego
-   más esperado del año, fiesta el día del estreno, laterales decorativos,
-   calendario con ventanitas y próximos eventos.
+   Carrusel de estrenos (los 5 más cercanos) con cuenta atrás, fiesta el día
+   del estreno, laterales decorativos, calendario con ventanitas y el
+   próximo evento.
    Prueba la fiesta con ?simular=AAAA-MM-DD (hace como si hoy fuera ese día).
    ============================================================ */
 (function () {
@@ -10,9 +10,8 @@
 
   var GT = window.GT, U = GT.Utils, B = GT.Biblioteca;
   var MESES = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
-  var MES3 = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
-  var featuredId = null;   // "Juego Más Esperado" elegido a mano (settings/featuredGame)
+  var featuredId = null;   // "Juego Más Esperado" elegido a mano (settings/featuredGame): también tiene fiesta
   var events = [];
   var slides = [], slideIdx = 0, slideTimer = null, tickTimer = null;
   var cal = null;          // { y, m }
@@ -32,9 +31,7 @@
 
   /* ── DATOS ───────────────────────────────────────────────── */
   function fullDate(g) { return g && /^\d{4}-\d{2}-\d{2}$/.test(g.fechaLanzamiento || '') ? g.fechaLanzamiento : null; }
-  function daysLeft(iso) { return Math.round((new Date(iso + 'T00:00:00') - new Date(todayIso() + 'T00:00:00')) / 864e5); }
   function fmtLong(iso) { var p = iso.split('-'); return parseInt(p[2], 10) + ' ' + MESES[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
-  function fmtShort(iso) { var p = iso.split('-'); return parseInt(p[2], 10) + ' ' + MES3[parseInt(p[1], 10) - 1] + ' ' + p[0]; }
   function isEsperado(g) { return g.id === featuredId || (parseInt(g.hype, 10) || 0) >= 3; }
   function trailerUrl(g) { return U.trailerUrl(g); }
   function upcoming() {
@@ -42,11 +39,6 @@
     return B.getAll().filter(function (g) { var d = fullDate(g); return d && d >= t; })
       .sort(function (a, b) { return a.fechaLanzamiento.localeCompare(b.fechaLanzamiento); });
   }
-  function cover(g, cls) {
-    return g.portadaUrl ? '<img class="' + cls + '" src="' + esc(U.thumb(g.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + esc(g.portadaPos || 'center top') + '">'
-      : '<div class="' + cls + ' r1-up__ph"></div>';
-  }
-
   /* ── CARRUSEL ────────────────────────────────────────────── */
   function buildSlides() { return upcoming().slice(0, 5); } // ya van por fecha: lo que sale hoy, primero
 
@@ -115,7 +107,7 @@
 
   /* cuenta atrás de la diapositiva visible; al llegar a cero, "¡YA A LA VENTA!" */
   function tick() {
-    document.querySelectorAll('.r1-slide.is-on .r1-cd, #r1Star .r1-cd').forEach(tickOne);
+    document.querySelectorAll('.r1-slide.is-on .r1-cd, #r1Evt .r1-cd').forEach(tickOne);
   }
   function tickOne(s) {
     var diff = new Date(s.dataset.cd + 'T00:00:00').getTime() - nowMs();
@@ -132,7 +124,6 @@
       if (go) { showSlide(slideIdx + parseInt(go.dataset.go, 10)); restartAuto(); }
       if (dot) { showSlide(parseInt(dot.dataset.dot, 10)); restartAuto(); }
     });
-    $('r1Star').addEventListener('click', function (e) { if (e.target.closest('#r1Pick')) openPick(); });
     tickTimer = setInterval(function () { if (!document.hidden) tick(); }, 1000);
   }
 
@@ -147,7 +138,7 @@
     sides.forEach(function (s) {
       s.classList.toggle('is-party', !!star);
       s.style.setProperty('--side-img', star && star.portadaUrl ? 'url("' + String(U.thumb(star.portadaUrl, 1280)).replace(/"/g, '%22') + '")' : 'none');
-      s.querySelector('.r1-side__txt').textContent = star ? star.titulo : 'REFUGIO';
+      s.querySelector('.r1-side__txt').textContent = star ? star.titulo : '';
     });
 
     if (star) {
@@ -287,76 +278,25 @@
     }, 2800);
   }
 
-  /* ── EL JUEGO MÁS ESPERADO DEL AÑO ─────────────────────────── */
-  // el elegido a mano; si no hay (o ya salió), el próximo estreno con más hype
-  function starGame() {
-    var f = featuredId && B.getById(featuredId), d = f && fullDate(f);
-    if (f && (!d || d >= todayIso())) return f;
-    return upcoming().filter(function (g) { return (parseInt(g.hype, 10) || 0) > 0; })
-      .sort(function (a, b) { return (parseInt(b.hype, 10) || 0) - (parseInt(a.hype, 10) || 0); })[0] || null;
-  }
-
-  function renderStar() {
-    var g = starGame(), d = g && fullDate(g);
-    $('r1Star').innerHTML = '<div class="r1-ph"><h2 class="r1-h r1-h--y">⭐ EL JUEGO MÁS ESPERADO DEL AÑO</h2><button type="button" class="r1-link" id="r1Pick">Cambiar</button></div>' +
-      (g ? '<a class="r1-star__cover" href="biblioteca.html?open=' + esc(g.id) + '">' +
-          (g.portadaUrl ? '<img src="' + esc(U.thumb(g.portadaUrl, 640)) + '" alt="" style="object-position:' + esc(g.portadaPos || 'center top') + '">' : '') +
-          '<div class="r1-star__shade"></div><div class="r1-star__t">' + esc(g.titulo) + '</div></a>' +
-        '<div class="r1-star__d">' + (d ? '📅 ' + fmtLong(d) : 'FECHA POR CONFIRMAR' + (g.fechaLanzamiento ? ' · ' + esc(g.fechaLanzamiento) : '')) + '</div>' +
-        (d ? '<div class="r1-cd" data-cd="' + d + '"></div>' : '') +
-        '<a class="r1-btn r1-btn--y r1-star__btn" href="' + esc(trailerUrl(g)) + '" target="_blank" rel="noopener noreferrer">▶ Ver tráiler</a>'
-      : '<div class="r1-none">Aún no hay juego más esperado. Pulsa «Cambiar» para elegirlo.</div>');
+  /* ── PRÓXIMO EVENTO (en vertical, a la altura del calendario) ── */
+  function renderEvents() {
+    var now = nowMs();
+    var ev = events.filter(function (e) { return new Date(e.isoDate).getTime() > now - 864e5; })
+      .sort(function (a, b) { return new Date(a.isoDate) - new Date(b.isoDate); })[0];
+    if (!ev) { $('r1Evt').innerHTML = '<div class="r1-none">No hay eventos próximamente</div>'; return; }
+    var d = new Date(ev.isoDate);
+    $('r1Evt').innerHTML = '<a class="r1-ev" href="eventos.html">' + (/^https?:\/\//i.test(ev.img || '') ? '<img src="' + esc(ev.img) + '" alt="">' : '') +
+      '<div class="r1-ev__shade"></div>' +
+      '<div class="r1-ev__i"><div class="r1-ev__t">' + esc(ev.nombre) + '</div><div class="r1-ev__d">📅 ' + esc(ev.fechaLabel || fmtLong(isoOf(d))) + '</div>' +
+      '<div class="r1-cd" data-cd="' + isoOf(d) + '"></div></div></a>';
     tick();
   }
 
-  function renderEvents() {
-    var now = nowMs();
-    var list = events.filter(function (ev) { return new Date(ev.isoDate).getTime() > now - 864e5; })
-      .sort(function (a, b) { return new Date(a.isoDate) - new Date(b.isoDate); }).slice(0, 3);
-    $('r1Evt').innerHTML = list.length ? list.map(function (ev) {
-      var d = new Date(ev.isoDate), dl = Math.max(0, Math.ceil((d.getTime() - now) / 864e5));
-      return '<a class="r1-ev" href="eventos.html">' + (/^https?:\/\//i.test(ev.img || '') ? '<img src="' + esc(ev.img) + '" alt="" loading="lazy">' : '') +
-        '<div class="r1-ev__shade"></div>' +
-        '<span class="r1-ev__left">' + (dl === 0 ? 'HOY' : 'EN ' + dl + ' DÍA' + (dl === 1 ? '' : 'S')) + '</span>' +
-        '<div class="r1-ev__i"><div class="r1-ev__t">' + esc(ev.nombre) + '</div><div class="r1-ev__d">' + esc(ev.fechaLabel || fmtShort(isoOf(d))) + '</div></div></a>';
-    }).join('') : '<div class="r1-none">No hay eventos próximamente</div>';
-  }
-
-  /* ── ELEGIR EL JUEGO MÁS ESPERADO (settings/featuredGame) ──── */
-  function openPick() {
-    var games = B.getAll().filter(function (g) { var d = fullDate(g); return !d || daysLeft(d) >= 0; })
-      .sort(function (a, b) { return (a.fechaLanzamiento || '9999').localeCompare(b.fechaLanzamiento || '9999') || (a.titulo || '').localeCompare(b.titulo || '', 'es'); });
-    $('pickGameList').innerHTML = games.map(function (g) {
-      var d = fullDate(g);
-      return '<div class="pg-item" data-pick-id="' + esc(g.id) + '">' + cover(g, '') +
-        '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:0.82rem">' + (g.id === featuredId ? '⭐ ' : '') + esc(g.titulo) + '</div>' +
-        '<div style="font-size:0.7rem;color:rgba(255,200,0,0.85)">' + (d ? fmtShort(d) : 'Sin fecha') + (g.desarrollador ? ' · ' + esc(g.desarrollador) : '') + '</div></div></div>';
-    }).join('');
-    $('pickGameOverlay').style.display = 'flex';
-  }
-
-  function initPick() {
-    var ov = $('pickGameOverlay');
-    $('btnClosePickGame').addEventListener('click', function () { ov.style.display = 'none'; });
-    ov.addEventListener('click', function (e) {
-      if (e.target === ov) { ov.style.display = 'none'; return; }
-      var it = e.target.closest('[data-pick-id]'), g = it && B.getById(it.dataset.pickId);
-      if (!g) return;
-      GT.db.collection('settings').doc('featuredGame').set({
-        juegoId: g.id, titulo: g.titulo || '', portadaUrl: g.portadaUrl || '', fechaLanzamiento: g.fechaLanzamiento || '', desarrollador: g.desarrollador || ''
-      }).then(function () {
-        featuredId = g.id; ov.style.display = 'none';
-        slideIdx = 0; renderAll();
-        if (GT.Toast) GT.Toast.show('⭐ «' + g.titulo + '» es ahora el juego más esperado');
-      }).catch(function (err) { console.error('featuredGame:', err); });
-    });
-  }
-
   /* ── ARRANQUE ────────────────────────────────────────────── */
-  function renderAll() { renderParty(); renderHero(); renderStar(); renderCal(); renderEvents(); }
+  function renderAll() { renderParty(); renderHero(); renderCal(); renderEvents(); }
 
   function init() {
-    initHero(); initCal(); initPick();
+    initHero(); initCal();
     renderAll();
     GT.db.collection('settings').doc('featuredGame').get()
       .then(function (doc) { featuredId = doc.exists ? doc.data().juegoId || null : null; renderAll(); })
@@ -364,7 +304,7 @@
     GT.db.collection('events').get()
       .then(function (snap) { events = snap.docs.map(function (d) { return d.data(); }).filter(function (ev) { return ev.isoDate; }); renderCal(); renderEvents(); })
       .catch(function () { $('r1Evt').innerHTML = '<div class="r1-none">No se pudieron cargar los eventos</div>'; });
-    GT.onDataChange(function () { renderParty(); renderHero(); renderStar(); renderCal(); });
+    GT.onDataChange(function () { renderParty(); renderHero(); renderCal(); });
   }
 
   document.addEventListener('DOMContentLoaded', function () { GT.onDataReady(init); });
