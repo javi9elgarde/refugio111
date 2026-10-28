@@ -5,135 +5,22 @@
   var hub       = document.getElementById('hub');
   var zoneLeft  = document.getElementById('zoneLeft');
   var zoneRight = document.getElementById('zoneRight');
-  var canvas    = document.getElementById('hubCanvas');
-  var ctx       = canvas.getContext('2d');
   var flash     = document.getElementById('hubFlash');
-
-  /* ── CANVAS RESIZE ─────────────────────────────────────── */
-  function resizeCanvas() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-
-  /* ── SISTEMA DE PARTÍCULAS ─────────────────────────────── */
-  var particles = [];
-  var spawnTimer = null;
-  var currentSide = null;
-
-  function spawnBatch(side) {
-    var isLeft = (side === 'left');
-    var count  = 10;
-    var cx     = window.innerWidth;
-    var cy     = window.innerHeight;
-
-    var vertical = window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches;
-
-    for (var i = 0; i < count; i++) {
-      var x, y;
-      if (vertical) {
-        var yRange = isLeft ? [cy * 0.05, cy * 0.45] : [cy * 0.55, cy * 0.95];
-        x = Math.random() * cx;
-        y = yRange[0] + Math.random() * (yRange[1] - yRange[0]);
-      } else {
-        var xRange = isLeft ? [0, cx * 0.45] : [cx * 0.55, cx];
-        x = xRange[0] + Math.random() * (xRange[1] - xRange[0]);
-        y = cy * 0.25 + Math.random() * (cy * 0.55);
-      }
-
-      particles.push({
-        x:     x,
-        y:     y,
-        vx:    (Math.random() - 0.5) * 1.2,
-        vy:    -(0.4 + Math.random() * 1.4),
-        life:  1,
-        decay: 0.007 + Math.random() * 0.01,
-        size:  isLeft ? (3 + Math.random() * 5) : (2 + Math.random() * 4),
-        color: isLeft ? '#00ff88' : '#4facfe',
-        shape: isLeft ? 'square' : 'circle',
-        rot:   Math.random() * Math.PI * 2,
-        rotV:  (Math.random() - 0.5) * 0.06
-      });
-    }
-  }
-
-  function startSpawning(side) {
-    if (currentSide === side) return;
-    currentSide = side;
-    clearInterval(spawnTimer);
-    spawnBatch(side);
-    ensureLoop();
-    spawnTimer = setInterval(function () { spawnBatch(side); ensureLoop(); }, 280);
-  }
-
-  function stopSpawning() {
-    currentSide = null;
-    clearInterval(spawnTimer);
-  }
-
-  function tickParticles() {
-    for (var i = particles.length - 1; i >= 0; i--) {
-      var p = particles[i];
-      p.x   += p.vx;
-      p.y   += p.vy;
-      p.rot += p.rotV;
-      p.life -= p.decay;
-      if (p.life <= 0) particles.splice(i, 1);
-    }
-  }
-
-  function drawParticles() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (var i = 0; i < particles.length; i++) {
-      var p = particles[i];
-      ctx.fillStyle = p.color;
-      // halo barato (círculo grande translúcido) en vez de shadowBlur, que es lo más caro del canvas
-      ctx.globalAlpha = p.life * 0.18;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * 1.3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = p.life * 0.75;
-      if (p.shape === 'square') {
-        ctx.setTransform(1, 0, 0, 1, p.x, p.y);
-        ctx.rotate(p.rot);
-        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-      } else {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  /* Loop de animación: solo mientras haya partículas (antes repintaba el canvas entero 60 veces/s para siempre) */
-  var rafId = null;
-  function loop() {
-    tickParticles();
-    drawParticles();
-    rafId = particles.length ? requestAnimationFrame(loop) : null;
-  }
-  function ensureLoop() { if (!rafId) rafId = requestAnimationFrame(loop); }
 
   /* ── HOVER — cambio de estado ──────────────────────────── */
   zoneLeft.addEventListener('mouseenter', function () {
     hub.classList.add('hover-left');
     hub.classList.remove('hover-right');
-    startSpawning('left');
   });
 
   zoneRight.addEventListener('mouseenter', function () {
     hub.classList.add('hover-right');
     hub.classList.remove('hover-left');
-    startSpawning('right');
   });
 
   /* Al salir del hub completo → estado neutro */
   hub.addEventListener('mouseleave', function () {
     hub.classList.remove('hover-left', 'hover-right');
-    stopSpawning();
   });
 
   /* ── SONIDOS (Web Audio API sintetizados) ──────────────── */
@@ -275,12 +162,10 @@
     else return;
     hub.classList.toggle('hover-left',  touchSide === 'left');
     hub.classList.toggle('hover-right', touchSide === 'right');
-    startSpawning(touchSide);
   }, { passive: true });
 
   document.addEventListener('touchend', function () {
     hub.classList.remove('hover-left', 'hover-right');
-    stopSpawning();
   });
 
 })();
