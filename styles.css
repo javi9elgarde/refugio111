@@ -506,18 +506,17 @@ ul, ol { list-style: none; }
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(6px);
+  background: rgba(3,4,10,0.86); /* sin backdrop-filter: desenfocar el fondo animado ralentizaba las fichas */
   z-index: 200;
   align-items: center;
   justify-content: center;
   padding: 1rem;
 }
 .modal-overlay.open { display: flex; }
-/* Con un modal abierto se congela el fondo animado: así el backdrop-filter no se recalcula en cada fotograma */
-body:has(.modal-overlay.open) .page-hero__orb,
-body:has(.modal-overlay.open) .nav__logo-gear,
-body:has(.modal-overlay.open) .badge-platino { animation-play-state: paused; }
+/* Con un modal abierto el fondo se queda quieto: sin scroll y con todas sus animaciones en pausa */
+html { scrollbar-gutter: stable; } /* al bloquear el scroll la página no salta de lado */
+html:has(.modal-overlay.open), body:has(.modal-overlay.open) { overflow: hidden; }
+body:has(.modal-overlay.open) *:not(.modal-overlay, .modal-overlay *) { animation-play-state: paused !important; }
 .modal {
   background: var(--bg2);
   border: 1px solid rgba(79,172,254,0.2);

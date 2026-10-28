@@ -7,7 +7,7 @@
   <link rel="apple-touch-icon" href="logonuevo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Refugio 111 — G.O.T.Y</title>
-  <link rel="stylesheet" href="styles.css?v=20261029a">
+  <link rel="stylesheet" href="styles.css?v=20261029b">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#07070f">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -555,7 +555,7 @@ body.honor-open { overflow: hidden; }
   var pts = Array.from({ length: 70 }, function () { return makePt(true); });
 
   function frame() {
-    if (document.body.classList.contains('honor-open')) { requestAnimationFrame(frame); return; } // tapado por la Sala de Honor
+    if (document.body.classList.contains('honor-open') || document.querySelector('.modal-overlay.open')) { requestAnimationFrame(frame); return; } // tapado por la Sala de Honor
     ctx.clearRect(0, 0, W, H);
     for (var i = 0; i < pts.length; i++) {
       var p = pts[i];
