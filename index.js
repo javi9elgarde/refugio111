@@ -902,6 +902,45 @@
     }).join('');
   }
 
+  /* ── SALA DE HONOR (G.O.T.Y): lo mejor valorado de la casa, sin notas ni orden ── */
+  function renderSalaHonor() {
+    var el = document.getElementById('salaHonorGrid');
+    if (!el) return;
+    var byGame = {};
+    Registro.getAll().forEach(function(r) {
+      var n = parseFloat(r.nota);
+      if (isNaN(n)) return;
+      var b = byGame[r.juegoId] = byGame[r.juegoId] || { sum: 0, n: 0, players: {} };
+      b.sum += n; b.n++; b.players[r.jugador] = true;
+    });
+    // mismo criterio que la antigua Sala Nuka (nota media de al menos 2 jugadores), con listón en 9,5
+    var games = Object.keys(byGame).filter(function(id) {
+      var b = byGame[id];
+      return Object.keys(b.players).length >= 2 && b.sum / b.n >= 9.5;
+    }).map(function(id) { return Biblioteca.getById(id); }).filter(Boolean);
+    for (var i = games.length - 1; i > 0; i--) { // orden aleatorio: aquí no hay puestos
+      var j = Math.floor(Math.random() * (i + 1)), t = games[i]; games[i] = games[j]; games[j] = t;
+    }
+    games = games.slice(0, 24);
+    if (!games.length) {
+      el.innerHTML = '<div class="nuka-empty"><span class="nuka-empty__icon">🔥</span>AÚN NO HAY JUEGOS CON NOTA MEDIA DE 9,5 O MÁS</div>';
+      return;
+    }
+    el.innerHTML = games.map(function(game) {
+      var sid = game.id.replace(/'/g, "\\'");
+      var objPos = Utils.escapeHtml(game.portadaPos || 'center top');
+      return '<div class="nuka-card" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" title="' + Utils.escapeHtml(game.titulo) + '">' +
+        '<div class="nuka-card__cover">' +
+          (game.portadaUrl
+            ? '<img src="' + Utils.escapeHtml(game.portadaUrl) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+            : '<div class="nuka-card__cover-ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>') +
+          '<div class="nuka-card__glass"></div>' +
+        '</div>' +
+        '<div class="nuka-card__info"><div class="nuka-card__title">' + Utils.escapeHtml(game.titulo) + '</div></div>' +
+      '</div>';
+    }).join('');
+  }
+
   /* ── BOOT ────────────────────────────────────────────────── */
   document.addEventListener('DOMContentLoaded', function () {
     safe(initCountdowns, 'initCountdowns');
@@ -915,6 +954,7 @@
       safe(initRanking,           'initRanking');
       safe(renderUpcomingCards,   'renderUpcomingCards');
       safe(renderSalaNukaTop,     'renderSalaNukaTop');
+      safe(renderSalaHonor,       'renderSalaHonor');
       // Re-render when another user changes data in real time
       window.GT.onDataChange(function () {
         safe(initStats,             'initStats');

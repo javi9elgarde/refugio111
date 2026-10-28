@@ -1136,177 +1136,13 @@
       var infoEl2 = document.getElementById('detailBody').querySelector('.detail-badges-row');
       if (infoEl2) infoEl2.insertBefore(sagaSpan, infoEl2.firstChild);
     }
-    // Resetear botón flotante de flip
-    state.detailFace = 'front';
-    var tab = document.getElementById('detailFlipTab');
-    if (tab) { tab.classList.remove('active'); }
+    document.getElementById('detailTrailer').href = Utils.trailerUrl(game);
   }
 
   function closeDetail() {
     var m = document.getElementById('detailModal');
     m.classList.remove('open', 'goty-gold', 'goty-silver', 'goty-bronze');
     state.detailFace = 'front';
-  }
-
-  /* ── GALLERY / TRAILER (back face) ─────────────────────── */
-  function ytEmbedUrl(url) {
-    if (!url) return '';
-    var m;
-    m = url.match(/youtu\.be\/([^?&#/]+)/);
-    if (m) return 'https://www.youtube.com/embed/' + m[1];
-    m = url.match(/[?&]v=([^?&#]+)/);
-    if (m) return 'https://www.youtube.com/embed/' + m[1];
-    m = url.match(/youtube\.com\/embed\/([^?&#/]+)/);
-    if (m) return 'https://www.youtube.com/embed/' + m[1];
-    return '';
-  }
-
-  function openDetailBack(id) {
-    var game = Biblioteca.getById(id);
-    if (!game) return;
-    var galeria = game.galeria || [];
-    var trailer = game.trailer || '';
-    var galFilter = 'All';
-
-    function pColor(p) {
-      return p === 'David' ? 'var(--player-david)' : p === 'Javi' ? 'var(--player-javi)' : p === 'Mery' ? 'var(--player-mery)' : '#888';
-    }
-
-    function renderGallery() {
-      var filtered = galFilter === 'All' ? galeria : galeria.filter(function(img){ return img.jugador === galFilter; });
-      var grid = document.getElementById('detailGalleryGrid');
-      if (!grid) return;
-      if (!filtered.length) {
-        grid.innerHTML =
-          '<div class="gal-empty">' +
-            '<span class="gal-empty__icon">🖼️</span>' +
-            '<span>Sin capturas' + (galFilter !== 'All' ? ' de ' + galFilter : '') + '</span>' +
-          '</div>';
-        return;
-      }
-      grid.innerHTML = filtered.map(function(img) {
-        var realIdx = galeria.indexOf(img);
-        return '<div class="gal-item" onclick="window.GT_Bib.viewGalleryImg(\'' + Utils.escapeHtml(img.url) + '\')">' +
-          '<img src="' + Utils.escapeHtml(img.url) + '" loading="lazy" alt="" onerror="this.closest(\'.gal-item\').style.display=\'none\'">' +
-          '<button class="gal-item__del" onclick="event.stopPropagation();window.GT_Bib.removeGalleryImg(' + realIdx + ')" title="Eliminar">✕</button>' +
-          (img.jugador ? '<span class="gal-item__player" style="color:' + pColor(img.jugador) + '">' + Utils.escapeHtml(img.jugador) + '</span>' : '') +
-        '</div>';
-      }).join('');
-    }
-
-    var embedUrl = ytEmbedUrl(trailer);
-
-    /* ── Trailer block ─────────────────────────────────────── */
-    var trailerBlock =
-      '<div class="gal-back-section">' +
-        '<div class="gal-section-hdr">' +
-          '<span class="gal-section-title">▶️ Trailer</span>' +
-          '<button class="gal-edit-btn" id="detailTrailerEditBtn">✏️ Editar</button>' +
-        '</div>' +
-        (embedUrl
-          ? '<div class="gal-trailer-wrap"><div class="gal-trailer-ratio"><iframe src="' + embedUrl + '?rel=0" allowfullscreen loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe></div></div>'
-          : '<div class="detail-trailer-empty" id="detailTrailerEmpty">' +
-              '<span class="detail-trailer-empty__icon">▶️</span>' +
-              '<span class="detail-trailer-empty__text">Sin trailer aún</span>' +
-              '<span class="detail-trailer-empty__add">+ Añadir enlace de YouTube</span>' +
-            '</div>') +
-      '</div>';
-
-    /* ── Gallery block ─────────────────────────────────────── */
-    var galleryBlock =
-      '<div class="gal-back-section">' +
-        '<div class="gal-section-hdr">' +
-          '<span class="gal-section-title">🖼️ Capturas</span>' +
-          '<div class="detail-gallery-filter" id="detailGalFilter">' +
-            ['All','David','Javi','Mery'].map(function(p) {
-              return '<button class="gal-filter-btn' + (p === 'All' ? ' active' : '') + '" data-gplayer="' + p + '">' +
-                (p === 'All' ? 'Todos' : p) + '</button>';
-            }).join('') +
-          '</div>' +
-        '</div>' +
-        '<div class="detail-gallery-grid" id="detailGalleryGrid"></div>' +
-        '<div class="gal-add-row">' +
-          '<input type="url" class="form-input" id="galUrlInput" placeholder="URL de captura (https://...)...">' +
-          '<select class="form-select form-select--sm" id="galPlayerInput">' +
-            '<option value="">Jugador</option>' +
-            '<option value="David">David</option>' +
-            '<option value="Javi">Javi</option>' +
-            '<option value="Mery">Mery</option>' +
-          '</select>' +
-          '<button class="btn btn-primary btn-sm" id="galAddBtn">＋ Añadir</button>' +
-        '</div>' +
-      '</div>';
-
-    document.getElementById('detailBody').innerHTML = trailerBlock + galleryBlock;
-    renderGallery();
-
-    /* ── Events ────────────────────────────────────────────── */
-    document.querySelectorAll('#detailGalFilter .gal-filter-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('#detailGalFilter .gal-filter-btn').forEach(function(b){ b.classList.remove('active'); });
-        this.classList.add('active');
-        galFilter = this.dataset.gplayer;
-        renderGallery();
-      });
-    });
-
-    document.getElementById('galAddBtn').addEventListener('click', function() {
-      var url    = (document.getElementById('galUrlInput').value || '').trim();
-      var player = document.getElementById('galPlayerInput').value;
-      if (!url) { Toast.show('Introduce una URL de imagen', 'error'); return; }
-      var newGaleria = galeria.slice();
-      newGaleria.push({ url: url, jugador: player });
-      Biblioteca.update(id, { galeria: newGaleria });
-      galeria = newGaleria;
-      document.getElementById('galUrlInput').value = '';
-      renderGallery();
-      Toast.show('Captura añadida ✓');
-    });
-
-    document.getElementById('detailTrailerEditBtn').addEventListener('click', function() { openTrailerModal(id, trailer); });
-    var trailerEmptyEl = document.getElementById('detailTrailerEmpty');
-    if (trailerEmptyEl) trailerEmptyEl.addEventListener('click', function() { openTrailerModal(id, trailer); });
-  }
-
-  function openTrailerModal(gameId, currentUrl) {
-    var existing = document.getElementById('trailerModal');
-    if (existing) existing.remove();
-    var modal = document.createElement('div');
-    modal.id = 'trailerModal';
-    modal.className = 'modal-overlay open';
-    modal.innerHTML =
-      '<div class="modal" style="max-width:480px">' +
-        '<div class="modal__header">' +
-          '<h2 class="modal__title">▶️ Trailer del juego</h2>' +
-          '<button class="modal__close" id="tModalClose">✕</button>' +
-        '</div>' +
-        '<div class="modal__body">' +
-          '<div class="form-group">' +
-            '<label class="form-label">URL de YouTube</label>' +
-            '<input type="text" class="form-input" id="tModalUrl" value="' + Utils.escapeHtml(currentUrl || '') + '" placeholder="https://www.youtube.com/watch?v=...">' +
-          '</div>' +
-        '</div>' +
-        '<div class="modal__footer">' +
-          (currentUrl ? '<button class="btn btn-danger btn-sm" id="tModalDel" style="margin-right:auto">Eliminar</button>' : '') +
-          '<button class="btn btn-secondary" id="tModalCancel">Cancelar</button>' +
-          '<button class="btn btn-primary" id="tModalSave">Guardar</button>' +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(modal);
-    function close() { modal.remove(); }
-    document.getElementById('tModalClose').addEventListener('click', close);
-    document.getElementById('tModalCancel').addEventListener('click', close);
-    modal.addEventListener('click', function(e){ if(e.target===modal) close(); });
-    var delBtn = document.getElementById('tModalDel');
-    if (delBtn) delBtn.addEventListener('click', function() {
-      Biblioteca.update(gameId, { trailer: '' });
-      close(); openDetailBack(gameId); Toast.show('Trailer eliminado');
-    });
-    document.getElementById('tModalSave').addEventListener('click', function() {
-      var url = document.getElementById('tModalUrl').value.trim();
-      Biblioteca.update(gameId, { trailer: url });
-      close(); openDetailBack(gameId); Toast.show('Trailer guardado ✓');
-    });
   }
 
   /* ── SAVE ───────────────────────────────────────────────── */
@@ -1422,50 +1258,6 @@
     document.getElementById('btnDelete').addEventListener('click', deleteGame);
     document.getElementById('detailClose').addEventListener('click', closeDetail);
 
-    // Botón flotante de flip: alterna cara frontal ↔ trasera
-    var flipTab = document.getElementById('detailFlipTab');
-
-    function doFlip() {
-      var body = document.getElementById('detailBody');
-      if (!body || !state.detailId) return;
-      var goingToBack = state.detailFace === 'front';
-      // Animación de giro en el botón
-      if (flipTab) {
-        flipTab.classList.add('spinning');
-        setTimeout(function() { flipTab.classList.remove('spinning'); }, 420);
-      }
-      // Flip-out del contenido
-      body.classList.add('detail-flip-out');
-      setTimeout(function() {
-        body.classList.remove('detail-flip-out');
-        if (goingToBack) {
-          state.detailFace = 'back';
-          if (flipTab) flipTab.classList.add('active');
-          openDetailBack(state.detailId);
-        } else {
-          state.detailFace = 'front';
-          if (flipTab) flipTab.classList.remove('active');
-          openDetail(state.detailId);
-        }
-        body.classList.add('detail-flip-in');
-        setTimeout(function(){ body.classList.remove('detail-flip-in'); }, 250);
-      }, 190);
-    }
-
-    if (flipTab) flipTab.addEventListener('click', doFlip);
-
-    // Swipe horizontal en el cuerpo del modal para voltear (móvil)
-    var _swipeX0 = 0, _swipeY0 = 0;
-    document.getElementById('detailModal').addEventListener('touchstart', function(e) {
-      var t = e.touches[0]; _swipeX0 = t.clientX; _swipeY0 = t.clientY;
-    }, { passive: true });
-    document.getElementById('detailModal').addEventListener('touchend', function(e) {
-      var t = e.changedTouches[0];
-      var dx = t.clientX - _swipeX0;
-      var dy = t.clientY - _swipeY0;
-      if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.5) doFlip();
-    }, { passive: true });
-
     // Close on backdrop
     document.getElementById('gameModal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
     document.getElementById('detailModal').addEventListener('click', function(e){ if(e.target===this) closeDetail(); });
@@ -1533,30 +1325,7 @@
     openEdit: openEdit,
     pickHit: pickHit,
     coverFailed: coverFailed,
-    goToGame: goToGame,
-    removeGalleryImg: function(idx) {
-      var id = state.detailId;
-      if (!id) return;
-      var game = Biblioteca.getById(id);
-      if (!game) return;
-      var newGaleria = (game.galeria || []).filter(function(_, i){ return i !== idx; });
-      Biblioteca.update(id, { galeria: newGaleria });
-      openDetailBack(id);
-      Toast.show('Imagen eliminada');
-    },
-    viewGalleryImg: function(url) {
-      if (!url) return;
-      // Open a simple lightbox overlay
-      var existing = document.getElementById('galLightbox');
-      if (existing) existing.remove();
-      var lb = document.createElement('div');
-      lb.id = 'galLightbox';
-      lb.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:1rem;backdrop-filter:blur(6px)';
-      lb.innerHTML = '<img src="' + url.replace(/"/g,'&quot;') + '" style="max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 0 60px rgba(0,0,0,0.8);object-fit:contain" alt="">';
-      lb.addEventListener('click', function() { lb.remove(); });
-      document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', esc); } });
-      document.body.appendChild(lb);
-    }
+    goToGame: goToGame
   };
 
   document.addEventListener('DOMContentLoaded', function () {

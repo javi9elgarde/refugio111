@@ -73,7 +73,13 @@ window.GT.Utils = (function () {
     if (n >= 999) return short ? '∞' : '∞ Infinitas';
     return short ? '~' + n + 'h' : '~' + n + ' horas';
   }
-  return { uuid, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
+  // Tráiler principal: el enlace guardado del juego o, si no hay, la búsqueda en YouTube
+  function trailerUrl(game) {
+    if (!game) return 'https://www.youtube.com';
+    return /^https?:\/\//i.test(game.trailer || '') ? game.trailer
+      : 'https://www.youtube.com/results?search_query=' + encodeURIComponent((game.titulo || '') + ' trailer');
+  }
+  return { uuid, trailerUrl, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
            playerBadge, statusBadge, escapeHtml, platformBadgesHtml, genreBadgesHtml, MONTHS };
 })();
 
@@ -361,166 +367,7 @@ window.GT.GameDetailModal = (function () {
     return (day ? day + ' ' + mon + ' ' : mon + ' ') + p[0];
   }
 
-  var _gdFace   = 'front'; // 'front' | 'back'
   var _gdGameId = null;
-
-  function ytEmbed(url) {
-    if (!url) return '';
-    var m;
-    m = url.match(/youtu\.be\/([^?&#/]+)/);       if (m) return 'https://www.youtube.com/embed/' + m[1];
-    m = url.match(/[?&]v=([^?&#]+)/);             if (m) return 'https://www.youtube.com/embed/' + m[1];
-    m = url.match(/youtube\.com\/embed\/([^?&#/]+)/); if (m) return 'https://www.youtube.com/embed/' + m[1];
-    return '';
-  }
-
-  function openFront(gameId) { _gdGameId = gameId; _gdFace = 'front'; _buildFront(gameId); }
-
-  function openBack(gameId) {
-    _gdFace = 'back';
-    var game    = window.GT.Biblioteca.getById(gameId);
-    if (!game) return;
-    var trailer = game.trailer || '';
-    var galeria = (game.galeria || []).slice();
-    var embed   = ytEmbed(trailer);
-    var galFilter = 'All';
-    var body    = document.getElementById('gdBody');
-    if (!body) return;
-
-    function pColor(p) {
-      return p === 'David' ? 'var(--player-david)' : p === 'Javi' ? 'var(--player-javi)' : p === 'Mery' ? 'var(--player-mery)' : '#888';
-    }
-
-    function renderGal() {
-      var filtered = galFilter === 'All' ? galeria : galeria.filter(function(img){ return img.jugador === galFilter; });
-      var grid = document.getElementById('gdGalGrid');
-      if (!grid) return;
-      if (!filtered.length) {
-        grid.innerHTML = '<div class="gal-empty"><span class="gal-empty__icon">🖼️</span><span>Sin capturas' + (galFilter !== 'All' ? ' de ' + galFilter : '') + '</span></div>';
-        return;
-      }
-      grid.innerHTML = filtered.map(function(img) {
-        var ri = galeria.indexOf(img);
-        var safeUrl = img.url.replace(/'/g, "\\'");
-        return '<div class="gal-item" onclick="window.open(\'' + safeUrl + '\',\'_blank\')">' +
-          '<img src="' + img.url + '" loading="lazy" alt="" onerror="this.closest(\'.gal-item\').style.display=\'none\'">' +
-          '<button class="gal-item__del" onclick="event.stopPropagation();window.GT_GDM_delImg(' + ri + ')" title="Eliminar">✕</button>' +
-          (img.jugador ? '<span class="gal-item__player" style="color:' + pColor(img.jugador) + '">' + img.jugador + '</span>' : '') +
-        '</div>';
-      }).join('');
-    }
-
-    // Expose helpers for inline onclick
-    window.GT_GDM_delImg = function(idx) {
-      galeria = galeria.filter(function(_, i){ return i !== idx; });
-      window.GT.Biblioteca.update(gameId, { galeria: galeria });
-      renderGal();
-      if (window.GT.Toast) window.GT.Toast.show('Imagen eliminada');
-    };
-
-    function openTrailerEdit() {
-      var existing = document.getElementById('gdTrailerModal');
-      if (existing) existing.remove();
-      var tm = document.createElement('div');
-      tm.id = 'gdTrailerModal';
-      tm.className = 'modal-overlay open';
-      tm.style.zIndex = '20000';
-      tm.innerHTML =
-        '<div class="modal" style="max-width:480px">' +
-          '<div class="modal__header">' +
-            '<h2 class="modal__title">▶️ Trailer del juego</h2>' +
-            '<button class="modal__close" id="gdTMClose">✕</button>' +
-          '</div>' +
-          '<div class="modal__body">' +
-            '<div class="form-group">' +
-              '<label class="form-label">URL de YouTube</label>' +
-              '<input type="text" class="form-input" id="gdTMUrl" value="' + (trailer || '') + '" placeholder="https://www.youtube.com/watch?v=...">' +
-            '</div>' +
-          '</div>' +
-          '<div class="modal__footer">' +
-            (trailer ? '<button class="btn btn-danger btn-sm" id="gdTMDel" style="margin-right:auto">Eliminar</button>' : '') +
-            '<button class="btn btn-secondary" id="gdTMCancel">Cancelar</button>' +
-            '<button class="btn btn-primary" id="gdTMSave">Guardar</button>' +
-          '</div>' +
-        '</div>';
-      document.body.appendChild(tm);
-      function closeTM() { tm.remove(); }
-      document.getElementById('gdTMClose').addEventListener('click', closeTM);
-      document.getElementById('gdTMCancel').addEventListener('click', closeTM);
-      tm.addEventListener('click', function(e){ if (e.target === tm) closeTM(); });
-      var delBtn = document.getElementById('gdTMDel');
-      if (delBtn) delBtn.addEventListener('click', function() {
-        window.GT.Biblioteca.update(gameId, { trailer: '' });
-        trailer = ''; closeTM(); openBack(gameId);
-        if (window.GT.Toast) window.GT.Toast.show('Trailer eliminado');
-      });
-      document.getElementById('gdTMSave').addEventListener('click', function() {
-        var url = document.getElementById('gdTMUrl').value.trim();
-        window.GT.Biblioteca.update(gameId, { trailer: url });
-        trailer = url; closeTM(); openBack(gameId);
-        if (window.GT.Toast) window.GT.Toast.show('Trailer guardado ✓');
-      });
-    }
-
-    body.innerHTML =
-      '<div class="gal-back-section">' +
-        '<div class="gal-section-hdr">' +
-          '<span class="gal-section-title">▶️ Trailer</span>' +
-          '<button class="gal-edit-btn" id="gdTrailerEditBtn">✏️ Editar</button>' +
-        '</div>' +
-        (embed
-          ? '<div class="gal-trailer-wrap"><div class="gal-trailer-ratio"><iframe src="' + embed + '?rel=0" allowfullscreen loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe></div></div>'
-          : '<div class="detail-trailer-empty" id="gdTrailerEmpty"><span class="detail-trailer-empty__icon">▶️</span><span class="detail-trailer-empty__text">Sin trailer aún</span><span class="detail-trailer-empty__add">+ Añadir enlace de YouTube</span></div>') +
-      '</div>' +
-      '<div class="gal-back-section">' +
-        '<div class="gal-section-hdr">' +
-          '<span class="gal-section-title">🖼️ Capturas</span>' +
-          '<div class="detail-gallery-filter" id="gdGalFilter">' +
-            ['All','David','Javi','Mery'].map(function(p) {
-              return '<button class="gal-filter-btn' + (p === 'All' ? ' active' : '') + '" data-gp="' + p + '">' + (p === 'All' ? 'Todos' : p) + '</button>';
-            }).join('') +
-          '</div>' +
-        '</div>' +
-        '<div class="detail-gallery-grid" id="gdGalGrid"></div>' +
-        '<div class="gal-add-row">' +
-          '<input type="url" class="form-input" id="gdGalUrl" placeholder="URL de captura (https://...)...">' +
-          '<select class="form-select form-select--sm" id="gdGalPlayer">' +
-            '<option value="">Jugador</option>' +
-            '<option value="David">David</option>' +
-            '<option value="Javi">Javi</option>' +
-            '<option value="Mery">Mery</option>' +
-          '</select>' +
-          '<button class="btn btn-primary btn-sm" id="gdGalAdd">＋ Añadir</button>' +
-        '</div>' +
-      '</div>';
-
-    renderGal();
-
-    document.getElementById('gdTrailerEditBtn').addEventListener('click', openTrailerEdit);
-    var emptyEl = document.getElementById('gdTrailerEmpty');
-    if (emptyEl) emptyEl.addEventListener('click', openTrailerEdit);
-
-    document.querySelectorAll('#gdGalFilter .gal-filter-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('#gdGalFilter .gal-filter-btn').forEach(function(b){ b.classList.remove('active'); });
-        this.classList.add('active');
-        galFilter = this.dataset.gp;
-        renderGal();
-      });
-    });
-
-    document.getElementById('gdGalAdd').addEventListener('click', function() {
-      var url    = (document.getElementById('gdGalUrl').value || '').trim();
-      var player = document.getElementById('gdGalPlayer').value;
-      if (!url) { if (window.GT.Toast) window.GT.Toast.show('Introduce una URL de imagen', 'error'); return; }
-      galeria.push({ url: url, jugador: player });
-      window.GT.Biblioteca.update(gameId, { galeria: galeria });
-      document.getElementById('gdGalUrl').value = '';
-      renderGal();
-      if (window.GT.Toast) window.GT.Toast.show('Captura añadida ✓');
-    });
-  }
-
-  function _buildFront(gameId) { /* populated in open() */ }
 
   function ensure() {
     if (overlay) return;
@@ -535,62 +382,23 @@ window.GT.GameDetailModal = (function () {
         '</div>' +
         '<div class="modal__body" id="gdBody"></div>' +
         '<div class="modal__footer">' +
+          '<a id="gdTrailer" href="#" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">▶ Tráiler</a>' +
           '<a id="gdEditLink" href="biblioteca.html" class="btn btn-secondary">✏️ Editar</a>' +
           '<a id="gdLibLink"  href="biblioteca.html" class="btn btn-primary">📚 Ver en Biblioteca</a>' +
         '</div>' +
-        '<button class="detail-flip-float" id="gdFlipTab" title="Ver galería y trailer / Volver a info" aria-label="Voltear ficha">↺</button>' +
       '</div>';
     document.body.appendChild(overlay);
     overlay.addEventListener('click', function(e){ if (e.target === overlay) close(); });
     document.getElementById('gdClose').addEventListener('click', close);
     document.addEventListener('keydown', function(e){ if (e.key === 'Escape') close(); });
-
-    // Flip button
-    document.getElementById('gdFlipTab').addEventListener('click', function() {
-      var body = document.getElementById('gdBody');
-      if (!body || !_gdGameId) return;
-      var tab = document.getElementById('gdFlipTab');
-      tab.classList.add('spinning');
-      setTimeout(function() { tab.classList.remove('spinning'); }, 420);
-      body.classList.add('detail-flip-out');
-      setTimeout(function() {
-        body.classList.remove('detail-flip-out');
-        if (_gdFace === 'front') {
-          _gdFace = 'back';
-          tab.classList.add('active');
-          openBack(_gdGameId);
-        } else {
-          _gdFace = 'front';
-          tab.classList.remove('active');
-          open(_gdGameId);
-        }
-        body.classList.add('detail-flip-in');
-        setTimeout(function() { body.classList.remove('detail-flip-in'); }, 250);
-      }, 190);
-    });
-
-    // Swipe to flip on mobile
-    var _sx = 0, _sy = 0;
-    overlay.addEventListener('touchstart', function(e) {
-      _sx = e.touches[0].clientX; _sy = e.touches[0].clientY;
-    }, { passive: true });
-    overlay.addEventListener('touchend', function(e) {
-      var dx = e.changedTouches[0].clientX - _sx;
-      var dy = e.changedTouches[0].clientY - _sy;
-      if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-        document.getElementById('gdFlipTab').click();
-      }
-    }, { passive: true });
   }
 
   function open(gameId) {
     ensure();
     _gdGameId = gameId;
-    _gdFace   = 'front';
-    var flipTab = document.getElementById('gdFlipTab');
-    if (flipTab) flipTab.classList.remove('active');
     var game     = window.GT.Biblioteca.getById(gameId);
     if (!game) return;
+    document.getElementById('gdTrailer').href = window.GT.Utils.trailerUrl(game);
     var Registro = window.GT.Registro;
     var Utils    = window.GT.Utils;
 
