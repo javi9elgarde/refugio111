@@ -266,7 +266,7 @@
       var c = e.target.closest('.r1-day--has');
       if (!c) return;
       var games = grid._byDay[c.dataset.day] || [];
-      if (games.length === 1) { location.href = 'biblioteca.html?open=' + encodeURIComponent(games[0].id); return; }
+      if (games.length === 1) { GT.GameDetailModal.open(games[0].id); return; }
       showPop(c); // en táctil el toque abre las ventanitas
     });
     document.addEventListener('click', function (e) { if (!e.target.closest('#r1Pop, .r1-day--multi')) pop.hidden = true; });
@@ -316,6 +316,14 @@
 
   function init() {
     initHero(); initCal(); initEvtEdit();
+    // «Más info» y los juegos del calendario abren la ficha aquí mismo (Ctrl/clic central siguen yendo a la Biblioteca)
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest('a[href^="biblioteca.html?open="]');
+      if (!a || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      e.preventDefault();
+      $('r1Pop').hidden = true;
+      GT.GameDetailModal.open(decodeURIComponent(a.getAttribute('href').split('open=')[1]));
+    });
     renderAll();
     GT.db.collection('settings').doc('featuredGame').get()
       .then(function (doc) { featuredId = doc.exists ? doc.data().juegoId || null : null; renderAll(); })

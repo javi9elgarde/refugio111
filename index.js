@@ -541,10 +541,12 @@
     var med    = HOF_MEDALS[rankIdx];
     var sc     = Utils.scoreColor(item.notaMedia);
     var objPos = Utils.escapeHtml(game.portadaPos || 'center top');
-    return '<div class="hof-card ' + med.cls + '" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
+    // tarjeta encima de su escalón del podio
+    return '<div class="hof-place hof-place--' + (rankIdx + 1) + '">' +
+      '<div class="hof-card ' + med.cls + '" onclick="window.GT.GameDetailModal.open(\'' + game.id + '\')" title="Ver ficha">' +
       '<div class="hof-card__cover">' +
         (game.portadaUrl
-          ? '<img src="' + Utils.escapeHtml(Utils.thumb(game.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
+          ? '<img src="' + Utils.escapeHtml(Utils.thumb(game.portadaUrl, 640)) + '" alt="" loading="lazy" style="object-position:' + objPos + '" onerror="this.style.display=\'none\'">'
           : '<div class="hof-card__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>') +
         (rankIdx === 0 ? '<div class="hof-champion-badge">🏆 CAMPEÓN ' + year + '</div>' : '') +
       '</div>' +
@@ -555,6 +557,8 @@
         '</div>' +
         '<div class="hof-card__medal">' + med.emoji + ' ' + med.label + '</div>' +
       '</div>' +
+      '</div>' +
+      '<div class="hof-step"><span>' + (rankIdx + 1) + '</span></div>' +
     '</div>';
   }
 
@@ -984,7 +988,10 @@
     });
     document.getElementById('salaHonorClose').addEventListener('click', closeHonor);
     modal.addEventListener('click', function(e) { if (e.target === modal) closeHonor(); });
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeHonor(); });
+    document.addEventListener('keydown', function(e) {
+      var gd = document.getElementById('gdModal'); // con la ficha abierta, Escape solo cierra la ficha
+      if (e.key === 'Escape' && !(gd && getComputedStyle(gd).display !== 'none')) closeHonor();
+    });
 
     document.getElementById('salaHonorEdit').addEventListener('click', function() {
       honorDraft = { juegos: honorIds(honor), fotos: JSON.parse(JSON.stringify(honor.fotos)) };
