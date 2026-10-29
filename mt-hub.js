@@ -50,7 +50,7 @@
       self.classList.add('choosing');
 
       try { localStorage.setItem('MT_player', player); } catch (e) {}
-      greetPlayer.textContent = 'Casa ' + player;
+      greetPlayer.textContent = player;
       playSelectSound(330, 415);
 
       /* Al elegir personaje se va directo al apartado General (dashboard) */

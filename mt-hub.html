@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-hub.css?v=20261029f">
+  <link rel="stylesheet" href="mt-hub.css?v=20261029l">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#07070f">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,9 +27,10 @@
 <!-- ── FASE 1: SELECCIÓN DE JUGADOR ────────────────────── -->
 <div class="mth-phase" id="phasePlayer">
 
+  <a href="hub.html" class="mth-back">← VOLVER</a>
+
   <div class="mth-header">
-    <div class="mth-header__eyebrow">REFUGIO 111 · CINE · SERIES · ANIME</div>
-    <h2 class="mth-header__title">¿DE QUÉ CASA ERES?</h2>
+    <h2 class="mth-header__title">¿QUÉ VAS A VER HOY?</h2>
     <p class="mth-header__sub">Selecciona tu perfil para continuar</p>
   </div>
 
@@ -37,35 +38,27 @@
     <div class="mth-pcard mth-pcard--david" data-player="David">
       <div class="mth-pcard__glow"></div>
       <div class="mth-pcard__img-wrap">
-        <img src="icondavidneutralpelis.png" class="mth-pcard__img" alt="Casa David" draggable="false"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;font-family:Orbitron,sans-serif;font-weight:900;color:#60a5fa\'>D</div>'">
+        <video class="mth-pcard__img" poster="mt_avatar_david_t.png" autoplay loop muted playsinline preload="auto" aria-label="David"><source src="mt_avatar_david.webm" type="video/webm"><source src="mt_avatar_david.mp4" type="video/mp4"></video>
       </div>
-      <div class="mth-pcard__name">CASA DAVID</div>
-      <div class="mth-pcard__fullname">David Garde</div>
+      <div class="mth-pcard__name">DAVID</div>
     </div>
 
     <div class="mth-pcard mth-pcard--javi" data-player="Javi">
       <div class="mth-pcard__glow"></div>
       <div class="mth-pcard__img-wrap">
-        <img src="iconjavineutralcine.png" class="mth-pcard__img" alt="Casa Javi" draggable="false"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;font-family:Orbitron,sans-serif;font-weight:900;color:#f87171\'>J</div>'">
+        <video class="mth-pcard__img" poster="mt_avatar_javi_t.png" autoplay loop muted playsinline preload="auto" aria-label="Javi"><source src="mt_avatar_javi.webm" type="video/webm"><source src="mt_avatar_javi.mp4" type="video/mp4"></video>
       </div>
-      <div class="mth-pcard__name">CASA JAVI</div>
-      <div class="mth-pcard__fullname">Javier Garde</div>
+      <div class="mth-pcard__name">JAVI</div>
     </div>
 
     <div class="mth-pcard mth-pcard--mery" data-player="Mery">
       <div class="mth-pcard__glow"></div>
       <div class="mth-pcard__img-wrap">
-        <img src="iconmeryneutralcine.png" class="mth-pcard__img" alt="Casa Mery" draggable="false"
-             onerror="this.style.display='none';this.parentNode.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:4rem;font-family:Orbitron,sans-serif;font-weight:900;color:#c084fc\'>M</div>'">
+        <video class="mth-pcard__img" poster="mt_avatar_mery_t.png" autoplay loop muted playsinline preload="auto" aria-label="Mery"><source src="mt_avatar_mery.webm" type="video/webm"><source src="mt_avatar_mery.mp4" type="video/mp4"></video>
       </div>
-      <div class="mth-pcard__name">CASA MERY</div>
-      <div class="mth-pcard__fullname">Mariam Moreno</div>
+      <div class="mth-pcard__name">MERY</div>
     </div>
   </div>
-
-  <a href="hub.html" class="mth-back">← Volver al Hub Friki</a>
 
 </div>
 
@@ -106,7 +99,7 @@
 <!-- Flash de transición -->
 <div class="mth-flash" id="mthFlash"></div>
 
-<script src="mt-hub.js?v=20260711a"></script>
+<script src="mt-hub.js?v=20261029k"></script>
 <script src="app.js?v=20261023a" defer></script>
 </body>
 </html>
