@@ -96,10 +96,6 @@
 .r1-dot.is-on { width: 30px; background: var(--r1-y); }
 .r1-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; height: 100%; padding: 1.5rem; text-align: center; color: var(--txt2); }
 
-/* ── REJILLA: CALENDARIO + PANELES ──────────────────────── */
-.r1-grid { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 1.6rem; margin-top: 1.8rem; align-items: stretch; }
-@media (max-width: 1100px) { .r1-grid { grid-template-columns: minmax(0, 1fr); } }
-.r1-evtp { display: flex; flex-direction: column; }
 .r1-panel { padding: 1.2rem; border-radius: 18px; background: var(--r1-panel); border: 1px solid rgba(255,200,0,0.12); }
 @media (max-width: 640px) { .r1-panel { padding: 0.9rem; border-radius: 14px; } }
 .r1-ph { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--r1-line); }
@@ -170,22 +166,77 @@
 .r1-none { padding: 0.8rem 0.4rem; text-align: center; font-size: 0.8rem; color: var(--txt3); }
 .r1-h--b { color: #7cc1ff; text-shadow: 0 0 12px rgba(79,172,254,0.4); }
 
-/* próximo evento: tarjeta vertical que llena la columna */
-.r1-evts { flex: 1; display: flex; flex-direction: column; }
-.r1-ev { position: relative; flex: 1; display: block; min-height: 340px; overflow: hidden; border-radius: 14px; border: 1px solid rgba(79,172,254,0.3); background: linear-gradient(160deg, #0f1f3a, #05070d); color: #fff; text-decoration: none; }
-.r1-ev img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease-out; }
-.r1-ev__shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(5,7,13,0.97) 0%, rgba(5,7,13,0.55) 45%, rgba(5,7,13,0.1) 100%); }
-.r1-ev__i { position: absolute; left: 1rem; right: 1rem; bottom: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
-.r1-ev__t { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(1.2rem, 1.7vw, 1.7rem); line-height: 1.12; overflow-wrap: anywhere; text-shadow: 0 2px 14px rgba(0,0,0,0.85); }
-.r1-ev__d { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.06em; color: #a5d4ff; }
-.r1-ev .r1-count { justify-content: center; }
-.r1-ev .r1-count__lbl { display: none; }
-.r1-ev .r1-count__u b { color: #7cc1ff; text-shadow: 0 0 12px rgba(79,172,254,0.5); }
-.r1-ev .r1-count__sep { color: #7cc1ff; }
-@media (hover: hover) and (pointer: fine) {
-  .r1-ev:hover img { transform: scale(1.05); }
-  .r1-ev:hover { border-color: rgba(79,172,254,0.6); }
+/* ── PRÓXIMO EVENTO: franja con letrero animado ─────────── */
+.r1-evbar { position: relative; margin-top: 1.4rem; }
+.r1-eb { --ec: #4facfe; position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1rem 1.6rem; flex-wrap: wrap;
+  min-height: 118px; padding: 1rem 1.6rem; overflow: hidden; border-radius: 16px; color: #fff; text-decoration: none;
+  border: 1px solid color-mix(in srgb, var(--ec) 55%, transparent); background: #05070d;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--ec) 22%, transparent), inset 0 0 30px color-mix(in srgb, var(--ec) 10%, transparent); }
+.r1-eb__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.55; }
+.r1-eb__shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(5,7,13,0.96) 0%, rgba(5,7,13,0.75) 45%, rgba(5,7,13,0.4) 100%); }
+/* barrido de luz que recorre el letrero */
+.r1-eb__scan { position: absolute; top: 0; bottom: 0; width: 30%; left: -30%; pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ec) 18%, transparent), transparent); animation: r1Scan 5s ease-in-out infinite; }
+@keyframes r1Scan { 0% { left: -30%; } 60%, 100% { left: 110%; } }
+.r1-eb__i { position: relative; display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.r1-eb__tag { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.62rem; letter-spacing: 0.22em; color: var(--ec); }
+.r1-eb__t { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(1.25rem, 3vw, 2.1rem); line-height: 1.1; letter-spacing: 0.04em; overflow-wrap: anywhere; }
+.r1-eb__t span { display: inline-block; animation: r1Letter 4.5s ease-in-out infinite; animation-delay: calc(var(--i) * 70ms); }
+@keyframes r1Letter {
+  0%, 70%, 100% { transform: none; color: #fff; text-shadow: 0 0 8px color-mix(in srgb, var(--ec) 40%, transparent); }
+  80% { transform: translateY(-4px); color: var(--ec); text-shadow: 0 0 18px var(--ec), 0 0 36px var(--ec); }
 }
+.r1-eb__d { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.74rem; letter-spacing: 0.06em; color: color-mix(in srgb, var(--ec) 55%, #fff); }
+.r1-eb .r1-cd { position: relative; }
+.r1-eb .r1-count { background: rgba(5,7,13,0.75); border-color: color-mix(in srgb, var(--ec) 35%, transparent); }
+.r1-eb .r1-count__lbl { display: none; }
+.r1-eb .r1-count__u b, .r1-eb .r1-count__sep { color: var(--ec); text-shadow: 0 0 12px color-mix(in srgb, var(--ec) 55%, transparent); }
+.r1-evbar__edit { position: absolute; top: 0.5rem; right: 0.7rem; z-index: 2; background: rgba(5,7,13,0.75); border: 1px solid rgba(255,255,255,0.15); border-radius: 999px; padding: 0.2rem 0.6rem; color: var(--txt3); font-size: 0.68rem; cursor: pointer; }
+@media (hover: hover) and (pointer: fine) { .r1-eb:hover .r1-eb__img { opacity: 0.7; } .r1-evbar__edit:hover { color: #fff; } }
+@media (max-width: 640px) { .r1-eb { padding: 0.9rem 1rem; } .r1-eb__t span { animation: none; } }
+
+/* calendario a todo el ancho, con casillas más grandes */
+.r1-calp { margin-top: 1.4rem; }
+.r1-dow, .r1-cal { gap: 0.6rem; }
+.r1-day { height: 112px; padding: 0.45rem 0.55rem; }
+.r1-day__n { font-size: 0.85rem; }
+.r1-day__t { font-size: 0.82rem; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.r1-day__pl .r1-pl { font-size: 0.56rem; }
+.r1-day__evt { font-size: 0.62rem; }
+@media (max-width: 640px) {
+  .r1-dow, .r1-cal { gap: 0.22rem; }
+  .r1-day { height: 70px; padding: 0.2rem 0.25rem; }
+  .r1-day__t { font-size: 0.55rem; }
+}
+
+/* ── FIESTA DEL DÍA DE ESTRENO ─────────────────────────── */
+/* banderines colgados bajo la barra de navegación */
+.r1-flags { position: absolute; top: var(--nav-h); left: 0; right: 0; height: 70px; z-index: 2; pointer-events: none; }
+.r1-flags svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.r1-flags i { position: absolute; top: var(--y); width: 22px; height: 30px; margin-left: -11px; transform-origin: top center;
+  clip-path: polygon(0 0, 100% 0, 50% 100%); filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5)); animation: r1Flag 3s ease-in-out infinite; animation-delay: var(--d); }
+@keyframes r1Flag { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+.r1-fiesta .r1-wrap { padding-top: 3.2rem; }
+/* aviso con el logo del juego */
+.r1-party { background: linear-gradient(90deg, var(--party-c), var(--party-c2, #ff9d00)); box-shadow: 0 10px 40px color-mix(in srgb, var(--party-c) 35%, transparent); }
+.r1-party__logo { max-height: 46px; max-width: 200px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+/* pancartas laterales colgando, con logo o título */
+.r1-side.is-party .r1-side__in { inset: 1.5rem 0; justify-content: flex-start; padding-top: 3rem; }
+.r1-banner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1rem; width: min(72%, 220px); padding: 1.6rem 1rem 3.4rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--party-c) 85%, #000), color-mix(in srgb, var(--party-c2, #ff9d00) 70%, #000));
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 2.2rem), 0 100%);
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.15) inset; animation: r1Sway 6s ease-in-out infinite; transform-origin: top center; }
+.r1-banner::before { content: ''; position: absolute; top: -3rem; left: 20%; right: 20%; height: 3rem; border-left: 2px solid rgba(255,255,255,0.5); border-right: 2px solid rgba(255,255,255,0.5); }
+@keyframes r1Sway { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+.r1-banner__logo { width: 100%; max-height: 140px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); }
+.r1-banner__t { writing-mode: vertical-rl; transform: rotate(180deg); max-height: 52vh; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(1.4rem, 2.2vw, 2.4rem); letter-spacing: 0.12em; color: #fff; text-shadow: 0 3px 12px rgba(0,0,0,0.7); }
+.r1-banner__s { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.72rem; letter-spacing: 0.14em; color: #fff; text-align: center; text-shadow: 0 2px 6px rgba(0,0,0,0.7); }
+/* los colores del juego también en la barra y el calendario */
+.r1-fiesta .nav { border-bottom-color: var(--party-c); box-shadow: 0 2px 24px color-mix(in srgb, var(--party-c) 30%, transparent); }
+.r1-fiesta .r1-panel { border-color: color-mix(in srgb, var(--party-c) 35%, transparent); }
+.r1-fiesta .r1-hero { border-color: color-mix(in srgb, var(--party-c) 55%, transparent); box-shadow: 0 0 40px color-mix(in srgb, var(--party-c) 22%, transparent); }
+@media (prefers-reduced-motion: reduce) { .r1-flags i, .r1-banner, .r1-eb__scan, .r1-eb__t span { animation: none; } }
 
 /* confeti del día de estreno */
 .r1-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 500; overflow: hidden; }

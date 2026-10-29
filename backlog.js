@@ -10,9 +10,9 @@
   var Toast      = window.GT.Toast;
 
   var PLAYERS = [
-    { key: 'David', name: 'David Garde',   initial: 'D', color: 'var(--player-david)', hex: '#3b82f6', icon: 'icondavidneutral.png' },
-    { key: 'Javi',  name: 'Javier Garde',  initial: 'J', color: 'var(--player-javi)',  hex: '#9b1742', icon: 'iconjavineutral.png'  },
-    { key: 'Mery',  name: 'Mariam Moreno', initial: 'M', color: 'var(--player-mery)',  hex: '#9b59ff', icon: 'iconmeryneutral.png'  }
+    { key: 'David', name: 'David Garde',   initial: 'D', color: 'var(--player-david)', hex: '#3b82f6', icon: 'cara_david.png' },
+    { key: 'Javi',  name: 'Javier Garde',  initial: 'J', color: 'var(--player-javi)',  hex: '#9b1742', icon: 'cara_javi.png'  },
+    { key: 'Mery',  name: 'Mariam Moreno', initial: 'M', color: 'var(--player-mery)',  hex: '#9b59ff', icon: 'cara_mery.png'  }
   ];
 
   var SORT_STATES = [

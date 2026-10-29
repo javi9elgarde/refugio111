@@ -420,7 +420,7 @@
     });
 
     /* ── HEADER — icono + nombre, sin avatar ni stats ───────── */
-    var playerIcons = { David: 'icondavidneutral.png', Javi: 'iconjavineutral.png', Mery: 'iconmeryneutral.png' };
+    var playerIcons = { David: 'cara_david.png', Javi: 'cara_javi.png', Mery: 'cara_mery.png' };
     var iconSrc = playerIcons[key] || null;
 
     var headerHtml =

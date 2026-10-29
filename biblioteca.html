@@ -7,7 +7,7 @@
   <link rel="apple-touch-icon" href="logonuevo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Refugio 111 — Biblioteca</title>
-  <link rel="stylesheet" href="styles.css?v=20261029b">
+  <link rel="stylesheet" href="styles.css?v=20261029f">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#07070f">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -189,6 +189,19 @@
           <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Escribe el título y autorrellena portada, fecha, desarrolladora, duración, géneros y plataformas con IGDB o RAWG (prueba el otro si uno no lo encuentra)</small>
           <div id="rawgResults" style="display:none;margin-top:0.8rem"></div>
         </div>
+
+        <!-- 2b. IMÁGENES EXTRA (opcionales): portada del inicio y fiesta del día de estreno -->
+        <details class="form-group" style="grid-column:1/-1">
+          <summary class="form-label" style="cursor:pointer">🎨 Imágenes extra (inicio y día de estreno) — opcional</summary>
+          <label class="form-label" for="fFondoHD" style="margin-top:0.6rem">Fondo 4K para la portada del inicio</label>
+          <input type="url" class="form-input" id="fFondoHD" placeholder="https://... (vacío = la portada a máxima calidad)">
+          <label class="form-label" for="fFiestaFondo" style="margin-top:0.6rem">Fondo de los laterales el día del estreno</label>
+          <input type="url" class="form-input" id="fFiestaFondo" placeholder="https://... (vacío = capturas del juego)">
+          <label class="form-label" for="fFiestaLogo" style="margin-top:0.6rem">Logo PNG para pancartas y banderines</label>
+          <input type="url" class="form-input" id="fFiestaLogo" placeholder="https://... .png con fondo transparente (vacío = el título en texto)">
+          <label class="form-label" for="fFiestaColor" style="margin-top:0.6rem">Color de la fiesta</label>
+          <input type="text" class="form-input" id="fFiestaColor" placeholder="#c8102e (vacío = se saca de la portada)" maxlength="7">
+        </details>
 
         <!-- 3. DATOS -->
         <div class="form-group">
@@ -382,10 +395,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
-<script src="main.js?v=20261028t"            defer></script>
+<script src="main.js?v=20261029f"            defer></script>
 <script src="rawg.js?v=20261022a"            defer></script>
 <script src="igdb.js?v=20261022a"            defer></script>
-<script src="biblioteca.js?v=20261028t"      defer></script>
+<script src="biblioteca.js?v=20261029g"      defer></script>
 <script src="app.js?v=20261023a" defer></script>
 </body>
 </html>

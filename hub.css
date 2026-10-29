@@ -613,3 +613,15 @@ html, body {
   .psel__name  { font-size: 0.8rem; letter-spacing: 0.08em; }
   .psel__title { font-size: 1.6rem; }
 }
+
+/* ── Vídeos de perfil sin caja negra: el negro del vídeo se funde con el fondo ── */
+.psel__img-wrap,
+.psel__card:hover .psel__img-wrap,
+.psel__card.choosing .psel__img-wrap {
+  background: radial-gradient(circle at 50% 58%, color-mix(in srgb, var(--pc) 20%, transparent), transparent 68%);
+  border-color: transparent; box-shadow: none;
+  transition: background 0.3s ease-out;
+}
+.psel__card:hover .psel__img-wrap,
+.psel__card.choosing .psel__img-wrap { background: radial-gradient(circle at 50% 58%, color-mix(in srgb, var(--pc) 42%, transparent), transparent 70%); }
+.psel__img { object-fit: contain; }

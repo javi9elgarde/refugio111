@@ -903,6 +903,7 @@
     document.getElementById('editId').value = '';
     document.getElementById('fTitulo').value = '';
     document.getElementById('fPortada').value = '';
+    ['fFondoHD', 'fFiestaFondo', 'fFiestaLogo', 'fFiestaColor'].forEach(function(f) { document.getElementById(f).value = ''; });
     document.getElementById('fDesarrollador').value = '';
     setDateSelects('');
     document.getElementById('fDuracion').value = '';
@@ -934,6 +935,10 @@
     document.getElementById('editId').value = id;
     document.getElementById('fTitulo').value = game.titulo || '';
     document.getElementById('fPortada').value = game.portadaUrl || '';
+    document.getElementById('fFondoHD').value = game.fondoHD || '';
+    document.getElementById('fFiestaFondo').value = game.fiestaFondo || '';
+    document.getElementById('fFiestaLogo').value = game.fiestaLogo || '';
+    document.getElementById('fFiestaColor').value = game.fiestaColor || '';
     document.getElementById('fDesarrollador').value = game.desarrollador || '';
     if (coverPreview) coverPreview.update(game.portadaUrl || '', game.portadaPos || '');
     setDateSelects(game.fechaLanzamiento || '');
@@ -1146,6 +1151,8 @@
   }
 
   /* ── SAVE ───────────────────────────────────────────────── */
+  function httpUrl(id) { var v = document.getElementById(id).value.trim(); return /^https?:\/\//i.test(v) ? v : ''; }
+
   function saveGame() {
     var titulo = document.getElementById('fTitulo').value.trim();
     if (!titulo) { Toast.show('El título es obligatorio', 'error'); return; }
@@ -1154,6 +1161,10 @@
       titulo:           titulo,
       portadaUrl:       document.getElementById('fPortada').value.trim(),
       portadaPos:       document.getElementById('fPortadaPos').value.trim() || null,
+      fondoHD:          httpUrl('fFondoHD'),
+      fiestaFondo:      httpUrl('fFiestaFondo'),
+      fiestaLogo:       httpUrl('fFiestaLogo'),
+      fiestaColor:      (/^#[0-9a-f]{6}$/i.test(document.getElementById('fFiestaColor').value.trim()) ? document.getElementById('fFiestaColor').value.trim() : ''),
       desarrollador:    document.getElementById('fDesarrollador').value.trim(),
       fechaLanzamiento: getDateFromSelects(),
       duracion:         parseFloat(document.getElementById('fDuracion').value) || null,

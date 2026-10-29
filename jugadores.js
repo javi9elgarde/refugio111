@@ -2,9 +2,9 @@
   'use strict';
 
   var PLAYERS = [
-    { key: 'David', cls: 'david', avatar: 'icondavidneutral.png', fullName: 'David Garde' },
-    { key: 'Javi',  cls: 'javi',  avatar: 'iconjavineutral.png',  fullName: 'Javier Garde' },
-    { key: 'Mery',  cls: 'mery',  avatar: 'iconmeryneutral.png',  fullName: 'Mariam Moreno' }
+    { key: 'David', cls: 'david', avatar: 'cara_david.png', fullName: 'David Garde' },
+    { key: 'Javi',  cls: 'javi',  avatar: 'cara_javi.png',  fullName: 'Javier Garde' },
+    { key: 'Mery',  cls: 'mery',  avatar: 'cara_mery.png',  fullName: 'Mariam Moreno' }
   ];
 
   function waitForDb(cb) {

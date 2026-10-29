@@ -576,7 +576,7 @@ window.GT.Nav = (function () {
         indicator.className = 'nav__player-pill';
         indicator.innerHTML =
           '<div class="nav__player-av" style="background:' + (PLAYER_COLORS[ap] || '#666') + '">' +
-            (PLAYER_INITIALS[ap] || ap[0]) +
+            (/^(David|Javi|Mery)$/.test(ap) ? '<img src="cara_' + ap.toLowerCase() + '.png" alt="">' : (PLAYER_INITIALS[ap] || ap[0])) +
           '</div>' +
           '<span class="nav__player-name">' + ap + '</span>';
         indicator.addEventListener('click', function (e) {
