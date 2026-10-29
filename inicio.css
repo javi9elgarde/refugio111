@@ -70,6 +70,8 @@
 .r1-sign .r1-title { font-size: clamp(1.15rem, 2.4vw, 1.9rem); line-height: 1.1; }
 .r1-sign__pl { display: flex; flex-wrap: wrap; gap: 0.25rem; }
 .r1-sign__pl .r1-pl { font-size: 0.6rem; padding: 0.1rem 0.35rem; }
+/* cartel a la derecha cuando el fondo tiene lo importante a la izquierda */
+.r1-slide--der .r1-sign { left: auto; right: clamp(1rem, 4vw, 3rem); }
 @media (max-width: 640px) { .r1-sign { width: min(260px, 72%); padding-top: 1.6rem; } .r1-sign::before, .r1-sign::after { height: 1.8rem; } .r1-sign__board { padding: 0.7rem 0.8rem; } }
 .r1-meta { display: flex; gap: 0.6rem; flex-wrap: wrap; font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.8rem; letter-spacing: 0.06em; color: var(--r1-y2); }
 .r1-meta span + span::before { content: '•'; margin-right: 0.6rem; color: var(--txt3); }
@@ -210,33 +212,14 @@
 }
 
 /* ── FIESTA DEL DÍA DE ESTRENO ─────────────────────────── */
-/* banderines colgados bajo la barra de navegación */
-.r1-flags { position: absolute; top: var(--nav-h); left: 0; right: 0; height: 70px; z-index: 2; pointer-events: none; }
-.r1-flags svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.r1-flags i { position: absolute; top: var(--y); width: 22px; height: 30px; margin-left: -11px; transform-origin: top center;
-  clip-path: polygon(0 0, 100% 0, 50% 100%); filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5)); animation: r1Flag 3s ease-in-out infinite; animation-delay: var(--d); }
-@keyframes r1Flag { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
-.r1-fiesta .r1-wrap { padding-top: 3.2rem; }
 /* aviso con el logo del juego */
 .r1-party { background: linear-gradient(90deg, var(--party-c), var(--party-c2, #ff9d00)); box-shadow: 0 10px 40px color-mix(in srgb, var(--party-c) 35%, transparent); }
 .r1-party__logo { max-height: 46px; max-width: 200px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
-/* pancartas laterales colgando, con logo o título */
-.r1-side.is-party .r1-side__in { inset: 1.5rem 0; justify-content: flex-start; padding-top: 3rem; }
-.r1-banner { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1rem; width: min(72%, 220px); padding: 1.6rem 1rem 3.4rem;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--party-c) 85%, #000), color-mix(in srgb, var(--party-c2, #ff9d00) 70%, #000));
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 2.2rem), 0 100%);
-  box-shadow: 0 0 0 3px rgba(255,255,255,0.15) inset; animation: r1Sway 6s ease-in-out infinite; transform-origin: top center; }
-.r1-banner::before { content: ''; position: absolute; top: -3rem; left: 20%; right: 20%; height: 3rem; border-left: 2px solid rgba(255,255,255,0.5); border-right: 2px solid rgba(255,255,255,0.5); }
-@keyframes r1Sway { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
-.r1-banner__logo { width: 100%; max-height: 140px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); }
-.r1-banner__t { writing-mode: vertical-rl; transform: rotate(180deg); max-height: 52vh; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(1.4rem, 2.2vw, 2.4rem); letter-spacing: 0.12em; color: #fff; text-shadow: 0 3px 12px rgba(0,0,0,0.7); }
-.r1-banner__s { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.72rem; letter-spacing: 0.14em; color: #fff; text-align: center; text-shadow: 0 2px 6px rgba(0,0,0,0.7); }
 /* los colores del juego también en la barra y el calendario */
 .r1-fiesta .nav { border-bottom-color: var(--party-c); box-shadow: 0 2px 24px color-mix(in srgb, var(--party-c) 30%, transparent); }
 .r1-fiesta .r1-panel { border-color: color-mix(in srgb, var(--party-c) 35%, transparent); }
 .r1-fiesta .r1-hero { border-color: color-mix(in srgb, var(--party-c) 55%, transparent); box-shadow: 0 0 40px color-mix(in srgb, var(--party-c) 22%, transparent); }
-@media (prefers-reduced-motion: reduce) { .r1-flags i, .r1-banner, .r1-eb__scan, .r1-eb__t span { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .r1-eb__scan, .r1-eb__t span { animation: none; } }
 
 /* confeti del día de estreno */
 .r1-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 500; overflow: hidden; }

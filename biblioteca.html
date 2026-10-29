@@ -7,7 +7,7 @@
   <link rel="apple-touch-icon" href="logonuevo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Refugio 111 — Biblioteca</title>
-  <link rel="stylesheet" href="styles.css?v=20261029f">
+  <link rel="stylesheet" href="styles.css?v=20261029j">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#07070f">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -190,17 +190,38 @@
           <div id="rawgResults" style="display:none;margin-top:0.8rem"></div>
         </div>
 
-        <!-- 2b. IMÁGENES EXTRA (opcionales): portada del inicio y fiesta del día de estreno -->
-        <details class="form-group" style="grid-column:1/-1">
-          <summary class="form-label" style="cursor:pointer">🎨 Imágenes extra (inicio y día de estreno) — opcional</summary>
-          <label class="form-label" for="fFondoHD" style="margin-top:0.6rem">Fondo 4K para la portada del inicio</label>
-          <input type="url" class="form-input" id="fFondoHD" placeholder="https://... (vacío = la portada a máxima calidad)">
-          <label class="form-label" for="fFiestaFondo" style="margin-top:0.6rem">Fondo de los laterales el día del estreno</label>
-          <input type="url" class="form-input" id="fFiestaFondo" placeholder="https://... (vacío = capturas del juego)">
-          <label class="form-label" for="fFiestaLogo" style="margin-top:0.6rem">Logo PNG para pancartas y banderines</label>
-          <input type="url" class="form-input" id="fFiestaLogo" placeholder="https://... .png con fondo transparente (vacío = el título en texto)">
-          <label class="form-label" for="fFiestaColor" style="margin-top:0.6rem">Color de la fiesta</label>
-          <input type="text" class="form-input" id="fFiestaColor" placeholder="#c8102e (vacío = se saca de la portada)" maxlength="7">
+        <!-- 2b. PORTADA DEL INICIO Y DÍA DE ESTRENO (opcional), con vista previa -->
+        <details class="form-group gx" id="gxBox" style="grid-column:1/-1">
+          <summary class="form-label" style="cursor:pointer">🎨 Portada del inicio y día de estreno — opcional</summary>
+          <div class="gx-prev" id="gxPrev" aria-hidden="true">
+            <div class="gx-prev__side" id="gxSideL"></div>
+            <div class="gx-prev__mid">
+              <div class="gx-prev__party" id="gxParty"><img id="gxLogo" alt="" hidden><span>🎉 ¡HOY SALE <b id="gxPartyT"></b>! 🎉</span></div>
+              <div class="gx-prev__hero">
+                <img id="gxImg" alt="">
+                <div class="gx-prev__sign" id="gxSign"><small id="gxDate">📅 FECHA</small><b id="gxTitle">Título</b></div>
+                <div class="gx-prev__bar"><span class="gx-btn gx-btn--y">▶ Ver tráiler</span><span class="gx-btn">ⓘ Más info</span></div>
+              </div>
+            </div>
+            <div class="gx-prev__side" id="gxSideR"></div>
+          </div>
+          <small class="gx-hint" id="gxHint">Así se verá en la portada del inicio; a los lados, los fondos del día de estreno.</small>
+          <div class="gx-grid">
+            <label class="form-label" for="fFondoHD">Fondo 4K de la portada</label>
+            <input type="url" class="form-input" id="fFondoHD" placeholder="https://... (vacío = la portada a máxima calidad)">
+            <label class="form-label" for="fCartelLado">Lado del cartel</label>
+            <select class="form-select" id="fCartelLado"><option value="">Automático (donde menos tape)</option><option value="izq">Izquierda</option><option value="der">Derecha</option></select>
+            <label class="form-label" for="fFiestaFondo">Fondo de los laterales el día del estreno</label>
+            <input type="url" class="form-input" id="fFiestaFondo" placeholder="https://... (vacío = capturas del juego)">
+            <label class="form-label" for="fFiestaLogo">Logo PNG del aviso de estreno</label>
+            <input type="url" class="form-input" id="fFiestaLogo" placeholder="https://... .png con fondo transparente (vacío = sin logo)">
+            <span class="form-label">Colores de la fiesta</span>
+            <div class="gx-colors">
+              <label class="gx-check"><input type="checkbox" id="fColorPropio"> Elegir a mano (si no, se sacan de la portada)</label>
+              <input type="color" id="fFiestaColor" value="#ffc800" aria-label="Color principal">
+              <input type="color" id="fFiestaColor2" value="#ff9d00" aria-label="Color secundario">
+            </div>
+          </div>
         </details>
 
         <!-- 3. DATOS -->
@@ -395,10 +416,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260521c" defer></script>
-<script src="main.js?v=20261029f"            defer></script>
+<script src="main.js?v=20261029j"            defer></script>
 <script src="rawg.js?v=20261022a"            defer></script>
 <script src="igdb.js?v=20261022a"            defer></script>
-<script src="biblioteca.js?v=20261029g"      defer></script>
+<script src="biblioteca.js?v=20261029j"      defer></script>
 <script src="app.js?v=20261023a" defer></script>
 </body>
 </html>

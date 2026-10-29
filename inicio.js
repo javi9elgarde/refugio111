@@ -44,7 +44,7 @@
 
   function slideHtml(g, i) {
     var d = fullDate(g);
-    return '<div class="r1-slide' + (i === slideIdx ? ' is-on' : '') + '" data-id="' + esc(g.id) + '">' +
+    return '<div class="r1-slide' + (i === slideIdx ? ' is-on' : '') + (g.cartelLado === 'der' ? ' r1-slide--der' : '') + '" data-id="' + esc(g.id) + '">' +
       // fondo a máxima calidad: el 4K puesto a mano o la portada original sin reducir
       (g.fondoHD || g.portadaUrl ? '<img class="r1-slide__bg" data-src="' + esc(g.fondoHD || g.portadaUrl) + '" alt="" style="object-position:' + esc(g.fondoHD ? 'center' : g.portadaPos || 'center top') + '">' : '') +
       '<div class="r1-slide__shade"></div>' +
@@ -91,6 +91,8 @@
     var s = $('r1Hero').querySelectorAll('.r1-slide')[i];
     var img = s && s.querySelector('img[data-src]');
     if (img) { img.src = img.dataset.src; img.removeAttribute('data-src'); }
+    var g = s && B.getById(s.dataset.id);
+    if (img && g && !g.cartelLado) U.quietSide(img.src, function (side) { s.classList.toggle('r1-slide--der', side === 'der'); }); // automático
   }
 
   function showSlide(i) {
@@ -142,11 +144,10 @@
     var sides = document.querySelectorAll('.r1-side');
 
     root.classList.toggle('r1-fiesta', !!star);
-    $('r1Flags').hidden = !star;
     if (!star) {
       partyId = null;
       ['--r1-y', '--r1-y2', '--party-c', '--party-c2'].forEach(function (p) { root.style.removeProperty(p); });
-      sides.forEach(function (s) { s.classList.remove('is-party'); s.querySelector('.r1-side__in').innerHTML = ''; });
+      sides.forEach(function (s) { s.classList.remove('is-party'); });
       party.hidden = true;
     } else {
       party.hidden = false;
@@ -160,34 +161,26 @@
     note.innerHTML = otros.length ? '📅 Hoy también sale: ' + otros.map(function (g) { return '<a href="biblioteca.html?open=' + esc(g.id) + '" style="color:inherit">' + esc(g.titulo) + '</a>'; }).join(' · ') : '';
   }
 
-  // decorado del día: colores, banderines, pancartas laterales y confeti (una vez por juego)
+  // decorado del día: colores, fondos laterales y confeti (una vez por juego)
   function decorate(star, t) {
     var id = star.id, sides = document.querySelectorAll('.r1-side');
-    flags(['#ffc800', '#ff9d00']);
     var paint = function (cols) {
       if (partyId !== id || !cols) return false;
       var r = document.documentElement.style;
       r.setProperty('--party-c', cols[0]); r.setProperty('--party-c2', cols[1]);
       r.setProperty('--r1-y', cols[0]); r.setProperty('--r1-y2', cols[2]);
-      flags(cols);
       return true;
     };
     // color puesto a mano en la ficha; si no, el de la portada; si su web no deja leerla, el de RAWG
     var m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(star.fiestaColor || '');
     if (m) {
       var hm = hsl(parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16))[0].toFixed(0);
-      paint([star.fiestaColor, 'hsl(' + ((+hm + 35) % 360) + ',80%,55%)', 'hsl(' + hm + ',90%,78%)']);
+      paint([star.fiestaColor, /^#[0-9a-f]{6}$/i.test(star.fiestaColor2 || '') ? star.fiestaColor2 : 'hsl(' + ((+hm + 35) % 360) + ',80%,55%)', 'hsl(' + hm + ',90%,78%)']);
     } else palette(star.portadaUrl, function (cols) {
       if (!paint(cols)) shots(star, function (list) { palette(list[0], function (c) { if (!paint(c)) palette(list[1], paint); }); });
     });
-    var banner = function (side) {
-      return '<div class="r1-banner">' +
-        (star.fiestaLogo ? '<img class="r1-banner__logo" src="' + esc(star.fiestaLogo) + '" alt="">' : '<div class="r1-banner__t">' + esc(star.titulo) + '</div>') +
-        '<div class="r1-banner__s">' + (side ? '¡YA A LA VENTA!' : '🎉 HOY SALE 🎉') + '</div></div>';
-    };
     sides.forEach(function (s, i) {
       s.classList.add('is-party');
-      s.querySelector('.r1-side__in').innerHTML = banner(i);
       s.style.setProperty('--side-img', cssUrl(star.fiestaFondo || U.thumb(star.portadaUrl, 1280)));
     });
     if (!star.fiestaFondo) shots(star, function (list) { // capturas distintas para cada lateral
@@ -199,16 +192,6 @@
     if (!seen) setTimeout(confetti, 600); // una vez por sesión, no en cada recarga
   }
   function cssUrl(u) { return u ? 'url("' + String(u).replace(/"/g, '%22') + '")' : 'none'; }
-
-  // banderines: una guirnalda con los colores del juego que cuelga en curva
-  function flags(cols) {
-    var n = 26, html = '';
-    for (var i = 0; i < n; i++) {
-      var x = (i + 0.5) / n, y = 4 + 104 * x * (1 - x); // misma parábola que el cordel (bezier 4→56→4)
-      html += '<i style="left:' + (x * 100) + '%;--y:' + y.toFixed(1) + 'px;--d:' + (i % 5) * -0.4 + 's;background:' + (i % 3 === 2 ? '#fff' : cols[i % 2]) + '"></i>';
-    }
-    $('r1Flags').innerHTML = '<svg viewBox="0 0 100 70" preserveAspectRatio="none"><path d="M0,4 Q50,56 100,4" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>' + html;
-  }
 
   // dos colores vivos de la portada (RAWG permite leerla en un canvas); si no se puede, null
   function palette(url, cb) {

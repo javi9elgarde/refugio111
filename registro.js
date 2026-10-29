@@ -10,7 +10,7 @@
   var Registro   = window.GT.Registro;
   var Toast      = window.GT.Toast;
 
-  var state      = { player: 'All', year: 0, month: '', estado: '', editId: null, sortAsc: true };
+  var state      = { player: 'All', year: 0, month: '', tab: '', plat: '', editId: null, sortAsc: false };
   var _quickModal = { entryId: null };
 
   function safe(fn, name) {
@@ -192,120 +192,152 @@
   }
 
   /* ── RENDER ROW ─────────────────────────────────────────── */
-  function renderRow(r) {
-    var game   = Biblioteca.getById(r.juegoId);
-    var titulo = game ? game.titulo : '(Juego eliminado)';
-    var sc     = Utils.scoreColor(r.nota);
+  /* ── VISTA: pestañas En curso / Completados / Mejores notas / Abandonados ── */
+  var CURSO = { Jugando: 1, Retomar: 1 }, OTROS = { Abandonado: 1 }; // el resto cuenta como completado
+  var PCOLOR = { David: '#3b82f6', Javi: '#ec4899', Mery: '#a855f7' };
+  var esc = function (s) { return Utils.escapeHtml(s == null ? '' : String(s)); };
 
-    var coverHtml =
-      '<div class="mini-cover">' +
-        (game && game.portadaUrl
-          ? '<img src="' + Utils.escapeHtml(Utils.thumb(game.portadaUrl, 200)) + '" alt="" loading="lazy" style="object-position:' + Utils.escapeHtml((game && game.portadaPos) || 'center top') + '" onerror="this.style.display=\'none\'">'
-          : '') +
-        '<span class="mini-cover__letter">' + Utils.escapeHtml(titulo.charAt(0)) + '</span>' +
+  function av(j) {
+    return /^(David|Javi|Mery)$/.test(j)
+      ? '<img class="rg-av" src="cara_' + j.toLowerCase() + '.png" alt="' + j + '" title="' + j + '" style="--pc:' + PCOLOR[j] + '">'
+      : '<span class="rg-av">' + esc((j || '?').charAt(0)) + '</span>';
+  }
+  function cover(game, w) {
+    return game && game.portadaUrl
+      ? '<img src="' + esc(Utils.thumb(game.portadaUrl, w)) + '" alt="" loading="lazy" style="object-position:' + esc(game.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">'
+      : '<span class="rg-ph">' + esc(game ? game.titulo.charAt(0) : '?') + '</span>';
+  }
+  function when(r) { return (Utils.monthName(r.mes) || '').slice(0, 3) + ' ' + r.año; }
+  function plat(p) { return p ? '<span class="badge badge-plat ' + Utils.platformClass(p) + '">' + esc(p) + '</span>' : ''; }
+  function nota(r) {
+    if (r.nota === null || r.nota === undefined || r.nota === '') return '<span class="rg-nota rg-nota--none">—</span>';
+    return '<span class="rg-nota" style="color:' + Utils.scoreColor(r.nota) + '">' + Utils.formatScore(r.nota) + '</span>';
+  }
+  function byDate(a, b) { return (a.año - b.año) || (a.mes - b.mes); }
+
+  // En curso: una fila por juego, con todos los que lo están jugando
+  function cursoRows(list, max) {
+    var games = {}, order = [];
+    list.forEach(function (r) { if (!games[r.juegoId]) { games[r.juegoId] = []; order.push(r.juegoId); } games[r.juegoId].push(r); });
+    return order.slice(0, max || order.length).map(function (id) {
+      var rs = games[id], game = Biblioteca.getById(id), r0 = rs[0];
+      var titulo = game ? game.titulo : '(Juego eliminado)';
+      var horas = Math.max.apply(null, rs.map(function (r) { return parseFloat(r.horas) || 0; }));
+      var dur = game && parseFloat(game.duracion);
+      // progreso aproximado: horas jugadas frente a la duración estimada del juego
+      var pct = dur ? Math.min(100, Math.round(horas / dur * 100)) : 0;
+      var plats = rs.map(function (r) { return r.plataformaJugada; }).filter(function (p, i, a) { return p && a.indexOf(p) === i; });
+      return '<div class="rg-row">' +
+        '<button type="button" class="rg-row__cover" onclick="window.GT.GameDetailModal.open(\'' + esc(id) + '\')" title="Ver ficha">' + cover(game, 420) + '</button>' +
+        '<div class="rg-row__t"><b>' + esc(titulo) + '</b><small>' + (r0.estado === 'Retomar' ? '🔁 Para retomar' : '🎮 Jugando') + ' · desde ' + when(r0) + '</small></div>' +
+        '<div class="rg-row__p">' + plats.map(plat).join('') + '</div>' +
+        '<div class="rg-row__prog">' +
+          (dur && horas ? '<div class="rg-prog__n"><b>' + pct + '%</b><span>' + (horas ? horas + 'h' : '0h') + ' / ~' + dur + 'h</span></div><div class="rg-prog"><i style="width:' + pct + '%"></i></div>'
+               : '<div class="rg-prog__n"><b>' + (horas ? horas + 'h' : '—') + '</b><span>' + (horas ? 'jugadas' : (dur ? 'dura ~' + dur + 'h' : 'sin horas')) + '</span></div>') +
+        '</div>' +
+        '<div class="rg-row__who">' + rs.map(function (r) { return '<button type="button" class="rg-who" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar la partida de ' + esc(r.jugador) + '">' + av(r.jugador) + '</button>'; }).join('') +
+          '<small>' + (rs.length > 1 ? 'Jugando juntos' : esc(r0.jugador)) + '</small></div>' +
+        '<button type="button" class="rg-row__go" onclick="window.GT_Reg.openQuickModal(\'' + r0.id + '\')" title="Actualizar rápido (estado, nota, horas)">›</button>' +
       '</div>';
-
-    var scoreHtml = (r.nota !== null && r.nota !== undefined && r.nota !== '')
-      ? '<div class="score-wrap" style="min-width:90px">' +
-          '<div class="score-bar"><div class="score-bar__fill" style="width:' + Utils.scoreWidth(r.nota) + ';background:' + sc + '"></div></div>' +
-          '<span class="score-num" style="color:' + sc + '">' + Utils.formatScore(r.nota) + '</span>' +
-        '</div>'
-      : '<span style="color:var(--txt3);font-size:0.8rem">—</span>';
-
-    var rowCls = r.jugador === 'David' ? 'reg-row-david' : r.jugador === 'Javi' ? 'reg-row-javi' : r.jugador === 'Mery' ? 'reg-row-mery' : '';
-    var platino = (r.estado === 'Platinado') ? ' reg-row--platino' : '';
-
-    return '<tr class="' + rowCls + platino + '">' +
-      '<td><span style="font-size:0.8rem;color:var(--txt2);line-height:1.3">' + Utils.monthName(r.mes) + '<br><span style="color:var(--txt3)">' + r.año + '</span></span></td>' +
-      '<td><span class="badge ' + Utils.playerBadge(r.jugador) + '">' + Utils.escapeHtml(r.jugador) + '</span></td>' +
-      '<td><div class="game-cell">' + coverHtml +
-        (game
-          ? '<a href="biblioteca.html?open=' + game.id + '" class="game-link" onclick="event.stopPropagation()">' + Utils.escapeHtml(titulo) + '</a>'
-          : '<span style="font-weight:600;color:var(--txt3)">' + Utils.escapeHtml(titulo) + '</span>') +
-      '</div></td>' +
-      '<td>' + scoreHtml + '</td>' +
-      '<td><span class="badge ' + Utils.statusBadge(r.estado) + '">' + (r.estado === 'Platinado' ? '🏆 ' : '') + Utils.escapeHtml(r.estado) + '</span></td>' +
-      '<td><span style="font-size:0.85rem;color:var(--txt2)">' + (r.horas ? r.horas + 'h' : '—') + '</span></td>' +
-      '<td>' + (game && game.generos && game.generos.length ? Utils.genreBadgesHtml(game.generos.slice(0,2)) : '—') + '</td>' +
-      '<td>' + (r.plataformaJugada ? '<span class="badge badge-plat ' + Utils.platformClass(r.plataformaJugada) + '">' + Utils.escapeHtml(r.plataformaJugada) + '</span>' : '—') + '</td>' +
-      '<td><span style="font-size:0.8rem;color:var(--txt3)">' + (game && game.fechaLanzamiento ? game.fechaLanzamiento.slice(0,4) : '—') + '</span></td>' +
-      '<td style="white-space:nowrap">' +
-        '<button class="btn btn-ghost btn-icon reg-tick-btn" onclick="window.GT_Reg.openQuickModal(\'' + r.id + '\')" title="Actualizar rápido">' +
-          '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><polyline points="4,10 8,14 16,6"/></svg>' +
-        '</button>' +
-        '<button class="btn btn-ghost btn-icon" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar">✏️</button>' +
-      '</td>' +
-    '</tr>';
+    }).join('');
   }
 
-  /* ── RENDER GROUP ───────────────────────────────────────── */
-  function renderGroup(type, icon, title, entries) {
-    var rows = entries.map(renderRow).join('');
-    return '<div class="reg-group reg-group--' + type + '">' +
-      '<div class="reg-group__hdr">' +
-        '<span class="reg-group__title">' + icon + ' ' + title + '</span>' +
-        '<span class="reg-group__count">' + entries.length + ' entrada' + (entries.length !== 1 ? 's' : '') + '</span>' +
-      '</div>' +
-      '<div class="table-wrap">' +
-        '<table class="table">' +
-          '<thead><tr>' +
-            '<th>Mes</th><th>Jugador</th><th>Videojuego</th><th>Nota</th><th>Estado</th>' +
-            '<th>Horas</th><th>Géneros</th><th>Plataforma</th><th>Año lanz.</th><th style="width:60px"></th>' +
-          '</tr></thead>' +
-          '<tbody>' + rows + '</tbody>' +
-        '</table>' +
-      '</div>' +
-    '</div>';
+  function card(r) {
+    var game = Biblioteca.getById(r.juegoId), titulo = game ? game.titulo : '(Juego eliminado)';
+    var mark = r.estado === 'Platinado' ? '🏆' : '✓';
+    return '<div class="rg-card' + (r.estado === 'Platinado' ? ' rg-card--plat' : '') + '">' +
+      '<button type="button" class="rg-card__cover" onclick="window.GT.GameDetailModal.open(\'' + esc(r.juegoId) + '\')" title="Ver ficha">' + cover(game, 420) +
+        '<span class="rg-card__ok" title="' + esc(r.estado) + '">' + mark + '</span>' + av(r.jugador) + '</button>' +
+      '<div class="rg-card__b">' +
+        '<b title="' + esc(titulo) + '">' + esc(titulo) + '</b>' +
+        '<small>📅 ' + when(r) + (r.horas ? ' · ' + r.horas + 'h' : '') + '</small>' +
+        '<div class="rg-card__f">' + plat(r.plataformaJugada) + nota(r) +
+          '<button type="button" class="rg-card__ed" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar">✏️</button></div>' +
+      '</div></div>';
   }
 
-  /* ── RENDER TABLE ───────────────────────────────────────── */
+  function topList(list, n) {
+    var conNota = list.filter(function (r) { return r.nota !== null && r.nota !== undefined && r.nota !== ''; })
+      .sort(function (a, b) { return b.nota - a.nota; }).slice(0, n);
+    if (!conNota.length) return '<p class="rg-none">Aún no hay notas</p>';
+    return '<ol class="rg-top">' + conNota.map(function (r, i) {
+      var game = Biblioteca.getById(r.juegoId);
+      return '<li><span class="rg-top__n">' + (i + 1) + '</span>' +
+        '<button type="button" class="rg-top__c" onclick="window.GT.GameDetailModal.open(\'' + esc(r.juegoId) + '\')">' + cover(game, 200) + '</button>' +
+        '<span class="rg-top__t"><b>' + esc(game ? game.titulo : '(Juego eliminado)') + '</b><small>' + av(r.jugador) + esc(r.jugador) + ' · ' + when(r) + '</small></span>' + nota(r) + '</li>';
+    }).join('') + '</ol>';
+  }
+
+  function section(cls, icon, title, count, body, more) {
+    return '<section class="rg-sec rg-sec--' + cls + '"><div class="rg-sec__h"><h2>' + icon + ' ' + title + '</h2><span class="rg-sec__n">' + count + '</span>' +
+      (more ? '<button type="button" class="rg-sec__more" data-goto="' + more + '">Ver todos →</button>' : '') + '</div>' + body + '</section>';
+  }
+
+  // contadores del lateral (jugadores y plataformas) con el año y el mes elegidos
+  function renderSide(base) {
+    document.querySelectorAll('#playerCards [data-count]').forEach(function (el) {
+      var p = el.dataset.count, n = base.filter(function (r) { return p === 'All' || r.jugador === p; }).length;
+      el.textContent = n + ' juego' + (n !== 1 ? 's' : '');
+    });
+    var mine = base.filter(function (r) { return state.player === 'All' || r.jugador === state.player; }), plats = {};
+    mine.forEach(function (r) { var p = r.plataformaJugada || 'Otras'; plats[p] = (plats[p] || 0) + 1; });
+    document.getElementById('regPlats').innerHTML = Object.keys(plats).sort(function (a, b) { return plats[b] - plats[a]; }).map(function (p) {
+      return '<button type="button" class="rg-plat' + (state.plat === p ? ' is-on' : '') + '" data-plat="' + esc(p) + '"><span>' + esc(p) + '</span><b>' + plats[p] + '</b></button>';
+    }).join('');
+  }
+
   function renderTable() {
-    var opts = { jugador: state.player };
-    if (state.year)   opts.año    = state.year;
-    if (state.month)  opts.mes    = parseInt(state.month);
-    if (state.estado) opts.estado = state.estado;
+    var opts = {};
+    if (state.year)  opts.año = state.year;
+    if (state.month) opts.mes = parseInt(state.month);
+    var base = Registro.filter(Object.assign({ jugador: 'All' }, opts));
+    renderSide(base);
+    var mineFilter = function (r) {
+      return (state.player === 'All' || r.jugador === state.player) && (!state.plat || (r.plataformaJugada || 'Otras') === state.plat);
+    };
+    // lo que se está jugando sale aunque se empezara otro año o mes
+    var entries = base.filter(function (r) { return !CURSO[r.estado] && mineFilter(r); })
+      .concat(Registro.getAll().filter(function (r) { return CURSO[r.estado] && mineFilter(r); }));
 
-    var entries = Registro.filter(opts);
-
-    var container = document.getElementById('regContainer');
-    var empty     = document.getElementById('regEmpty');
-    var count     = document.getElementById('regCount');
-
-    count.textContent = entries.length + ' entrada' + (entries.length !== 1 ? 's' : '');
-
-    if (!entries.length) {
-      container.innerHTML = '';
-      empty.classList.remove('hidden');
-      return;
-    }
+    var container = document.getElementById('regContainer'), empty = document.getElementById('regEmpty');
+    document.getElementById('regCount').textContent = entries.length + ' entrada' + (entries.length !== 1 ? 's' : '');
+    if (!entries.length) { container.innerHTML = ''; empty.classList.remove('hidden'); return; }
     empty.classList.add('hidden');
 
-    // Split first, then sort each group independently
-    var playing = entries.filter(function(r) { return r.estado === 'Jugando' || r.estado === 'Retomar'; });
-    var history = entries.filter(function(r) { return r.estado !== 'Jugando' && r.estado !== 'Retomar'; });
+    var dir = state.sortAsc ? 1 : -1;
+    var curso = entries.filter(function (r) { return CURSO[r.estado]; }).sort(function (a, b) { return dir * byDate(a, b); });
+    var otros = entries.filter(function (r) { return OTROS[r.estado]; }).sort(function (a, b) { return dir * byDate(a, b); });
+    var hecho = entries.filter(function (r) { return !CURSO[r.estado] && !OTROS[r.estado]; }).sort(function (a, b) { return dir * byDate(a, b); });
 
-    // En Curso: respeta el orden del botón (por defecto más reciente)
-    playing.sort(function(a, b) {
-      var byYear = state.sortAsc ? (a.año - b.año) : (b.año - a.año);
-      if (byYear !== 0) return byYear;
-      return state.sortAsc ? (a.mes - b.mes) : (b.mes - a.mes);
-    });
-
-    // Historial: siempre Enero→Diciembre (ascendente)
-    history.sort(function(a, b) {
-      var byYear = a.año - b.año;
-      if (byYear !== 0) return byYear;
-      return a.mes - b.mes;
-    });
-
-    var html = '';
-    if (playing.length) {
-      html += renderGroup('playing', '🎮', 'En Curso', playing);
+    var t = state.tab, html = '';
+    var cursoHtml = curso.length ? '<div class="rg-rows">' + cursoRows(curso, t ? 0 : 6) + '</div>' : '<p class="rg-none">Nadie está jugando nada ahora mismo</p>';
+    if (!t || t === 'curso') html += section('curso', '🎮', 'EN CURSO', curso.length, cursoHtml, t ? '' : 'curso');
+    if (!t) {
+      html += '<div class="rg-duo">' +
+        section('hecho', '✅', 'COMPLETADOS', hecho.length, '<div class="rg-cards rg-cards--strip">' + hecho.slice(0, 12).map(card).join('') + '</div>', 'hecho') +
+        section('top', '⭐', 'MEJORES NOTAS', '', topList(hecho, 5), 'top') +
+      '</div>';
+      if (otros.length) html += section('otros', '⏸️', 'ABANDONADOS', otros.length, '<div class="rg-cards">' + otros.slice(0, 6).map(card).join('') + '</div>', 'otros');
     }
-    if (history.length) {
-      html += renderGroup('history', '📋', 'Historial', history);
-    }
+    if (t === 'hecho') html += section('hecho', '✅', 'COMPLETADOS', hecho.length, hecho.length ? '<div class="rg-cards">' + hecho.map(card).join('') + '</div>' : '<p class="rg-none">Sin juegos completados</p>');
+    if (t === 'top') html += section('top', '⭐', 'MEJORES NOTAS', '', topList(hecho, 20));
+    if (t === 'otros') html += section('otros', '⏸️', 'ABANDONADOS', otros.length, otros.length ? '<div class="rg-cards">' + otros.map(card).join('') + '</div>' : '<p class="rg-none">Ningún juego abandonado</p>');
     container.innerHTML = html;
+  }
+
+  function setTab(tab) {
+    state.tab = tab;
+    document.querySelectorAll('#regTabs [data-tab]').forEach(function (b) { b.classList.toggle('is-on', b.dataset.tab === tab); b.setAttribute('aria-selected', b.dataset.tab === tab); });
+    renderTable();
+  }
+  function initTabs() {
+    document.getElementById('regTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
+    document.getElementById('regContainer').addEventListener('click', function (e) { var b = e.target.closest('[data-goto]'); if (b) { setTab(b.dataset.goto); scrollTo({ top: 0, behavior: 'smooth' }); } });
+    document.getElementById('regPlats').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-plat]'); if (!b) return;
+      state.plat = state.plat === b.dataset.plat ? '' : b.dataset.plat; // segundo clic quita el filtro
+      renderTable();
+    });
   }
 
   /* ── YEAR OPTIONS ───────────────────────────────────────── */
@@ -486,7 +518,7 @@
     initPlayerCards();
 
     document.getElementById('filterMonth').addEventListener('change', function() { state.month = this.value; renderTable(); });
-    document.getElementById('filterStatus').addEventListener('change', function() { state.estado = this.value; renderTable(); });
+    initTabs();
 
     document.getElementById('btnSortOrder').addEventListener('click', function() {
       state.sortAsc = !state.sortAsc;

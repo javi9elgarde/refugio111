@@ -83,7 +83,33 @@ window.GT.Utils = (function () {
   function thumb(url, w) {
     return String(url || '').replace(/^(https:\/\/media\.rawg\.io\/media\/)(?!resize\/|crop\/)/, '$1resize/' + (w || 420) + '/-/');
   }
-  return { uuid, trailerUrl, thumb, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
+  // Lado de arriba con menos detalle ('izq' | 'der') para colgar el cartel sin tapar lo importante.
+  // Solo con imágenes que dejan leerse (RAWG); si no, null y se queda a la izquierda.
+  var _sides = {};
+  function quietSide(url, cb) {
+    if (!url) return cb(null);
+    if (url in _sides) return cb(_sides[url]);
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+      try {
+        var W = 64, H = 36, c = document.createElement('canvas'), x = c.getContext('2d');
+        c.width = W; c.height = H;
+        x.drawImage(img, 0, 0, W, H);
+        var d = x.getImageData(0, 0, W, H).data, L = function (i, j) { var k = (j * W + i) * 4; return d[k] * 0.3 + d[k + 1] * 0.59 + d[k + 2] * 0.11; };
+        var busy = function (x0, x1) { // bordes + brillo de la franja de arriba, donde va el cartel
+          var s = 0;
+          for (var j = 0; j < 22; j++) for (var i = x0; i < x1; i++) s += Math.abs(L(i + 1, j) - L(i, j)) + Math.abs(L(i, j + 1) - L(i, j)) + L(i, j) * 0.08;
+          return s;
+        };
+        _sides[url] = busy(38, 63) < busy(0, 25) * 0.85 ? 'der' : 'izq';
+      } catch (e) { _sides[url] = null; }
+      cb(_sides[url]);
+    };
+    img.onerror = function () { cb(_sides[url] = null); };
+    img.src = thumb(url, 200);
+  }
+  return { uuid, trailerUrl, thumb, quietSide, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
            playerBadge, statusBadge, escapeHtml, platformBadgesHtml, genreBadgesHtml, MONTHS };
 })();
 

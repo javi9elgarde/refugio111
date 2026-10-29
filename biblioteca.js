@@ -903,7 +903,7 @@
     document.getElementById('editId').value = '';
     document.getElementById('fTitulo').value = '';
     document.getElementById('fPortada').value = '';
-    ['fFondoHD', 'fFiestaFondo', 'fFiestaLogo', 'fFiestaColor'].forEach(function(f) { document.getElementById(f).value = ''; });
+    fillExtras({});
     document.getElementById('fDesarrollador').value = '';
     setDateSelects('');
     document.getElementById('fDuracion').value = '';
@@ -935,10 +935,7 @@
     document.getElementById('editId').value = id;
     document.getElementById('fTitulo').value = game.titulo || '';
     document.getElementById('fPortada').value = game.portadaUrl || '';
-    document.getElementById('fFondoHD').value = game.fondoHD || '';
-    document.getElementById('fFiestaFondo').value = game.fiestaFondo || '';
-    document.getElementById('fFiestaLogo').value = game.fiestaLogo || '';
-    document.getElementById('fFiestaColor').value = game.fiestaColor || '';
+    fillExtras(game);
     document.getElementById('fDesarrollador').value = game.desarrollador || '';
     if (coverPreview) coverPreview.update(game.portadaUrl || '', game.portadaPos || '');
     setDateSelects(game.fechaLanzamiento || '');
@@ -959,6 +956,7 @@
     renderPlataformaChips();
     document.getElementById('gameModal').classList.add('open');
     document.getElementById('detailModal').classList.remove('open');
+    updateExtrasPreview();
   }
 
   function closeModal() {
@@ -1150,6 +1148,51 @@
     state.detailFace = 'front';
   }
 
+  /* ── PORTADA DEL INICIO Y DÍA DE ESTRENO: campos y vista previa ── */
+  function fillExtras(g) {
+    var v = function (id, val) { document.getElementById(id).value = val || ''; };
+    v('fFondoHD', g.fondoHD); v('fFiestaFondo', g.fiestaFondo); v('fFiestaLogo', g.fiestaLogo); v('fCartelLado', g.cartelLado);
+    document.getElementById('fColorPropio').checked = !!g.fiestaColor;
+    document.getElementById('fFiestaColor').value  = g.fiestaColor  || '#ffc800';
+    document.getElementById('fFiestaColor2').value = g.fiestaColor2 || '#ff9d00';
+  }
+  function updateExtrasPreview() {
+    var val = function (id) { return document.getElementById(id).value.trim(); };
+    var ok = function (u) { return /^https?:\/\//i.test(u) ? u : ''; };
+    var portada = ok(val('fPortada')), hero = ok(val('fFondoHD')) || portada;
+    var sideImg = ok(val('fFiestaFondo')) || portada, logo = ok(val('fFiestaLogo'));
+    var c1 = '#ffc800', c2 = '#ff9d00';
+    if (document.getElementById('fColorPropio').checked) { c1 = val('fFiestaColor'); c2 = val('fFiestaColor2'); }
+    var box = document.getElementById('gxPrev'), img = document.getElementById('gxImg'), sign = document.getElementById('gxSign');
+    box.style.setProperty('--c1', c1); box.style.setProperty('--c2', c2);
+    if (img.getAttribute('src') !== Utils.thumb(hero, 1280)) img.src = hero ? Utils.thumb(hero, 1280) : '';
+    img.hidden = !hero;
+    ['gxSideL', 'gxSideR'].forEach(function (id) { document.getElementById(id).style.backgroundImage = sideImg ? 'url("' + Utils.thumb(sideImg, 640).replace(/"/g, '%22') + '")' : 'none'; });
+    var l = document.getElementById('gxLogo'); l.hidden = !logo; if (logo) l.src = logo;
+    var t = val('fTitulo') || 'Título del juego', d = getDateFromSelects();
+    document.getElementById('gxTitle').textContent = t;
+    document.getElementById('gxPartyT').textContent = t.toUpperCase();
+    document.getElementById('gxDate').textContent = '📅 ' + (d || 'Sin fecha');
+    var lado = val('fCartelLado'), hint = document.getElementById('gxHint');
+    var setSide = function (side, auto) {
+      sign.classList.toggle('gx-prev__sign--der', side === 'der');
+      hint.textContent = 'Así se verá en la portada del inicio' + (auto ? ' (cartel automático: ' + (side === 'der' ? 'derecha' : 'izquierda') + ')' : '') + '; a los lados, los fondos del día de estreno.';
+    };
+    if (lado) setSide(lado, false);
+    else Utils.quietSide(hero, function (side) { setSide(side || 'izq', true); });
+  }
+  function initExtrasPreview() {
+    ['fTitulo', 'fPortada', 'fFondoHD', 'fCartelLado', 'fFiestaFondo', 'fFiestaLogo', 'fColorPropio', 'fFiestaColor', 'fFiestaColor2'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', updateExtrasPreview);
+      document.getElementById(id).addEventListener('change', updateExtrasPreview);
+    });
+    // al tocar un color se marca «elegir a mano»
+    ['fFiestaColor', 'fFiestaColor2'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', function () { document.getElementById('fColorPropio').checked = true; updateExtrasPreview(); });
+    });
+    document.getElementById('gxBox').addEventListener('toggle', updateExtrasPreview);
+  }
+
   /* ── SAVE ───────────────────────────────────────────────── */
   function httpUrl(id) { var v = document.getElementById(id).value.trim(); return /^https?:\/\//i.test(v) ? v : ''; }
 
@@ -1164,7 +1207,9 @@
       fondoHD:          httpUrl('fFondoHD'),
       fiestaFondo:      httpUrl('fFiestaFondo'),
       fiestaLogo:       httpUrl('fFiestaLogo'),
-      fiestaColor:      (/^#[0-9a-f]{6}$/i.test(document.getElementById('fFiestaColor').value.trim()) ? document.getElementById('fFiestaColor').value.trim() : ''),
+      cartelLado:       document.getElementById('fCartelLado').value,
+      fiestaColor:      document.getElementById('fColorPropio').checked ? document.getElementById('fFiestaColor').value : '',
+      fiestaColor2:     document.getElementById('fColorPropio').checked ? document.getElementById('fFiestaColor2').value : '',
       desarrollador:    document.getElementById('fDesarrollador').value.trim(),
       fechaLanzamiento: getDateFromSelects(),
       duracion:         parseFloat(document.getElementById('fDuracion').value) || null,
@@ -1214,6 +1259,7 @@
     safe(populateDateSelects, 'populateDateSelects');
     safe(initHypeSelector, 'initHypeSelector');
     coverPreview = initCoverPreview();
+    initExtrasPreview();
 
     // Search
     document.getElementById('searchInput').addEventListener('input', function(){

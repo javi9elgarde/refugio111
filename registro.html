@@ -7,7 +7,8 @@
   <link rel="apple-touch-icon" href="logonuevo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Refugio 111 — Registro</title>
-  <link rel="stylesheet" href="styles.css?v=20261029f">
+  <link rel="stylesheet" href="styles.css?v=20261029j">
+  <link rel="stylesheet" href="registro.css?v=20261029a">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#07070f">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -66,78 +67,59 @@
   <a href="eventos.html" class="tabbar__item"><span>&#128197;</span><span>Eventos</span></a>
   <button type="button" id="tabMore" class="tabbar__item" aria-expanded="false"><span>&#9776;</span><span>Más</span></button>
 </nav>
-<div class="page">
-  <div class="page-hero page-hero--registro">
-    <div class="page-hero__bg">
-      <div class="page-hero__orb page-hero__orb--1"></div>
-      <div class="page-hero__orb page-hero__orb--2"></div>
-      <div class="page-hero__orb page-hero__orb--3"></div>
+<div class="page rg">
+  <header class="rg-hero">
+    <svg class="rg-hero__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 11h4M8 9v4M15 12h.01M18 10h.01"/><path d="M17.3 5H6.7a4 4 0 0 0-4 3.6l-.6 6.6A3 3 0 0 0 5 18.5c1 0 1.9-.5 2.4-1.3L8.5 15h7l1.1 2.2c.5.8 1.4 1.3 2.4 1.3a3 3 0 0 0 2.9-3.3l-.6-6.6A4 4 0 0 0 17.3 5z"/></svg>
+    <div>
+      <h1 class="rg-hero__title">REGISTRO</h1>
+      <p class="rg-hero__sub">CADA JUEGO ES UNA NUEVA AVENTURA · <span id="regCount">Cargando...</span></p>
     </div>
-    <h1 class="page-hero__title">REGISTRO</h1>
-    <p class="page-hero__sub" id="regCount">Cargando...</p>
-  </div>
-  <div class="section" style="padding-bottom:0">
-    <div class="reg-filter-wrap">
-    <!-- Player filter cards -->
-    <div class="reg-player-filter" id="playerCards">
-      <label class="reg-pcard reg-pcard--all">
-        <input type="radio" name="regPlayer" value="All" checked>
-        <div class="reg-pcard__inner">
-          <div class="reg-pcard__avatar">★</div>
-          <div class="reg-pcard__name">Todos</div>
-        </div>
-      </label>
-      <label class="reg-pcard reg-pcard--david">
-        <input type="radio" name="regPlayer" value="David">
-        <div class="reg-pcard__inner">
-          <div class="reg-pcard__avatar">D</div>
-          <div class="reg-pcard__name">David</div>
-        </div>
-      </label>
-      <label class="reg-pcard reg-pcard--javi">
-        <input type="radio" name="regPlayer" value="Javi">
-        <div class="reg-pcard__inner">
-          <div class="reg-pcard__avatar">J</div>
-          <div class="reg-pcard__name">Javi</div>
-        </div>
-      </label>
-      <label class="reg-pcard reg-pcard--mery">
-        <input type="radio" name="regPlayer" value="Mery">
-        <div class="reg-pcard__inner">
-          <div class="reg-pcard__avatar">M</div>
-          <div class="reg-pcard__name">Mery</div>
-        </div>
-      </label>
-    </div>
-    <!-- Compact secondary filters -->
-    <div class="reg-filters-row">
-      <select class="form-select form-select--sm" id="filterYear" style="width:82px"></select>
-      <select class="form-select form-select--sm" id="filterMonth" style="width:118px">
-        <option value="">Todos los meses</option>
-        <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-        <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-        <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-      </select>
-      <select class="form-select form-select--sm" id="filterStatus" style="width:128px">
-        <option value="">Todos los estados</option>
-        <option value="Terminado">Terminado</option><option value="Jugando">Jugando</option>
-        <option value="Rejugado">Rejugado</option><option value="Platinado">Platinado</option>
-        <option value="Retomar">Retomar</option><option value="Abandonado">Abandonado</option>
-        <option value="Jugado">Jugado</option>
-      </select>
-      <button class="btn btn-secondary btn-sm btn--compact" id="btnSortOrder" title="Cambiar orden">↑ Enero→Dic</button>
-    </div>
-    </div><!-- /.reg-filter-wrap -->
-  </div>
+  </header>
 
-  <div class="section">
-    <div id="regContainer"></div>
-    <div id="regEmpty" class="empty-state hidden">
-      <div class="empty-state__icon">📋</div>
-      <div class="empty-state__title">Sin entradas</div>
-      <p>Añade tu primera partida con el botón +.</p>
-    </div>
+  <div class="rg-layout">
+    <!-- LATERAL: jugadores y plataformas -->
+    <aside class="rg-side">
+      <div class="rg-players" id="playerCards">
+        <label class="rg-pl rg-pl--all"><input type="radio" name="regPlayer" value="All" checked><span class="rg-pl__av">★</span><span class="rg-pl__t"><b>Todos</b><small data-count="All"></small></span></label>
+        <label class="rg-pl rg-pl--david"><input type="radio" name="regPlayer" value="David"><img class="rg-pl__av" src="cara_david.png" alt=""><span class="rg-pl__t"><b>David</b><small data-count="David"></small></span></label>
+        <label class="rg-pl rg-pl--javi"><input type="radio" name="regPlayer" value="Javi"><img class="rg-pl__av" src="cara_javi.png" alt=""><span class="rg-pl__t"><b>Javi</b><small data-count="Javi"></small></span></label>
+        <label class="rg-pl rg-pl--mery"><input type="radio" name="regPlayer" value="Mery"><img class="rg-pl__av" src="cara_mery.png" alt=""><span class="rg-pl__t"><b>Mery</b><small data-count="Mery"></small></span></label>
+      </div>
+      <div class="rg-side__h">PLATAFORMAS</div>
+      <div class="rg-plats" id="regPlats"></div>
+      <div class="rg-quote">Jugar también<br>es vivir 🎮</div>
+    </aside>
+
+    <main class="rg-main">
+      <!-- PESTAÑAS Y FILTROS -->
+      <div class="rg-bar">
+        <div class="rg-tabs" id="regTabs" role="tablist">
+          <button type="button" role="tab" data-tab="" class="is-on"><span class="rg-tab__i">🎮</span><span><b>TODOS</b><small>Ver todos</small></span></button>
+          <button type="button" role="tab" data-tab="curso"><span class="rg-tab__i">⏱️</span><span><b>EN CURSO</b><small>Jugando ahora</small></span></button>
+          <button type="button" role="tab" data-tab="hecho"><span class="rg-tab__i">✅</span><span><b>COMPLETADOS</b><small>¡Lo hemos logrado!</small></span></button>
+          <button type="button" role="tab" data-tab="top"><span class="rg-tab__i">⭐</span><span><b>MEJORES NOTAS</b><small>Los imprescindibles</small></span></button>
+          <button type="button" role="tab" data-tab="otros"><span class="rg-tab__i">⏸️</span><span><b>ABANDONADOS</b><small>Para otro momento</small></span></button>
+        </div>
+        <div class="rg-filters">
+          <select class="form-select form-select--sm" id="filterYear" aria-label="Año"></select>
+          <select class="form-select form-select--sm" id="filterMonth" aria-label="Mes">
+            <option value="">Todos los meses</option>
+            <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+            <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+            <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+          </select>
+          <button class="btn btn-secondary btn-sm btn--compact" id="btnSortOrder" title="Cambiar orden">↓ Más reciente</button>
+        </div>
+      </div>
+
+      <div id="regContainer"></div>
+      <div id="regEmpty" class="empty-state hidden">
+        <div class="empty-state__icon">📋</div>
+        <div class="empty-state__title">Sin entradas</div>
+        <p>Añade tu primera partida con el botón +.</p>
+      </div>
+    </main>
   </div>
 </div>
 
@@ -188,8 +170,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260519b" defer></script>
-<script src="main.js?v=20261029f"            defer></script>
-<script src="registro.js?v=20261028t"        defer></script>
+<script src="main.js?v=20261029j"            defer></script>
+<script src="registro.js?v=20261029k"        defer></script>
 <script src="app.js?v=20261023a" defer></script>
 </body>
 </html>
