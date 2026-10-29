@@ -109,7 +109,10 @@ window.GT.Utils = (function () {
     img.onerror = function () { cb(_sides[url] = null); };
     img.src = thumb(url, 200);
   }
-  return { uuid, trailerUrl, thumb, quietSide, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
+  // 14213 → 14.213, también dentro de textos como «5957h» (no usar con años)
+  function miles(v) { return String(v == null ? '' : v).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+  console.assert(miles(14213) === '14.213' && miles(5957) === '5.957' && miles('5957h') === '5.957h' && miles('8,35') === '8,35', 'miles');
+  return { uuid, trailerUrl, thumb, quietSide, miles, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
            playerBadge, statusBadge, escapeHtml, platformBadgesHtml, genreBadgesHtml, MONTHS };
 })();
 

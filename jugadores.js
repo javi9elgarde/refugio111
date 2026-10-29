@@ -1,85 +1,86 @@
+/* ============================================================
+   REFUGIO 111 — Jugadores (perfil + estadísticas en una página)
+   Aquí vive el selector de jugador y la ventana de detalle; el perfil lo
+   pinta pendientes.js y las gráficas estadisticas.js, y los dos escuchan
+   el evento «gt:jugador».
+   ============================================================ */
 (function () {
   'use strict';
 
-  var PLAYERS = [
-    { key: 'David', cls: 'david', avatar: 'cara_david.png', fullName: 'David Garde' },
-    { key: 'Javi',  cls: 'javi',  avatar: 'cara_javi.png',  fullName: 'Javier Garde' },
-    { key: 'Mery',  cls: 'mery',  avatar: 'cara_mery.png',  fullName: 'Mariam Moreno' }
-  ];
+  var COLORS = { David: '#3b82f6', Javi: '#dc2626', Mery: '#a855f7' };
+  var ap = window.GT.getActivePlayer && window.GT.getActivePlayer();
+  var JG = window.GT_JG = { player: COLORS[ap] ? ap : 'David', colors: COLORS };
 
-  function waitForDb(cb) {
-    if (window.GT && window.GT.db) return cb(window.GT.db);
-    setTimeout(function () { waitForDb(cb); }, 100);
-  }
+  function esc(s) { return window.GT.Utils.escapeHtml(s == null ? '' : String(s)); }
 
-  function goToPlayer(key) {
-    if (window.GT && window.GT.setActivePlayer) window.GT.setActivePlayer(key);
-    window.location.href = 'pendientes.html';
-  }
-
-  function renderCards(stats) {
-    var grid = document.getElementById('jugadoresGrid');
-    if (!grid) return;
-    grid.innerHTML = PLAYERS.map(function (p) {
-      var s = stats[p.key] || { juegos: 0, horas: 0, pendientes: 0, platinos: 0 };
-      return '<div class="jugador-card jugador-card--' + p.cls + '" onclick="window.GT_goToPlayer(\'' + p.key + '\')" role="button" tabindex="0">' +
-        '<div class="jugador-card__avatar">' +
-          '<img src="' + p.avatar + '" alt="' + p.fullName + '" onerror="this.style.display=\'none\'">' +
-        '</div>' +
-        '<div class="jugador-card__name">' + p.fullName + '</div>' +
-        '<div class="jugador-card__stats">' +
-          '<div class="jugador-card__stat"><div class="jugador-card__stat-val">' + s.juegos + '</div><div class="jugador-card__stat-lbl">Jugados</div></div>' +
-          '<div class="jugador-card__stat"><div class="jugador-card__stat-val">' + (s.horas > 999 ? Math.round(s.horas / 1000 * 10) / 10 + 'k' : s.horas) + '</div><div class="jugador-card__stat-lbl">Horas</div></div>' +
-          '<div class="jugador-card__stat"><div class="jugador-card__stat-val">' + s.platinos + '</div><div class="jugador-card__stat-lbl">Platinos</div></div>' +
-          '<div class="jugador-card__stat"><div class="jugador-card__stat-val">' + s.pendientes + '</div><div class="jugador-card__stat-lbl">Pendientes</div></div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-
-    /* keyboard enter support */
-    grid.querySelectorAll('.jugador-card').forEach(function (card, i) {
-      card.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') goToPlayer(PLAYERS[i].key);
-      });
+  JG.setPlayer = function (key) {
+    if (!COLORS[key]) return;
+    JG.player = key;
+    document.querySelectorAll('#jgSwitch [data-player]').forEach(function (b) {
+      var on = b.dataset.player === key;
+      b.classList.toggle('is-on', on); b.setAttribute('aria-selected', on);
     });
-  }
+    document.querySelectorAll('.jg-cmp [data-col]').forEach(function (c) { c.classList.toggle('is-on', c.dataset.col === key); });
+    document.querySelector('.jg').style.setProperty('--pc', COLORS[key]);
+    document.dispatchEvent(new CustomEvent('gt:jugador', { detail: key }));
+  };
 
-  window.GT_goToPlayer = goToPlayer;
+  /* ── VENTANA DE DETALLE ─────────────────────────────────── */
+  function modal(title, html, wide) {
+    document.querySelector('.jg-modal').classList.toggle('jg-modal--wide', wide === 'wide');
+    document.getElementById('jgModalTitle').textContent = title;
+    document.getElementById('jgModalBody').innerHTML = html;
+    document.getElementById('jgModal').classList.add('open');
+  }
+  JG.modal = modal;
+  function closeModal() { document.getElementById('jgModal').classList.remove('open'); }
+
+  // logro sin juego asociado: tarjeta grande con su valor
+  JG.showLogro = function (l) {
+    modal(l.shortName || l.badge, '<div class="jg-lg" style="background:' + l.bg + '">' +
+      '<div class="jg-lg__ico">' + (l.visual && l.visual.type === 'trophy' ? '<img src="platinum-trophy.png" alt="">' : esc(l.emoji || '🏅')) + '</div>' +
+      '<b>' + esc(l.badge) + '</b><p>' + esc(l.desc) + '</p>' +
+      '<div class="jg-lg__val">' + esc(String(l.value)) + '</div><small>' + esc(l.detail || '') + '</small></div>');
+  };
+
+  // partidas detrás de un trozo de gráfica (un género, una plataforma, un año)
+  JG.showGames = function (title, entries) {
+    var seen = {}, B = window.GT.Biblioteca, U = window.GT.Utils;
+    var list = entries.filter(function (r) { if (seen[r.juegoId]) return false; return (seen[r.juegoId] = true); });
+    modal(title + ' · ' + list.length + ' juego' + (list.length !== 1 ? 's' : ''), list.length ? '<div class="jg-gl">' + list.map(function (r) {
+      var g = B.getById(r.juegoId);
+      return '<button type="button" class="jg-gl__i" data-game="' + esc(r.juegoId) + '">' +
+        (g && g.portadaUrl ? '<img src="' + esc(U.thumb(g.portadaUrl, 420)) + '" alt="" loading="lazy">' : '<span></span>') +
+        '<b>' + esc(g ? g.titulo : '(Juego eliminado)') + '</b>' +
+        '<small>' + esc(r.estado) + (r.nota != null && r.nota !== '' ? ' · ' + U.formatScore(r.nota) : '') + (r.horas ? ' · ' + r.horas + 'h' : '') + '</small></button>';
+    }).join('') + '</div>' : '<p style="color:var(--txt3)">Sin juegos</p>');
+  };
+
+  /* ── INCLINACIÓN 3D DE LAS PORTADAS ─────────────────────── */
+  function tilt(e) {
+    var c = e.target.closest('.jp-fav--filled');
+    if (!c) return;
+    var r = c.getBoundingClientRect();
+    c.style.setProperty('--ry', ((e.clientX - r.left) / r.width - 0.5) * 14 + 'deg');
+    c.style.setProperty('--rx', (0.5 - (e.clientY - r.top) / r.height) * 14 + 'deg');
+  }
 
   document.addEventListener('DOMContentLoaded', function () {
-    if (window.GT && window.GT.Nav) window.GT.Nav.init();
-  });
-
-  waitForDb(function (db) {
-    var stats = {};
-    PLAYERS.forEach(function (p) { stats[p.key] = { juegos: 0, horas: 0, pendientes: 0, platinos: 0 }; });
-
-    /* Load from Registro (entries) */
-    db.collection('registro').get().then(function (snap) {
-      snap.forEach(function (doc) {
-        var r = doc.data();
-        var p = stats[r.jugador];
-        if (!p) return;
-        p.juegos++;
-        p.horas += parseFloat(r.horas) || 0;
-        if (r.estado === 'Platinado') p.platinos++;
-        if (r.estado === 'Retomar' || r.estado === 'Jugando') p.pendientes++;
-      });
-      /* Round horas */
-      PLAYERS.forEach(function (pl) { stats[pl.key].horas = Math.round(stats[pl.key].horas); });
-      renderCards(stats);
-
-      if (window.GT && window.GT.Nav) window.GT.Nav.init();
-      if (window.GT && window.GT.hideLoading) window.GT.hideLoading();
-      else {
-        var el = document.getElementById('gtLoading');
-        if (el) { el.style.opacity = '0'; setTimeout(function () { el.style.display = 'none'; }, 400); }
-      }
-    }).catch(function () {
-      /* Fallback: render with zeros */
-      renderCards(stats);
-      var el = document.getElementById('gtLoading');
-      if (el) { el.style.opacity = '0'; setTimeout(function () { el.style.display = 'none'; }, 400); }
+    document.getElementById('jgSwitch').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-player]'); if (b) JG.setPlayer(b.dataset.player);
     });
+    document.getElementById('jgModalClose').addEventListener('click', closeModal);
+    document.getElementById('jgModal').addEventListener('click', function (e) {
+      if (e.target === this) return closeModal();
+      var g = e.target.closest('[data-game]');
+      if (g) { closeModal(); window.GT.GameDetailModal.open(g.dataset.game); }
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+    if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      var box = document.getElementById('playerProfiles');
+      box.addEventListener('pointermove', tilt);
+      box.addEventListener('pointerout', function (e) { var c = e.target.closest('.jp-fav--filled'); if (c && !c.contains(e.relatedTarget)) { c.style.removeProperty('--rx'); c.style.removeProperty('--ry'); } });
+    }
+    window.GT.onDataReady(function () { JG.setPlayer(JG.player); });
   });
 })();

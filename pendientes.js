@@ -19,6 +19,7 @@
   /* ── State ─────────────────────────────────────────────────── */
   var _favs        = { David: [], Javi: [], Mery: [] };
   var _logros      = { David: [], Javi: [], Mery: [] };
+  var _titulos     = {};
   var _favModal    = { playerKey: null, slotIdx: null };
   var _doneModal   = { gameId: null, playerKey: null };
   var _logrosPick  = { playerKey: null, selected: [] };
@@ -37,6 +38,7 @@
         if (_favs.hasOwnProperty(doc.id)) {
           _favs[doc.id]   = doc.data().favoritos || [];
           _logros[doc.id] = doc.data().logrosSeleccionados || [];
+          _titulos[doc.id] = doc.data().titulo || '';
         }
       });
       if (cb) cb();
@@ -241,8 +243,8 @@
   /* ══════════════════════════════════════════════════════════════
      BUILD ALL LOGROS — computa todos los logros disponibles
   ══════════════════════════════════════════════════════════════ */
-  function _buildAllLogros(key, color) {
-    var entries     = Registro.filter({ jugador: key });
+  function _buildAllLogros(key, color, year) {
+    var entries     = Registro.filter({ jugador: key, año: year || null });
     var totalHoras  = Math.round(entries.reduce(function(acc, r) { return acc + (parseFloat(r.horas) || 0); }, 0));
     var platSeen = {}; var platCount = 0;
     entries.forEach(function(r) {
@@ -395,221 +397,129 @@
   /* ══════════════════════════════════════════════════════════════
      RENDER PLAYER PROFILE
   ══════════════════════════════════════════════════════════════ */
+  var _shownLogros = {}; // logros pintados, para abrir su detalle al pulsarlos
+  // rango de cada logro, como los trofeos de PlayStation
+  var TIER = { platinero: 'platino', horas: 'oro', completista: 'oro', maratonista: 'oro', critico: 'plata', explorador: 'plata', veterano: 'plata' };
+  var TIER_TXT = { platino: 'PLATINO', oro: 'ORO', plata: 'PLATA', bronce: 'BRONCE' };
+
   function renderPlayer(player) {
-    var key   = player.key;
-    var color = player.color;
+    var key = player.key, esc = Utils.escapeHtml, M = Utils.miles;
+    var color = (window.GT_JG && window.GT_JG.colors[key]) || player.color;
+    var safeKey = key.replace(/'/g, "\\'");
 
-    /* --- Pending games count ---------------------------------- */
-    var pendingCount = Biblioteca.getAll().filter(function(g) {
-      return (g.pendientePor || []).indexOf(key) !== -1;
-    }).length;
-
-    /* --- Registro data ---------------------------------------- */
-    var entries     = Registro.filter({ jugador: key });
+    var entries = Registro.filter({ jugador: key });
     var totalJuegos = new Set(entries.map(function(r) { return r.juegoId; })).size;
     var totalHoras  = Math.round(entries.reduce(function(acc, r) { return acc + (parseFloat(r.horas) || 0); }, 0));
+    var platCount = new Set(entries.filter(function(r) { return r.estado === 'Platinado'; }).map(function(r) { return r.juegoId; })).size;
+    var notas = entries.filter(function(r) { return r.nota !== null && r.nota !== undefined && r.nota !== ''; });
+    var media = notas.length ? notas.reduce(function(a, r) { return a + parseFloat(r.nota); }, 0) / notas.length : null;
 
-    /* --- Platinos --------------------------------------------- */
-    var platSeen = {};
-    var platCount = 0;
-    entries.forEach(function(r) {
-      if (r.estado === 'Platinado' && !platSeen[r.juegoId]) {
-        platSeen[r.juegoId] = true;
-        platCount++;
-      }
-    });
-
-    /* ── HEADER — icono + nombre, sin avatar ni stats ───────── */
-    var playerIcons = { David: 'cara_david.png', Javi: 'cara_javi.png', Mery: 'cara_mery.png' };
-    var iconSrc = playerIcons[key] || null;
-
-    var headerHtml =
-      '<div class="pp-header' + (iconSrc ? ' pp-header--icon' : '') + '">' +
-        (iconSrc ? '<img src="' + iconSrc + '" class="pp-icon" alt="" draggable="false">' : '') +
-        '<div style="flex:1;min-width:0">' +
-          '<div class="pp-name pp-name--lg">' + Utils.escapeHtml(player.name) + '</div>' +
+    /* ── CABECERA: cara, nombre, título, cifras y medalla de logros ── */
+    var kpi = function (val, lbl) { return '<div class="jp-kpi"><b>' + val + '</b><span>' + lbl + '</span></div>'; };
+    var headHtml =
+      '<header class="jp-head">' +
+        '<img class="jp-av" src="cara_' + key.toLowerCase() + '.png" alt="">' +
+        '<div class="jp-id"><h2>' + esc(player.name) + '</h2>' +
+          '<p class="jp-title" contenteditable="plaintext-only" spellcheck="false" data-title="' + esc(key) + '" data-ph="Añade tu título…" title="Pulsa para editar tu título">' + esc(_titulos[key] || '') + '</p></div>' +
+        '<div class="jp-kpis">' +
+          kpi(M(totalJuegos), 'Juegos jugados') + kpi(M(totalHoras) + 'h', 'Horas totales') +
+          kpi(media === null ? '—' : media.toFixed(2).replace('.', ','), 'Nota media') +
+          '<div class="jp-kpi jp-kpi--plat"><img src="platinum-trophy.png" alt=""><b>' + M(platCount) + '</b><span>Platino' + (platCount !== 1 ? 's' : '') + '</span></div>' +
+          '<button type="button" class="jp-medal" onclick="window.GT_Pend.openLogros(\'' + safeKey + '\')" title="Ver logros"><span>🏅</span><b>Logros</b></button>' +
         '</div>' +
-        '<a href="registro.html" class="btn btn-ghost btn-sm" style="font-size:0.75rem;flex-shrink:0">📋 Registro</a>' +
-      '</div>';
+      '</header>';
 
-    /* ── LOGROS — 4 seleccionables ──────────────────────────── */
-    var allLogros    = _buildAllLogros(key, color);
-    var selIds       = _logros[key].length ? _logros[key] : _LOGRO_DEFAULT;
-    var logroDefs    = selIds.map(function(id) {
-      return allLogros.find(function(l) { return l.id === id; });
-    }).filter(Boolean);
-    /* Si faltan, rellena con los primeros disponibles no seleccionados */
-    if (logroDefs.length < 4) {
-      allLogros.forEach(function(l) {
-        if (logroDefs.length < 4 && !logroDefs.find(function(x) { return x.id === l.id; })) {
-          logroDefs.push(l);
-        }
-      });
-    }
-
-    var safeKeyL = key.replace(/'/g, "\\'");
-
-    function renderLogroCard(l) {
-      var v = l.visual;
-      var bannerInner = '';
-      if (v.type === 'cover' && v.src) {
-        bannerInner = '<img class="logro-banner__cover" src="' + Utils.escapeHtml(v.src) + '" ' +
-          'style="object-position:' + Utils.escapeHtml(v.pos || 'center top') + '" ' +
-          'onerror="this.style.display=\'none\'">';
-      } else if (v.type === 'trophy') {
-        bannerInner = '<img class="logro-banner__trophy" src="' + Utils.escapeHtml(v.src) + '" alt="Platino" onerror="this.style.display=\'none\'">';
-      } else if (v.type === 'bigtext') {
-        bannerInner = '<div class="logro-banner__bignum">' + Utils.escapeHtml(v.text) +
-          (v.sub ? '<span class="logro-banner__bignumsub">' + Utils.escapeHtml(v.sub) + '</span>' : '') +
-        '</div>';
-      } else {
-        bannerInner = '<div class="logro-banner__icon">' + (v.icon || '') + '</div>';
-      }
-      var cardClick = l.gameId
-        ? ' onclick="window.GT.GameDetailModal.open(\'' + l.gameId.replace(/'/g, "\\'") + '\')" style="cursor:pointer" title="Ver ficha del juego"'
-        : '';
-      return '<div class="logro-card logro-card--profile"' + cardClick + '>' +
-        '<div class="logro-banner" style="background:' + l.bg + '">' +
-          bannerInner +
-        '</div>' +
-        '<div class="logro-pp-body">' +
-          '<div class="logro-pp-title">' + Utils.escapeHtml(l.badge) + '</div>' +
-          '<div class="logro-pp-desc">' + Utils.escapeHtml(l.desc) + '</div>' +
-          '<div class="logro-pp-val" style="color:' + color + '">' + Utils.escapeHtml(String(l.value)) + '</div>' +
-        '</div>' +
-      '</div>';
-    }
-
-    var logrosHtml =
-      '<div class="pp-logros-section">' +
-        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">' +
-          '<div class="pp-sub-title" style="margin:0">🏅 Logros</div>' +
-          '<button class="btn btn-ghost btn-sm" style="font-size:0.72rem" ' +
-            'onclick="window.GT_Pend.openLogrosPicker(\'' + safeKeyL + '\')">✏️ Editar</button>' +
-        '</div>' +
-        '<div class="pp-logros-grid">' +
-          logroDefs.map(renderLogroCard).join('') +
-        '</div>' +
-      '</div>';
-
-    /* ── MIS JUEGOS FAVORITOS — grid 16:9 ───────────────────────── */
-    var favIds  = _favs[key] || [];
-    var safeKey = key.replace(/'/g, "\\'");
-    var favsHtml = '<div class="pp-fav-grid">';
-
+    /* ── MIS FAVORITOS: cuadros iguales en el orden elegido ─── */
+    var favIds = _favs[key] || [], cells = [], free = -1, shown = 0;
     for (var i = 0; i < 12; i++) {
-      var gameId = favIds[i] || null;
-      if (gameId) {
-        var g = Biblioteca.getById(gameId);
-        var imgHtml = (g && g.portadaUrl)
-          ? '<img src="' + Utils.escapeHtml(Utils.thumb(g.portadaUrl)) + '" class="pp-fav-card__img" ' +
-              'style="object-position:' + Utils.escapeHtml(g.portadaPos || 'center center') + '" ' +
-              'loading="lazy" onerror="this.style.display=\'none\'">'
-          : '<div class="pp-fav-card__ph">' + Utils.escapeHtml((g ? g.titulo : '?').charAt(0)) + '</div>';
-
-        var safeGId = gameId.replace(/'/g, "\\'");
-        favsHtml +=
-          '<div class="pp-fav-card pp-fav-card--filled" style="cursor:pointer" title="Ver ficha: ' + Utils.escapeHtml(g ? g.titulo : '') + '" ' +
-            'onclick="window.GT.GameDetailModal.open(\'' + safeGId + '\')">' +
-            '<div class="pp-fav-card__img-wrap">' +
-              imgHtml +
-              '<div class="pp-fav-card__overlay">' +
-                '<span class="pp-fav-card__rank">' + (i + 1) + '</span>' +
-                '<span class="pp-fav-card__title">' + Utils.escapeHtml(g ? g.titulo : '(juego eliminado)') + '</span>' +
-              '</div>' +
-              '<button class="pp-fav-card__remove" title="Quitar" ' +
-                'onclick="event.stopPropagation();window.GT_Pend.removeFav(\'' + safeKey + '\',' + i + ')">×</button>' +
-            '</div>' +
-          '</div>';
-      } else {
-        favsHtml +=
-          '<div class="pp-fav-card pp-fav-card--empty" onclick="window.GT_Pend.openFavPicker(\'' + safeKey + '\',' + i + ')">' +
-            '<div class="pp-fav-card__img-wrap">' +
-              '<span class="pp-fav-card__empty-num">' + (i + 1) + '</span>' +
-              '<span class="pp-fav-card__empty-plus">＋</span>' +
-            '</div>' +
-          '</div>';
-      }
+      var gameId = favIds[i];
+      if (!gameId) { if (free < 0) free = i; continue; }
+      var g = Biblioteca.getById(gameId);
+      var h = Math.round(entries.filter(function(r) { return r.juegoId === gameId; }).reduce(function(a, r) { return a + (parseFloat(r.horas) || 0); }, 0));
+      var safeGId = gameId.replace(/'/g, "\\'");
+      shown++;
+      cells.push('<div class="jp-fav jp-fav--filled" role="button" tabindex="0" title="Ver ficha: ' + esc(g ? g.titulo : '') + '" onclick="window.GT.GameDetailModal.open(\'' + safeGId + '\')">' +
+        '<div class="jp-fav__pic">' + (g && g.portadaUrl ? '<img src="' + esc(Utils.thumb(g.portadaUrl, 640)) + '" style="object-position:' + esc(g.portadaPos || 'center center') + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">' : '') + '</div>' +
+        '<div class="jp-fav__plate"><b>' + esc(g ? g.titulo : '(juego eliminado)') + '</b>' + (h ? '<span>⏱ ' + M(h) + ' h jugadas</span>' : '') + '</div>' +
+        '<span class="jp-fav__ctl">' +
+          '<button title="Mover a la izquierda" onclick="event.stopPropagation();window.GT_Pend.moveFav(\'' + safeKey + '\',' + i + ',-1)">‹</button>' +
+          '<button title="Quitar" onclick="event.stopPropagation();window.GT_Pend.removeFav(\'' + safeKey + '\',' + i + ')">×</button>' +
+          '<button title="Mover a la derecha" onclick="event.stopPropagation();window.GT_Pend.moveFav(\'' + safeKey + '\',' + i + ',1)">›</button>' +
+        '</span>' +
+      '</div>');
     }
-    favsHtml += '</div>';
+    if (free >= 0) cells.push('<button type="button" class="jp-fav jp-fav--add" onclick="window.GT_Pend.openFavPicker(\'' + safeKey + '\',' + free + ')"><span>＋</span>Añadir favorito</button>');
 
-    /* ── PLATINOS ─────────────────────────────────────────────── */
-    var platHtml =
-      '<div class="pp-plat-box">' +
-        '<div class="pp-plat-icon">' + PLAT_SVG + '</div>' +
-        '<div class="pp-plat-count" style="color:' + color + '">' + platCount + '</div>' +
-        '<div class="pp-plat-label">Platino' + (platCount !== 1 ? 's' : '') + '</div>' +
-      '</div>';
-
-    /* ── STATS bajo platinos ──────────────────────────────────── */
-    var statsHtml =
-      '<div class="pp-stat-list">' +
-        '<div class="pp-stat-item">' +
-          '<div class="pp-stat-val">' + totalHoras + 'h</div>' +
-          '<div class="pp-stat-lbl">Horas jugadas</div>' +
-        '</div>' +
-        '<div class="pp-stat-item">' +
-          '<div class="pp-stat-val">' + totalJuegos + '</div>' +
-          '<div class="pp-stat-lbl">Juegos jugados</div>' +
-        '</div>' +
-        '<div class="pp-stat-item">' +
-          '<div class="pp-stat-val">' + pendingCount + '</div>' +
-          '<div class="pp-stat-lbl">Pendientes</div>' +
-        '</div>' +
-      '</div>';
-
-    /* ── COMPOSE ──────────────────────────────────────────────── */
-    return '<div class="player-profile" id="player-' + key.toLowerCase() + '" style="--pp-color:' + color + ';scroll-margin-top:5rem">' +
-      headerHtml +
-      '<div class="pp-body--2col">' +
-        '<div class="pp-main">' +
-          '<div class="pp-sub-title">❤️ Mis Juegos Favoritos</div>' +
-          favsHtml +
-          logrosHtml +
-        '</div>' +
-        '<div class="pp-sidebar">' +
-          '<div class="pp-sub-title">🎮 Platinos</div>' +
-          platHtml +
-          statsHtml +
-        '</div>' +
-      '</div>' +
+    return '<div class="jp" id="player-' + key.toLowerCase() + '" style="--pc:' + color + '">' + headHtml +
+      '<section class="jp-favs"><h3 class="jp-favs__h">MIS FAVORITOS</h3><div class="jp-gallery">' + cells.join('') + '</div></section>' +
     '</div>';
   }
 
-  /* ── RENDER ALL ─────────────────────────────────────────────── */
+  // cambia de sitio un favorito con el siguiente (o anterior) que haya
+  function moveFav(key, i, dir) {
+    var favs = (_favs[key] || []).slice();
+    while (favs.length < 12) favs.push(null);
+    for (var j = i + dir; j >= 0 && j < 12; j += dir) {
+      if (!favs[j]) continue;
+      var t = favs[i]; favs[i] = favs[j]; favs[j] = t;
+      _favs[key] = favs; saveFavoritos(key); render();
+      return;
+    }
+  }
+
+  /* ── VENTANA DE LOGROS: general o de un año ──────────────── */
+  function openLogros(key, year) {
+    year = parseInt(year, 10) || 0;
+    var esc = Utils.escapeHtml, M = Utils.miles, safeKey = key.replace(/'/g, "\\'");
+    var color = (window.GT_JG && window.GT_JG.colors[key]) || '#f5c842';
+    var years = Registro.filter({ jugador: key }).map(function(r) { return r.año; })
+      .filter(function(y, i, a) { return y && a.indexOf(y) === i; }).sort(function(a, b) { return b - a; });
+    var list = _buildAllLogros(key, color, year);
+    var card = function (l) {
+      var v = l.visual, tier = TIER[l.id] || 'bronce', art;
+      _shownLogros[key + ':' + l.id] = l;
+      if (v.type === 'cover' && v.src) art = '<img class="lg__cover" src="' + esc(Utils.thumb(v.src, 640)) + '" style="object-position:' + esc(v.pos || 'center top') + '" alt="">';
+      else if (v.type === 'trophy') art = '<img class="lg__trophy" src="' + esc(v.src) + '" alt="">';
+      else {
+        var big = v.type === 'bigtext' ? (l.id === 'retro' ? String(v.text) : M(v.text)) : '';
+        art = '<span class="lg__big' + (big.length > 4 ? ' lg__big--sm' : '') + '">' + esc(big) + (v.icon || '') + '</span>';
+      }
+      var click = l.gameId ? 'window.GT.GameDetailModal.open(\'' + l.gameId.replace(/'/g, "\\'") + '\')' : '';
+      var tag = click ? 'button' : 'div';
+      return '<' + tag + ' class="lg lg--' + tier + '"' + (click ? ' type="button" onclick="' + click + '" title="Ver ficha del juego"' : '') + '>' +
+        '<span class="lg__art" style="background:' + l.bg + '">' + art + '<i class="lg__emoji">' + esc(l.emoji || '🏅') + '</i></span>' +
+        '<span class="lg__txt"><small class="lg__tier">' + TIER_TXT[tier] + '</small><b>' + esc(l.shortName || l.badge) + '</b><em>' + esc(l.desc) + '</em>' +
+          '<span class="lg__val">' + esc(l.id === 'retro' ? String(l.value) : M(l.value)) + '</span><small class="lg__det">' + esc(l.detail || '') + '</small></span>' +
+      '</' + tag + '>';
+    };
+    window.GT_JG.modal('🏅 Logros de ' + key,
+      '<div class="lgs-bar"><select class="jg-sel" onchange="window.GT_Pend.openLogros(\'' + safeKey + '\', this.value)">' +
+        '<option value="0">General</option>' + years.map(function(y) { return '<option value="' + y + '"' + (y === year ? ' selected' : '') + '>' + y + '</option>'; }).join('') +
+      '</select><span>' + list.length + ' logro' + (list.length !== 1 ? 's' : '') + (year ? ' en ' + year : ' en total') + '</span></div>' +
+      (list.length ? '<div class="lgs">' + list.map(card).join('') + '</div>' : '<p class="lgs-none">Sin logros este año</p>'), 'wide');
+  }
+
+  /* ── RENDER ─────────────────────────────────────────────── */
+  // en Jugadores se ve solo el elegido en el selector; en la página antigua, los tres
   function render() {
     var container = document.getElementById('playerProfiles');
     if (!container) return;
-
-    /* Reorder: active player first */
-    var ap = window.GT && window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;
-    var ordered = PLAYERS.slice();
-    if (ap) {
-      ordered.sort(function(a, b) {
-        if (a.key === ap) return -1;
-        if (b.key === ap) return  1;
-        return 0;
-      });
-    }
-    container.innerHTML = ordered.map(function(p) { return renderPlayer(p); }).join('');
-
-    // Scroll to player anchor (hash > active player > nothing)
-    try {
-      var hash = window.location.hash;
-      var target = null;
-      if (hash) {
-        target = document.querySelector(hash);
-      } else {
-        var ap = window.GT && window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;
-        if (ap) target = document.getElementById('player-' + ap.toLowerCase());
-      }
-      if (target) {
-        setTimeout(function() {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 150);
-      }
-    } catch(e) {}
+    var sel = window.GT_JG && window.GT_JG.player;
+    var list = sel ? PLAYERS.filter(function(p) { return p.key === sel; }) : PLAYERS;
+    container.innerHTML = list.map(renderPlayer).join('');
   }
+
+  function saveTitulo(el) {
+    var key = el.dataset.title, val = el.textContent.trim().slice(0, 60);
+    if (val === (_titulos[key] || '')) return;
+    _titulos[key] = val;
+    window.GT.db.collection('jugadores').doc(key).set({ titulo: val }, { merge: true })
+      .then(function() { Toast.show('Título guardado'); })
+      .catch(function(e) { Toast.show('No se pudo guardar el título', 'error'); console.warn('saveTitulo:', e); });
+  }
+  document.addEventListener('focusout', function(e) { if (e.target.dataset && e.target.dataset.title) saveTitulo(e.target); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Enter' && e.target.dataset && e.target.dataset.title) { e.preventDefault(); e.target.blur(); } });
+  document.addEventListener('gt:jugador', function() { if (window.GT.Biblioteca.getAll().length) safe(render, 'render'); });
 
   /* ══════════════════════════════════════════════════════════════
      DONE MODAL
@@ -814,7 +724,10 @@
     removeFav:         removeFav,
     openLogrosPicker:  openLogrosPicker,
     closeLogrosPicker: closeLogrosPicker,
-    toggleLogroSel:    toggleLogroSel
+    toggleLogroSel:    toggleLogroSel,
+    moveFav:           moveFav,
+    openLogros:        openLogros,
+    showLogro:         function (key, id) { var l = _shownLogros[key + ':' + id]; if (l && window.GT_JG) window.GT_JG.showLogro(l); }
   };
 
   document.addEventListener('DOMContentLoaded', function () {

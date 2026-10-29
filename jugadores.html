@@ -7,125 +7,8 @@
   <link rel="apple-touch-icon" href="logonuevo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Refugio 111 — Jugadores</title>
-  <link rel="stylesheet" href="styles.css?v=20261029q">
-  <style>
-    /* ── JUGADORES — nuevo layout 2 columnas ── */
-    .pp-body--2col {
-      padding: 1.25rem 2rem 1.75rem;
-      display: grid;
-      grid-template-columns: 1fr 200px;
-      gap: 1.75rem;
-      align-items: start;
-    }
-    @media (max-width: 900px) { .pp-body--2col { grid-template-columns: 1fr; } }
-    @media (max-width: 600px) { .pp-body--2col { padding: 1rem; gap: 1.25rem; } }
-
-    .pp-main {}
-    .pp-sidebar { display: flex; flex-direction: column; gap: 0.85rem; }
-
-    .pp-name--lg {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.3rem; font-weight: 700;
-      color: var(--txt);
-      letter-spacing: 0.04em;
-    }
-
-    .pp-fav-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.55rem;
-      margin-top: 0.65rem;
-    }
-    @media (max-width: 700px) { .pp-fav-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 420px) { .pp-fav-grid { grid-template-columns: repeat(2, 1fr); } }
-
-    .pp-fav-card { position: relative; border-radius: 6px; overflow: hidden; }
-    .pp-fav-card__img-wrap {
-      position: relative; aspect-ratio: 16 / 9; overflow: hidden;
-      background: var(--bg3); border-radius: 6px;
-    }
-    .pp-fav-card__img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.32s ease; }
-    .pp-fav-card--filled:hover .pp-fav-card__img { transform: scale(1.07); }
-    .pp-fav-card__ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; color: var(--txt3); }
-    .pp-fav-card__overlay {
-      position: absolute; inset: 0; pointer-events: none;
-      background: linear-gradient(to top, rgba(7,7,15,0.95) 0%, rgba(7,7,15,0.15) 55%, transparent 100%);
-      display: flex; flex-direction: column; justify-content: flex-end;
-      padding: 0.28rem 0.3rem 0.25rem;
-    }
-    .pp-fav-card__rank { font-family: 'Orbitron', sans-serif; font-size: 0.48rem; font-weight: 700; color: var(--pp-color); line-height: 1; margin-bottom: 0.08rem; }
-    .pp-fav-card__title { font-size: 0.58rem; font-weight: 600; color: var(--txt); line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .pp-fav-card__remove {
-      position: absolute; top: 0.2rem; right: 0.2rem; width: 18px; height: 18px; border-radius: 50%;
-      border: none; background: rgba(7,7,15,0.85); color: rgba(255,255,255,0.55); font-size: 0.85rem; line-height: 1;
-      display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0;
-      transition: opacity 0.15s, color 0.15s; z-index: 3;
-    }
-    .pp-fav-card--filled:hover .pp-fav-card__remove { opacity: 1; }
-    .pp-fav-card__remove:hover { color: #ef4444; }
-    .pp-fav-card--empty .pp-fav-card__img-wrap {
-      cursor: pointer; border: 1px dashed rgba(255,255,255,0.1);
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.1rem;
-      transition: border-color 0.18s, background 0.18s;
-    }
-    .pp-fav-card--empty:hover .pp-fav-card__img-wrap { border-color: var(--pp-color); background: rgba(255,255,255,0.025); }
-    .pp-fav-card__empty-num { font-family: 'Orbitron', sans-serif; font-size: 0.5rem; font-weight: 700; color: rgba(255,255,255,0.12); line-height: 1; }
-    .pp-fav-card__empty-plus { font-size: 1rem; color: rgba(255,255,255,0.18); line-height: 1; transition: color 0.18s; }
-    .pp-fav-card--empty:hover .pp-fav-card__empty-plus { color: var(--pp-color); }
-
-    .pp-logros-section { margin-top: 1.5rem; }
-    .pp-logros-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.85rem; }
-
-    .pp-stat-list { display: flex; flex-direction: column; gap: 0.4rem; }
-    .pp-stat-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.6rem; text-align: center; }
-    .pp-stat-val { font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700; color: var(--pp-color); line-height: 1; }
-    .pp-stat-lbl { font-size: 0.62rem; color: var(--txt3); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 0.18rem; }
-
-    .lgr-pick-card {
-      position: relative; background: rgba(255,255,255,0.035); border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm); padding: 0.75rem 0.65rem; cursor: pointer; text-align: center;
-      transition: border-color 0.18s, background 0.18s, transform 0.14s; user-select: none;
-    }
-    .lgr-pick-card:hover { border-color: var(--pp-color, var(--cyan)); background: rgba(255,255,255,0.06); transform: translateY(-2px); }
-    .lgr-pick-card--sel { border-color: var(--pp-color, var(--cyan)); background: rgba(255,255,255,0.07); box-shadow: 0 0 12px -3px var(--pp-color, var(--cyan)); }
-
-    /* ── Hero iconos jugadores ── */
-    .jug-hero-icons {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2rem;
-      position: relative;
-      z-index: 1;
-      animation: heroTitleIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
-    }
-    .jug-hero-icon {
-      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-    }
-    .jug-hero-icon__img {
-      width: 80px; height: 80px; border-radius: 50%;
-      border: 3px solid rgba(255,255,255,0.12);
-      object-fit: cover; display: block;
-      transition: transform 0.2s, border-color 0.2s;
-      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
-    }
-    .jug-hero-icon--david .jug-hero-icon__img { border-color: rgba(59,130,246,0.6); }
-    .jug-hero-icon--javi  .jug-hero-icon__img { border-color: rgba(155,23,66,0.6); }
-    .jug-hero-icon--mery  .jug-hero-icon__img { border-color: rgba(155,89,255,0.6); }
-    .jug-hero-icon--active .jug-hero-icon__img {
-      transform: scale(1.15);
-      box-shadow: 0 0 24px rgba(255,255,255,0.18);
-    }
-    .jug-hero-icon__name {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.65rem; font-weight: 700;
-      letter-spacing: 0.1em; opacity: 0.7;
-    }
-    .jug-hero-icon--david .jug-hero-icon__name { color: var(--player-david); }
-    .jug-hero-icon--javi  .jug-hero-icon__name { color: var(--player-javi); }
-    .jug-hero-icon--mery  .jug-hero-icon__name { color: var(--player-mery); }
-    .jug-hero-icon--active .jug-hero-icon__name { opacity: 1; }
-  </style>
+  <link rel="stylesheet" href="styles.css?v=20261030a">
+  <link rel="stylesheet" href="jugadores.css?v=20261030d">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#07070f">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -155,7 +38,6 @@
   <div class="nav__links nav__links--right">
     <a href="eventos.html" class="nav__link">Eventos</a>
     <a href="jugadores.html" class="nav__link nav__link--active">Jugadores</a>
-    <a href="estadisticas.html" class="nav__link">Estadísticas</a>
     <div class="nav__dropdown">
       <button type="button" class="nav__link nav__dropbtn" aria-haspopup="true" aria-expanded="false">Más ▾</button>
       <div class="nav__dropmenu">
@@ -175,7 +57,6 @@
   <a href="eventos.html"      class="nav__link" data-intab>Eventos</a>
   <a href="tombola.html"      class="nav__link">&#127920; Tómbola</a>
   <a href="jugadores.html"    class="nav__link">&#127918; Jugadores</a>
-  <a href="estadisticas.html" class="nav__link">&#128202; Estadísticas</a>
 </div>
 <nav class="tabbar" aria-label="Navegación principal">
   <a href="index.html" class="tabbar__item"><span>&#127968;</span><span>Inicio</span></a>
@@ -184,26 +65,59 @@
   <a href="eventos.html" class="tabbar__item"><span>&#128197;</span><span>Eventos</span></a>
   <button type="button" id="tabMore" class="tabbar__item tabbar__item--active" aria-expanded="false"><span>&#9776;</span><span>Más</span></button>
 </nav>
-<div class="page">
-  <div class="page-hero page-hero--jugadores" style="padding-bottom:1.5rem">
+<div class="page jg">
+  <div class="page-hero page-hero--jugadores">
     <div class="page-hero__bg">
       <div class="page-hero__orb page-hero__orb--1"></div>
       <div class="page-hero__orb page-hero__orb--2"></div>
       <div class="page-hero__orb page-hero__orb--3"></div>
     </div>
-    <div class="jug-hero-icons" id="jugHeroIcons">
-      <!-- generado por JS según jugador activo -->
-      <div class="jug-hero-icon jug-hero-icon--david"><img class="jug-hero-icon__img" src="cara_david.png" alt="David"><span class="jug-hero-icon__name">DAVID</span></div>
-      <div class="jug-hero-icon jug-hero-icon--javi"><img class="jug-hero-icon__img" src="cara_javi.png" alt="Javi"><span class="jug-hero-icon__name">JAVI</span></div>
-      <div class="jug-hero-icon jug-hero-icon--mery"><img class="jug-hero-icon__img" src="cara_mery.png" alt="Mery"><span class="jug-hero-icon__name">MERY</span></div>
-    </div>
-    <p class="page-hero__sub" style="margin-top:1rem">Perfiles · Favoritos · Leyendas — Refugio 111</p>
+    <h1 class="page-hero__title">JUGADORES</h1>
   </div>
 
-  <div class="section">
-    <div class="player-profiles" id="playerProfiles">
-      <!-- renderizado por pendientes.js -->
+  <div class="jg-wrap">
+    <!-- selector de jugador: manda en el perfil y en las estadísticas -->
+    <div class="jg-switch" id="jgSwitch" role="tablist" aria-label="Jugador">
+      <button type="button" role="tab" data-player="David" style="--pc:#3b82f6"><img src="cara_david.png" alt=""><b>David</b></button>
+      <button type="button" role="tab" data-player="Javi" style="--pc:#dc2626"><img src="cara_javi.png" alt=""><b>Javi</b></button>
+      <button type="button" role="tab" data-player="Mery" style="--pc:#a855f7"><img src="cara_mery.png" alt=""><b>Mery</b></button>
     </div>
+
+    <div id="playerProfiles"></div>
+
+    <section class="jg-an" id="stats">
+      <div class="jg-an__h">
+        <h2>📊 ESTADÍSTICAS</h2>
+        <select class="jg-sel" id="statsYear" aria-label="Año"></select>
+      </div>
+      <div class="jg-an__grid">
+        <div class="jg-card"><h3>🎮 Géneros más jugados</h3><canvas id="chartGenres" class="chart-canvas"></canvas></div>
+        <div class="jg-card"><h3>🖥 Plataformas</h3><canvas id="chartPlatforms" class="chart-canvas"></canvas></div>
+        <div class="jg-card jg-card--wide"><h3>📈 Últimos 10 años</h3><div class="jg-hist"><canvas id="chartHistory"></canvas></div></div>
+        <div class="jg-card jg-card--cmp"><h3>👥 Comparativa</h3>
+          <table class="jg-cmp">
+            <thead><tr><th></th><th data-col="David"><img src="cara_david.png" alt="">David</th><th data-col="Javi"><img src="cara_javi.png" alt="">Javi</th><th data-col="Mery"><img src="cara_mery.png" alt="">Mery</th></tr></thead>
+            <tbody>
+              <tr><th>Juegos</th><td data-col="David" id="david-juegos">—</td><td data-col="Javi" id="javi-juegos">—</td><td data-col="Mery" id="mery-juegos">—</td></tr>
+              <tr><th>Horas</th><td data-col="David" id="david-horas">—</td><td data-col="Javi" id="javi-horas">—</td><td data-col="Mery" id="mery-horas">—</td></tr>
+              <tr><th>Nota media</th><td data-col="David" id="david-nota">—</td><td data-col="Javi" id="javi-nota">—</td><td data-col="Mery" id="mery-nota">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <h2 class="jg-an__sub">🏅 RÉCORDS DEL REFUGIO</h2>
+      <div class="logros-grid" id="logrosGrid"></div>
+    </section>
+
+    <details class="jg-data">
+      <summary>💾 Copia de seguridad</summary>
+      <div>
+        <button class="btn btn-secondary" id="btnExport">⬇ Exportar JSON</button>
+        <button class="btn btn-secondary" id="btnImport">⬆ Importar JSON</button>
+        <button class="btn btn-danger btn-sm" id="btnReset">↺ Restaurar demo</button>
+        <input type="file" id="importFile" accept=".json" style="display:none">
+      </div>
+    </details>
   </div>
 
   <footer class="footer">
@@ -212,28 +126,22 @@
   </footer>
 </div>
 
-<script>
-// Destacar el icono del jugador activo en el hero
-(function() {
-  document.addEventListener('DOMContentLoaded', function() {
-    var ap = null;
-    try { ap = localStorage.getItem('GT_player'); } catch(e) {}
-    if (!ap) return;
-    var icons = document.querySelectorAll('#jugHeroIcons .jug-hero-icon');
-    icons.forEach(function(el) {
-      if (el.classList.contains('jug-hero-icon--' + ap.toLowerCase())) {
-        el.classList.add('jug-hero-icon--active');
-      }
-    });
-  });
-})();
-</script>
+<!-- detalle de un logro o lista de juegos de una gráfica -->
+<div class="modal-overlay" id="jgModal">
+  <div class="modal jg-modal">
+    <div class="modal__header"><h2 class="modal__title" id="jgModalTitle"></h2><button class="modal__close" id="jgModalClose">✕</button></div>
+    <div class="modal__body" id="jgModalBody"></div>
+  </div>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"      defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260519b" defer></script>
-<script src="main.js?v=20261029q"            defer></script>
-<script src="pendientes.js?v=20261029f"      defer></script>
+<script src="main.js?v=20261030b"            defer></script>
+<script src="jugadores.js?v=20261030b"       defer></script>
+<script src="pendientes.js?v=20261030d"      defer></script>
+<script src="estadisticas.js?v=20261030d"    defer></script>
 <script src="app.js?v=20261023a" defer></script>
 </body>
 </html>

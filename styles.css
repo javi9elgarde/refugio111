@@ -5816,7 +5816,14 @@ button.nav__dropbtn { background: none; border: 0; font: inherit; font-size: 0.8
   .nav__links .nav__link:hover, .nav__hub-solo:hover, .nav__dropbtn:hover { color: #fff; background-color: transparent; background-size: 40% 2px, 0 14px; }
   .nav__links .nav__link.active { color: #fff; background-size: 70% 2px, 70% 14px; text-shadow: 0 0 12px color-mix(in srgb, var(--nav-acc) 55%, transparent); box-shadow: none; }
   .nav__links .nav__link.active::before { background: var(--nav-acc); }
-  .nav__link--hof { border: 0; }
+  .nav__link--hof { border: 0; text-shadow: none; }
+  /* la línea va de principio a fin de la palabra (sin el icono) */
+  .nav__links .nav__link, .nav__dropbtn { --nav-w: calc(100% - 1.6rem); background-position: right 0.8rem bottom 2px, right 0.8rem bottom 0; }
+  .nav__links a.nav__link { --nav-w: calc(100% - 1.6rem - 16px - 0.45rem); }
+  .nav__links .nav__link:hover, .nav__dropbtn:hover { background-size: var(--nav-w) 2px, 0 14px; }
+  .nav__links .nav__link.active { background-size: var(--nav-w) 2px, var(--nav-w) 14px; }
+  /* G.O.T.Y es la única que se vuelve de oro al pasar el ratón */
+  .nav__links .nav__link--hof:hover { color: #f5c842; text-shadow: 0 0 12px rgba(245,200,66,0.55); }
   .nav__link--hub.nav__hub-solo { color: rgba(0,255,136,0.85); border: 0; }
   .nav a.nav__link[href]::before { width: 16px; height: 16px; flex-shrink: 0; background: currentColor; -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat; }
   .nav > .nav__link[href="hub.html"]::before, .nav__links > .nav__link[href="hub.html"]::before { content: ""; --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10.5 12 3l9 7.5V21H3z'/%3E%3Cpath d='M9 21v-6h6v6'/%3E%3C/svg%3E"); }

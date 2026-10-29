@@ -20,34 +20,35 @@
   var CHART_FONT = { family: "'Inter', sans-serif" };
   var PLAYER_COLORS = {
     David: 'rgba(79,172,254,0.85)',
-    Javi:  'rgba(155,23,66,0.85)',
+    Javi:  'rgba(220,38,38,0.85)',
     Mery:  'rgba(155,89,255,0.85)'
   };
 
   /* ── STAT CARDS ─────────────────────────────────────────── */
+  function setTxt(id, v) { var el = document.getElementById(id); if (el) el.textContent = Utils.miles(v); }
   function renderStatCards(year, player) {
     var stats    = Registro.getStats(year);
     var libCount = Biblioteca.getAll().length;
 
     if (player === 'All') {
-      document.getElementById('sc-juegos').textContent = stats.totalJuegos;
-      document.getElementById('sc-horas').textContent  = stats.totalHoras + 'h';
-      document.getElementById('sc-nota').textContent   = stats.avgScore ? stats.avgScore.toFixed(2).replace('.', ',') : '—';
+      setTxt('sc-juegos', stats.totalJuegos);
+      setTxt('sc-horas', stats.totalHoras + 'h');
+      setTxt('sc-nota', stats.avgScore ? stats.avgScore.toFixed(2).replace('.', ',') : '—');
     } else {
       var ps = stats.porJugador[player] || { juegos: 0, horas: 0, avgScore: 0 };
-      document.getElementById('sc-juegos').textContent = ps.juegos;
-      document.getElementById('sc-horas').textContent  = ps.horas + 'h';
-      document.getElementById('sc-nota').textContent   = ps.avgScore ? ps.avgScore.toFixed(2).replace('.', ',') : '—';
+      setTxt('sc-juegos', ps.juegos);
+      setTxt('sc-horas', ps.horas + 'h');
+      setTxt('sc-nota', ps.avgScore ? ps.avgScore.toFixed(2).replace('.', ',') : '—');
     }
-    document.getElementById('sc-biblioteca').textContent = libCount;
+    setTxt('sc-biblioteca', libCount);
 
     // Player comparison cards always show all 3 (year-filtered only)
     ['David', 'Javi', 'Mery'].forEach(function(p) {
       var key = p.toLowerCase();
       var ps  = stats.porJugador[p] || { juegos: 0, horas: 0, avgScore: 0 };
-      document.getElementById(key + '-juegos').textContent = ps.juegos;
-      document.getElementById(key + '-horas').textContent  = ps.horas + 'h';
-      document.getElementById(key + '-nota').textContent   = ps.avgScore ? ps.avgScore.toFixed(2).replace('.', ',') : '—';
+      setTxt(key + '-juegos', ps.juegos);
+      setTxt(key + '-horas', ps.horas + 'h');
+      setTxt(key + '-nota', ps.avgScore ? ps.avgScore.toFixed(2).replace('.', ',') : '—');
     });
   }
 
@@ -110,6 +111,7 @@
         responsive: true,
         maintainAspectRatio: true,
         cutout: '58%',
+        onClick: function (e, els) { if (els.length) pick('genero', data[els[0].index].genero, year, player); },
         plugins: {
           legend: { display: false },
           tooltip: { callbacks: {
@@ -152,6 +154,7 @@
         responsive: true,
         maintainAspectRatio: true,
         cutout: '60%',
+        onClick: function (e, els) { if (els.length) pick('plat', data[els[0].index].plataforma, year, player); },
         plugins: {
           legend: {
             position: 'bottom',
@@ -214,6 +217,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        onClick: function (e, els) { if (els.length) pick('año', years[els[0].index], null, player === 'All' ? datasets[els[0].datasetIndex].label : player); },
         plugins: {
           legend: {
             display: player === 'All',
@@ -240,6 +244,14 @@
         }
       }
     });
+  }
+
+  function pick(kind, val, year, player) {
+    if (!window.GT_JG) return;
+    var list = Registro.filter({ jugador: player, año: kind === 'año' ? val : year });
+    if (kind === 'genero') list = list.filter(function (r) { var g = Biblioteca.getById(r.juegoId); return g && (g.generos || []).indexOf(val) !== -1; });
+    if (kind === 'plat') list = list.filter(function (r) { return (r.plataformaJugada || 'PC') === val; });
+    window.GT_JG.showGames((player !== 'All' ? player + ' · ' : '') + val + (kind !== 'año' && year ? ' · ' + year : ''), list);
   }
 
   /* ── LOGROS ─────────────────────────────────────────────── */
@@ -482,6 +494,8 @@
     return logros;
   }
 
+  // los récords con un año (El Retro) no llevan punto de miles
+  function noYear(v) { return /^\d{4}$/.test(String(v)) ? String(v) : Utils.miles(v); }
   function renderLogros(year, player) {
     var el     = document.getElementById('logrosGrid');
     var logros = computeLogros(year, player);
@@ -498,7 +512,7 @@
       } else if (v.type === 'trophy') {
         bannerInner = '<img class="logro-banner__trophy" src="' + Utils.escapeHtml(v.src) + '" alt="Platino" onerror="this.style.display=\'none\'">';
       } else if (v.type === 'bigtext') {
-        bannerInner = '<div class="logro-banner__bignum">' + Utils.escapeHtml(v.text) +
+        bannerInner = '<div class="logro-banner__bignum">' + Utils.escapeHtml(noYear(v.text)) +
           (v.sub ? '<span class="logro-banner__bignumsub">' + Utils.escapeHtml(v.sub) + '</span>' : '') +
           '</div>';
       } else {
@@ -513,7 +527,7 @@
             '<div class="logro-winner-name" style="color:' + playerColor(l.winner) + '">' + Utils.escapeHtml(l.winner) + '</div>' +
             '<div class="logro-winner-detail">' + Utils.escapeHtml(l.detail) + '</div>' +
           '</div>' +
-          '<div class="logro-footer__val" style="color:' + (l.valColor || 'var(--txt2)') + '">' + Utils.escapeHtml(String(l.value)) + '</div>';
+          '<div class="logro-footer__val" style="color:' + (l.valColor || 'var(--txt2)') + '">' + Utils.escapeHtml(noYear(l.value)) + '</div>';
       } else {
         footerHtml =
           '<div class="logro-footer__info">' +
@@ -635,6 +649,11 @@
 
   /* ── PLAYER TABS ────────────────────────────────────────── */
   function buildPlayerTabs() {
+    if (window.GT_JG) {
+      state.player = window.GT_JG.player;
+      document.addEventListener('gt:jugador', function (e) { state.player = e.detail; renderAll(state.year || null, state.player); });
+      return;
+    }
     document.getElementById('statsPlayerTabs').querySelectorAll('.player-tab').forEach(function(btn) {
       btn.addEventListener('click', function() {
         state.player = this.dataset.player;
@@ -657,7 +676,7 @@
 
     /* Pre-select active player from localStorage */
     var ap = window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;
-    if (ap && ap !== 'All') {
+    if (ap && ap !== 'All' && !window.GT_JG) {
       state.player = ap;
       document.querySelectorAll('#statsPlayerTabs .player-tab').forEach(function(b){ b.className = 'player-tab'; });
       var activeTab = document.querySelector('#statsPlayerTabs [data-player="' + ap + '"]');
