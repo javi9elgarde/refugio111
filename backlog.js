@@ -16,12 +16,12 @@
   ];
 
   var SORT_STATES = [
-    { key: 'alpha',    label: '⏱ A–Z',         title: 'Ordenar: A–Z' },
-    { key: 'dur-asc',  label: '⏱ ↑ Duración',  title: 'Ordenar: menor duración primero' },
-    { key: 'dur-desc', label: '⏱ ↓ Duración',  title: 'Ordenar: mayor duración primero' }
+    { key: 'alpha',    label: 'A–Z' },
+    { key: 'dur-asc',  label: 'Más cortos primero' },
+    { key: 'dur-desc', label: 'Más largos primero' }
   ];
 
-  var state = { player: 'David', sort: 'alpha' };
+  var state = { player: 'David', sort: 'alpha', year: '' };
   var _doneModal = { gameId: null, playerKey: null };
 
   function safe(fn, name) {
@@ -100,9 +100,13 @@
     var color = playerData.color;
     var hex   = playerData.hex;
 
-    var pendingGames = Biblioteca.getAll().filter(function(g) {
+    var allPending = Biblioteca.getAll().filter(function(g) {
       return (g.pendientePor || []).indexOf(key) !== -1;
-    }).sort(function(a, b) {
+    });
+    var gameYear = function(g) { return String(g.fechaLanzamiento || '').slice(0, 4); };
+    var years = allPending.map(gameYear).filter(function(y, i, a) { return /^\d{4}$/.test(y) && a.indexOf(y) === i; }).sort().reverse();
+    if (years.indexOf(state.year) === -1) state.year = '';
+    var pendingGames = allPending.filter(function(g) { return !state.year || gameYear(g) === state.year; }).sort(function(a, b) {
       if (state.sort === 'dur-asc') {
         var da = (a.duracion === 999 ? Infinity : (parseFloat(a.duracion) || 0));
         var db = (b.duracion === 999 ? Infinity : (parseFloat(b.duracion) || 0));
@@ -121,8 +125,6 @@
     if (bar) {
       bar.style.display = '';
       bar.style.setProperty('--pc', color);
-      var sortIdx   = SORT_STATES.findIndex(function(s){ return s.key === state.sort; });
-      var sortLabel = SORT_STATES[sortIdx] ? SORT_STATES[sortIdx].label : '⏱ A–Z';
 
       /* Ordenar: activo en el centro, los otros a los lados */
       var others = PLAYERS.filter(function(p) { return p.key !== playerData.key; });
@@ -151,7 +153,12 @@
             '<span class="blg-player-hero__count">' +
               pendingGames.length + ' juego' + (pendingGames.length !== 1 ? 's' : '') + ' pendiente' + (pendingGames.length !== 1 ? 's' : '') +
             '</span>' +
-            '<button class="btn btn-ghost btn-sm btn--compact" id="blgSortBtn" style="font-size:0.72rem;padding:0.2rem 0.55rem">' + sortLabel + '</button>' +
+            '<span class="blg-filters">' +
+              '<select id="blgSort" aria-label="Ordenar">' + SORT_STATES.map(function(s) {
+                return '<option value="' + s.key + '"' + (s.key === state.sort ? ' selected' : '') + '>' + s.label + '</option>'; }).join('') + '</select>' +
+              '<select id="blgYear" aria-label="Año del juego"><option value="">Todos los años</option>' + years.map(function(y) {
+                return '<option value="' + y + '"' + (y === state.year ? ' selected' : '') + '>' + y + '</option>'; }).join('') + '</select>' +
+            '</span>' +
           '</div>' +
         '</div>';
 
@@ -164,13 +171,8 @@
         });
       });
 
-      /* Sort button */
-      var sortBtn = document.getElementById('blgSortBtn');
-      if (sortBtn) sortBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        state.sort = SORT_STATES[(sortIdx + 1) % SORT_STATES.length].key;
-        render();
-      });
+      document.getElementById('blgSort').addEventListener('change', function() { state.sort = this.value; render(); });
+      document.getElementById('blgYear').addEventListener('change', function() { state.year = this.value; render(); });
     }
 
     /* ── Game grid ── */
@@ -218,29 +220,6 @@
         '</div>' +
       '</div>';
     }).join('');
-  }
-
-  /* ── SORT BUTTON ─────────────────────────────────────────────── */
-  function updateSortBtn() {
-    var btn = document.getElementById('blgSortBtn');
-    if (!btn) return;
-    var cur = SORT_STATES.find(function(s) { return s.key === state.sort; }) || SORT_STATES[0];
-    btn.textContent = cur.label;
-    btn.title       = cur.title;
-    btn.classList.toggle('btn-primary',   state.sort !== 'alpha');
-    btn.classList.toggle('btn-secondary', state.sort === 'alpha');
-  }
-
-  function initSortBtn() {
-    var btn = document.getElementById('blgSortBtn');
-    if (!btn) return;
-    updateSortBtn();
-    btn.addEventListener('click', function() {
-      var idx = SORT_STATES.findIndex(function(s) { return s.key === state.sort; });
-      state.sort = SORT_STATES[(idx + 1) % SORT_STATES.length].key;
-      updateSortBtn();
-      render();
-    });
   }
 
   /* ── PLAYER TABS ─────────────────────────────────────────────── */

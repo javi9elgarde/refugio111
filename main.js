@@ -594,17 +594,17 @@ window.GT.Nav = (function () {
     /* Active player indicator */
     try {
       var ap = window.GT.getActivePlayer();
-      if (ap) {
-        /* ── Pill en nav desktop ── */
+      /* ── Pill en nav desktop (sin jugador elegido: «?» y al pulsar salen los tres) ── */
+      {
         var indicator = document.createElement('button');
         indicator.type  = 'button';
-        indicator.title = 'Jugando como ' + ap + ' · Pulsa para cambiar';
+        indicator.title = ap ? 'Jugando como ' + ap + ' · Pulsa para cambiar' : 'Elige jugador';
         indicator.className = 'nav__player-pill';
         indicator.innerHTML =
           '<div class="nav__player-av" style="background:' + (PLAYER_COLORS[ap] || '#666') + '">' +
-            (/^(David|Javi|Mery)$/.test(ap) ? '<img src="cara_' + ap.toLowerCase() + '.png" alt="">' : (PLAYER_INITIALS[ap] || ap[0])) +
+            (/^(David|Javi|Mery)$/.test(ap) ? '<img src="cara_' + ap.toLowerCase() + '.png" alt="">' : (PLAYER_INITIALS[ap] || (ap || '?')[0])) +
           '</div>' +
-          '<span class="nav__player-name">' + ap + '</span>';
+          '<span class="nav__player-name">' + (ap || '') + '</span>';
         indicator.addEventListener('click', function (e) {
           e.stopPropagation();
           togglePlayerSwitchModal(indicator);
@@ -616,7 +616,7 @@ window.GT.Nav = (function () {
 
         /* ── Entrada en menú móvil ── */
         var mob = document.getElementById('navMobile');
-        if (mob) {
+        if (mob && ap) {
           var mobPlayer = document.createElement('button');
           mobPlayer.type = 'button';
           mobPlayer.className = 'nav__link nav__mobile-player-btn';
@@ -650,20 +650,19 @@ window.GT.Nav = (function () {
     ];
     var current = window.GT.getActivePlayer();
 
+    // solo las cabezas de los otros dos, justo debajo de la cara del jugador activo
     var modal = document.createElement('div');
     modal.id = 'playerSwitchModal';
-    modal.innerHTML =
-      '<div class="psw-title">Cambiar jugador</div>' +
-      PLAYERS.map(function (p) {
-        var isActive = p.key === current;
-        return '<button class="psw-btn' + (isActive ? ' psw-btn--active' : '') + '" ' +
-          'style="--psw-c:' + p.color + '" ' +
-          'onclick="window.GT.setActivePlayer(\'' + p.key + '\');location.reload()">' +
-          '<div class="psw-av" style="background:' + p.color + '">' + (PLAYER_INITIALS[p.key] || p.key[0]) + '</div>' +
-          '<span class="psw-name">' + p.key + '</span>' +
-          (isActive ? '<span class="psw-badge">activo</span>' : '') +
-        '</button>';
-      }).join('');
+    modal.className = 'psw-heads';
+    modal.setAttribute('aria-label', 'Cambiar jugador');
+    modal.innerHTML = PLAYERS.filter(function (p) { return p.key !== current; }).map(function (p) {
+      return '<button type="button" class="psw-head" style="--psw-c:' + p.color + '" title="Cambiar a ' + p.key + '" ' +
+        'onclick="window.GT.setActivePlayer(\'' + p.key + '\');location.reload()">' +
+        '<span class="psw-face"><img src="cara_' + p.key.toLowerCase() + '.png" alt=""></span><span>' + p.key + '</span></button>';
+    }).join('');
+    var r = anchor.getBoundingClientRect();
+    modal.style.top = (r.bottom + 8) + 'px';
+    modal.style.right = Math.max(8, document.documentElement.clientWidth - r.right) + 'px';
     document.body.appendChild(modal);
 
     /* Cerrar al hacer clic fuera */

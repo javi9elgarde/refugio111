@@ -10,7 +10,7 @@
   var Registro   = window.GT.Registro;
   var Toast      = window.GT.Toast;
 
-  var state      = { player: 'All', year: 0, month: '', tab: '', plat: '', editId: null, sortAsc: false };
+  var state      = { player: 'All', year: 0, month: '', tab: '', rel: {}, editId: null, sort: 'desc' };
   var _quickModal = { entryId: null };
 
   function safe(fn, name) {
@@ -192,14 +192,14 @@
   }
 
   /* ── RENDER ROW ─────────────────────────────────────────── */
-  /* ── VISTA: pestañas En curso / Completados / Mejores notas / Abandonados ── */
-  var CURSO = { Jugando: 1, Retomar: 1 }, OTROS = { Abandonado: 1 }; // el resto cuenta como completado
-  var PCOLOR = { David: '#3b82f6', Javi: '#ec4899', Mery: '#a855f7' };
+  /* ── VISTA: pestañas Todos / En curso / Retomar / Completados / Abandonados ── */
+  var JUGANDO = { Jugando: 1 }, RETOMAR = { Retomar: 1 }, OTROS = { Abandonado: 1 }; // el resto cuenta como completado
+  var PCOLOR = { David: '#3b82f6', Javi: '#dc2626', Mery: '#a855f7' };
   var esc = function (s) { return Utils.escapeHtml(s == null ? '' : String(s)); };
 
   function av(j) {
     return /^(David|Javi|Mery)$/.test(j)
-      ? '<img class="rg-av" src="cara_' + j.toLowerCase() + '.png" alt="' + j + '" title="' + j + '" style="--pc:' + PCOLOR[j] + '">'
+      ? '<span class="rg-av" style="--pc:' + PCOLOR[j] + '" title="' + j + '"><img src="cara_' + j.toLowerCase() + '.png" alt="' + j + '"></span>'
       : '<span class="rg-av">' + esc((j || '?').charAt(0)) + '</span>';
   }
   function cover(game, w) {
@@ -215,75 +215,66 @@
   }
   function byDate(a, b) { return (a.año - b.año) || (a.mes - b.mes); }
 
-  // En curso: una fila por juego, con todos los que lo están jugando
+  // En curso: una fila por juego; con «Todos» salen las caras de quien lo juega
   function cursoRows(list, max) {
     var games = {}, order = [];
     list.forEach(function (r) { if (!games[r.juegoId]) { games[r.juegoId] = []; order.push(r.juegoId); } games[r.juegoId].push(r); });
     return order.slice(0, max || order.length).map(function (id) {
       var rs = games[id], game = Biblioteca.getById(id), r0 = rs[0];
-      var titulo = game ? game.titulo : '(Juego eliminado)';
-      var horas = Math.max.apply(null, rs.map(function (r) { return parseFloat(r.horas) || 0; }));
-      var dur = game && parseFloat(game.duracion);
-      // progreso aproximado: horas jugadas frente a la duración estimada del juego
-      var pct = dur ? Math.min(100, Math.round(horas / dur * 100)) : 0;
       var plats = rs.map(function (r) { return r.plataformaJugada; }).filter(function (p, i, a) { return p && a.indexOf(p) === i; });
       return '<div class="rg-row">' +
         '<button type="button" class="rg-row__cover" onclick="window.GT.GameDetailModal.open(\'' + esc(id) + '\')" title="Ver ficha">' + cover(game, 420) + '</button>' +
-        '<div class="rg-row__t"><b>' + esc(titulo) + '</b><small>' + (r0.estado === 'Retomar' ? '🔁 Para retomar' : '🎮 Jugando') + ' · desde ' + when(r0) + '</small></div>' +
+        '<div class="rg-row__t"><b>' + esc(game ? game.titulo : '(Juego eliminado)') + '</b><small><span class="rg-live"></span>Jugando · desde ' + when(r0) + '</small></div>' +
         '<div class="rg-row__p">' + plats.map(plat).join('') + '</div>' +
-        '<div class="rg-row__prog">' +
-          (dur && horas ? '<div class="rg-prog__n"><b>' + pct + '%</b><span>' + (horas ? horas + 'h' : '0h') + ' / ~' + dur + 'h</span></div><div class="rg-prog"><i style="width:' + pct + '%"></i></div>'
-               : '<div class="rg-prog__n"><b>' + (horas ? horas + 'h' : '—') + '</b><span>' + (horas ? 'jugadas' : (dur ? 'dura ~' + dur + 'h' : 'sin horas')) + '</span></div>') +
-        '</div>' +
-        '<div class="rg-row__who">' + rs.map(function (r) { return '<button type="button" class="rg-who" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar la partida de ' + esc(r.jugador) + '">' + av(r.jugador) + '</button>'; }).join('') +
-          '<small>' + (rs.length > 1 ? 'Jugando juntos' : esc(r0.jugador)) + '</small></div>' +
+        '<div class="rg-row__who">' + (state.player === 'All'
+          ? rs.map(function (r) { return '<button type="button" class="rg-who" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar la partida de ' + esc(r.jugador) + '">' + av(r.jugador) + '</button>'; }).join('')
+          : '') + '</div>' +
         '<button type="button" class="rg-row__go" onclick="window.GT_Reg.openQuickModal(\'' + r0.id + '\')" title="Actualizar rápido (estado, nota, horas)">›</button>' +
+        '<i class="rg-row__bar" aria-hidden="true"></i>' +
       '</div>';
     }).join('');
   }
 
+  // tarjeta de completados / abandonados; las de retomar llevan «desde» y actualización rápida
   function card(r) {
-    var game = Biblioteca.getById(r.juegoId), titulo = game ? game.titulo : '(Juego eliminado)';
-    var mark = r.estado === 'Platinado' ? '🏆' : '✓';
+    var game = Biblioteca.getById(r.juegoId), titulo = game ? game.titulo : '(Juego eliminado)', ret = RETOMAR[r.estado];
     return '<div class="rg-card' + (r.estado === 'Platinado' ? ' rg-card--plat' : '') + '">' +
-      '<button type="button" class="rg-card__cover" onclick="window.GT.GameDetailModal.open(\'' + esc(r.juegoId) + '\')" title="Ver ficha">' + cover(game, 420) +
-        '<span class="rg-card__ok" title="' + esc(r.estado) + '">' + mark + '</span>' + av(r.jugador) + '</button>' +
+      '<button type="button" class="rg-card__cover" onclick="window.GT.GameDetailModal.open(\'' + esc(r.juegoId) + '\')" title="Ver ficha">' + cover(game, 640) +
+        (r.estado === 'Platinado' ? '<span class="rg-card__ok" title="Platinado">🏆</span>' : '') + '</button>' +
       '<div class="rg-card__b">' +
         '<b title="' + esc(titulo) + '">' + esc(titulo) + '</b>' +
-        '<small>📅 ' + when(r) + (r.horas ? ' · ' + r.horas + 'h' : '') + '</small>' +
-        '<div class="rg-card__f">' + plat(r.plataformaJugada) + nota(r) +
-          '<button type="button" class="rg-card__ed" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar">✏️</button></div>' +
+        '<div class="rg-card__f">' + av(r.jugador) + (ret ? '<small class="rg-card__d">desde ' + when(r) + '</small>' : nota(r)) +
+          '<button type="button" class="rg-card__ed" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar">✏️</button>' +
+          (ret ? '<button type="button" class="rg-card__go" onclick="window.GT_Reg.openQuickModal(\'' + r.id + '\')" title="Actualizar rápido">›</button>' : '') + '</div>' +
       '</div></div>';
   }
 
-  function topList(list, n) {
-    var conNota = list.filter(function (r) { return r.nota !== null && r.nota !== undefined && r.nota !== ''; })
-      .sort(function (a, b) { return b.nota - a.nota; }).slice(0, n);
-    if (!conNota.length) return '<p class="rg-none">Aún no hay notas</p>';
-    return '<ol class="rg-top">' + conNota.map(function (r, i) {
-      var game = Biblioteca.getById(r.juegoId);
-      return '<li><span class="rg-top__n">' + (i + 1) + '</span>' +
-        '<button type="button" class="rg-top__c" onclick="window.GT.GameDetailModal.open(\'' + esc(r.juegoId) + '\')">' + cover(game, 200) + '</button>' +
-        '<span class="rg-top__t"><b>' + esc(game ? game.titulo : '(Juego eliminado)') + '</b><small>' + av(r.jugador) + esc(r.jugador) + ' · ' + when(r) + '</small></span>' + nota(r) + '</li>';
-    }).join('') + '</ol>';
-  }
+  function relYear() { return state.year || new Date().getFullYear(); }
+  // juego que salió el año elegido (o el actual si se ven todos los años)
+  function launched(r) { var g = Biblioteca.getById(r.juegoId); return !!g && String(g.fechaLanzamiento || '').indexOf(String(relYear())) === 0; }
 
-  function section(cls, icon, title, count, body, more) {
-    return '<section class="rg-sec rg-sec--' + cls + '"><div class="rg-sec__h"><h2>' + icon + ' ' + title + '</h2><span class="rg-sec__n">' + count + '</span>' +
+  function section(cls, title, count, body, more) {
+    return '<section class="rg-sec rg-sec--' + cls + '"><div class="rg-sec__h"><h2>' + title + '</h2><span class="rg-sec__n">' + count + '</span>' +
+      '<button type="button" class="rg-rel' + (state.rel[cls] ? ' is-on' : '') + '" data-rel="' + cls + '" aria-pressed="' + !!state.rel[cls] + '">Lanzados en ' + relYear() + '</button>' +
       (more ? '<button type="button" class="rg-sec__more" data-goto="' + more + '">Ver todos →</button>' : '') + '</div>' + body + '</section>';
   }
 
-  // contadores del lateral (jugadores y plataformas) con el año y el mes elegidos
+  // contadores de los jugadores con el año y el mes elegidos
   function renderSide(base) {
     document.querySelectorAll('#playerCards [data-count]').forEach(function (el) {
       var p = el.dataset.count, n = base.filter(function (r) { return p === 'All' || r.jugador === p; }).length;
       el.textContent = n + ' juego' + (n !== 1 ? 's' : '');
     });
-    var mine = base.filter(function (r) { return state.player === 'All' || r.jugador === state.player; }), plats = {};
-    mine.forEach(function (r) { var p = r.plataformaJugada || 'Otras'; plats[p] = (plats[p] || 0) + 1; });
-    document.getElementById('regPlats').innerHTML = Object.keys(plats).sort(function (a, b) { return plats[b] - plats[a]; }).map(function (p) {
-      return '<button type="button" class="rg-plat' + (state.plat === p ? ' is-on' : '') + '" data-plat="' + esc(p) + '"><span>' + esc(p) + '</span><b>' + plats[p] + '</b></button>';
-    }).join('');
+  }
+
+  function hasNota(r) { return r.nota !== null && r.nota !== undefined && r.nota !== ''; }
+  function sorter(a, b) {
+    if (state.sort === 'best' || state.sort === 'worst') {
+      if (hasNota(a) !== hasNota(b)) return hasNota(a) ? -1 : 1; // sin nota, al final
+      if (hasNota(a) && a.nota != b.nota) return state.sort === 'best' ? b.nota - a.nota : a.nota - b.nota;
+      return -byDate(a, b);
+    }
+    return (state.sort === 'asc' ? 1 : -1) * byDate(a, b);
   }
 
   function renderTable() {
@@ -292,36 +283,26 @@
     if (state.month) opts.mes = parseInt(state.month);
     var base = Registro.filter(Object.assign({ jugador: 'All' }, opts));
     renderSide(base);
-    var mineFilter = function (r) {
-      return (state.player === 'All' || r.jugador === state.player) && (!state.plat || (r.plataformaJugada || 'Otras') === state.plat);
-    };
+    var mine = function (r) { return state.player === 'All' || r.jugador === state.player; };
+    var activo = function (r) { return JUGANDO[r.estado] || RETOMAR[r.estado]; };
     // lo que se está jugando sale aunque se empezara otro año o mes
-    var entries = base.filter(function (r) { return !CURSO[r.estado] && mineFilter(r); })
-      .concat(Registro.getAll().filter(function (r) { return CURSO[r.estado] && mineFilter(r); }));
+    var entries = base.filter(function (r) { return !activo(r) && mine(r); })
+      .concat(Registro.getAll().filter(function (r) { return activo(r) && mine(r); }));
 
     var container = document.getElementById('regContainer'), empty = document.getElementById('regEmpty');
-    document.getElementById('regCount').textContent = entries.length + ' entrada' + (entries.length !== 1 ? 's' : '');
     if (!entries.length) { container.innerHTML = ''; empty.classList.remove('hidden'); return; }
     empty.classList.add('hidden');
 
-    var dir = state.sortAsc ? 1 : -1;
-    var curso = entries.filter(function (r) { return CURSO[r.estado]; }).sort(function (a, b) { return dir * byDate(a, b); });
-    var otros = entries.filter(function (r) { return OTROS[r.estado]; }).sort(function (a, b) { return dir * byDate(a, b); });
-    var hecho = entries.filter(function (r) { return !CURSO[r.estado] && !OTROS[r.estado]; }).sort(function (a, b) { return dir * byDate(a, b); });
+    var pick = function (cls, f) { return entries.filter(function (r) { return f(r) && (!state.rel[cls] || launched(r)); }).sort(sorter); };
+    var curso = pick('curso', function (r) { return JUGANDO[r.estado]; }), retomar = pick('retomar', function (r) { return RETOMAR[r.estado]; });
+    var otros = pick('otros', function (r) { return OTROS[r.estado]; }), hecho = pick('hecho', function (r) { return !activo(r) && !OTROS[r.estado]; });
 
     var t = state.tab, html = '';
-    var cursoHtml = curso.length ? '<div class="rg-rows">' + cursoRows(curso, t ? 0 : 6) + '</div>' : '<p class="rg-none">Nadie está jugando nada ahora mismo</p>';
-    if (!t || t === 'curso') html += section('curso', '🎮', 'EN CURSO', curso.length, cursoHtml, t ? '' : 'curso');
-    if (!t) {
-      html += '<div class="rg-duo">' +
-        section('hecho', '✅', 'COMPLETADOS', hecho.length, '<div class="rg-cards rg-cards--strip">' + hecho.slice(0, 12).map(card).join('') + '</div>', 'hecho') +
-        section('top', '⭐', 'MEJORES NOTAS', '', topList(hecho, 5), 'top') +
-      '</div>';
-      if (otros.length) html += section('otros', '⏸️', 'ABANDONADOS', otros.length, '<div class="rg-cards">' + otros.slice(0, 6).map(card).join('') + '</div>', 'otros');
-    }
-    if (t === 'hecho') html += section('hecho', '✅', 'COMPLETADOS', hecho.length, hecho.length ? '<div class="rg-cards">' + hecho.map(card).join('') + '</div>' : '<p class="rg-none">Sin juegos completados</p>');
-    if (t === 'top') html += section('top', '⭐', 'MEJORES NOTAS', '', topList(hecho, 20));
-    if (t === 'otros') html += section('otros', '⏸️', 'ABANDONADOS', otros.length, otros.length ? '<div class="rg-cards">' + otros.map(card).join('') + '</div>' : '<p class="rg-none">Ningún juego abandonado</p>');
+    var cards = function (list, max, emptyTxt) { return list.length ? '<div class="rg-cards">' + list.slice(0, max || list.length).map(card).join('') + '</div>' : '<p class="rg-none">' + emptyTxt + '</p>'; };
+    if (!t || t === 'curso') html += section('curso', 'EN CURSO', curso.length, curso.length ? '<div class="rg-rows">' + cursoRows(curso, t ? 0 : 6) + '</div>' : '<p class="rg-none">Nadie está jugando nada ahora mismo</p>', t ? '' : 'curso');
+    if (!t || t === 'retomar') html += section('retomar', 'RETOMAR', retomar.length, cards(retomar, t ? 0 : 5, 'Nada pendiente de retomar'), t ? '' : 'retomar');
+    if (!t || t === 'hecho') html += section('hecho', 'COMPLETADOS', hecho.length, cards(hecho, t ? 0 : 10, 'Sin juegos completados'), t ? '' : 'hecho');
+    if (!t || t === 'otros') html += section('otros', 'ABANDONADOS', otros.length, cards(otros, t ? 0 : 5, 'Ningún juego abandonado'), t ? '' : 'otros');
     container.innerHTML = html;
   }
 
@@ -332,13 +313,14 @@
   }
   function initTabs() {
     document.getElementById('regTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); });
-    document.getElementById('regContainer').addEventListener('click', function (e) { var b = e.target.closest('[data-goto]'); if (b) { setTab(b.dataset.goto); scrollTo({ top: 0, behavior: 'smooth' }); } });
-    document.getElementById('regPlats').addEventListener('click', function (e) {
-      var b = e.target.closest('[data-plat]'); if (!b) return;
-      state.plat = state.plat === b.dataset.plat ? '' : b.dataset.plat; // segundo clic quita el filtro
-      renderTable();
+    var box = document.getElementById('regContainer');
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-goto]'); if (b) { setTab(b.dataset.goto); scrollTo({ top: 0, behavior: 'smooth' }); return; }
+      var r = e.target.closest('[data-rel]'); if (r) { state.rel[r.dataset.rel] = !state.rel[r.dataset.rel]; renderTable(); }
     });
+    document.getElementById('regSort').addEventListener('change', function () { state.sort = this.value; renderTable(); });
   }
+
 
   /* ── YEAR OPTIONS ───────────────────────────────────────── */
   function buildYearOptions() {
@@ -520,11 +502,6 @@
     document.getElementById('filterMonth').addEventListener('change', function() { state.month = this.value; renderTable(); });
     initTabs();
 
-    document.getElementById('btnSortOrder').addEventListener('click', function() {
-      state.sortAsc = !state.sortAsc;
-      this.textContent = state.sortAsc ? '↑ Enero→Dic' : '↓ Más reciente';
-      renderTable();
-    });
 
     injectQuickModal();
 

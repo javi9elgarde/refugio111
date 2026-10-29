@@ -7,7 +7,7 @@
   <link rel="apple-touch-icon" href="logonuevo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Refugio 111 — Pendientes</title>
-  <link rel="stylesheet" href="styles.css?v=20261029j">
+  <link rel="stylesheet" href="styles.css?v=20261029q">
   <style>
     /* ── BACKLOG — selector de jugador + grid 16:9 ── */
 
@@ -66,6 +66,13 @@
       animation: heroTitleIn 0.5s 0.2s cubic-bezier(0.22,1,0.36,1) both;
     }
     .blg-player-hero__count { font-size: 0.8rem; color: var(--txt3); }
+    /* desplegables de orden y año en una cápsula */
+    .blg-filters { display: inline-flex; padding: 0.15rem; border-radius: 999px; border: 1px solid var(--border); background: rgba(12,16,28,0.9); }
+    .blg-filters select { appearance: none; -webkit-appearance: none; border: 0; padding: 0.35rem 1.7rem 0.35rem 0.85rem; border-radius: 999px; color: #e2e8f0; font-size: 0.76rem; cursor: pointer;
+      background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6'%3E%3Cpath d='M1 1l3.5 3.5L8 1' fill='none' stroke='%2394a3b8' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 0.65rem center / 9px 6px; }
+    .blg-filters select + select { border-left: 1px solid var(--border); border-radius: 0 999px 999px 0; }
+    .blg-filters select option { background: #0f1522; }
+    .blg-filters select:focus-visible { outline: 2px solid var(--pc, #4facfe); outline-offset: 1px; }
 
     /* Cabecera del jugador activo */
     .blg-player-bar {
@@ -300,8 +307,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260519n" defer></script>
-<script src="main.js?v=20261029j"            defer></script>
-<script src="backlog.js?v=20261029f"         defer></script>
+<script src="main.js?v=20261029q"            defer></script>
+<script src="backlog.js?v=20261029u"         defer></script>
 <script src="app.js?v=20261023a" defer></script>
 </body>
 </html>

@@ -82,6 +82,7 @@
 .r1-btn--y { background: var(--r1-y); border-color: var(--r1-y); color: #0a0d14; box-shadow: 0 8px 24px rgba(255,200,0,0.25); }
 .r1-btn[disabled] { opacity: 0.6; cursor: default; }
 .r1-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem 1rem; flex-wrap: wrap; }
+.r1-foot .r1-cd { min-height: 4.6rem; display: flex; align-items: center; } /* mismo alto con cuenta atrás o «¡ya a la venta!»: la franja no salta al cambiar de juego */
 @media (max-width: 640px) { .r1-foot .r1-btn { padding: 0.6rem 0.9rem; font-size: 0.8rem; } }
 .r1-count { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.85rem; border-radius: 12px; background: rgba(5,7,13,0.85); border: 1px solid #232e42; }
 .r1-count__lbl { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.6rem; letter-spacing: 0.14em; color: var(--txt3); }
@@ -155,12 +156,16 @@
 /* ventanitas flotantes: varios juegos el mismo día */
 .r1-pop { position: fixed; z-index: 400; display: flex; gap: 0.6rem; filter: drop-shadow(0 18px 40px rgba(0,0,0,0.65)); }
 .r1-pop[hidden] { display: none; }
-.r1-pc { --rot: -2deg; width: 150px; flex-shrink: 0; overflow: hidden; border-radius: 12px; background: #0f1522; border: 1px solid rgba(255,200,0,0.35); color: #fff; text-decoration: none;
+.r1-pc { --rot: -2deg; width: 220px; flex-shrink: 0; overflow: hidden; border-radius: 12px; background: #0f1522; border: 1px solid rgba(255,200,0,0.35); color: #fff; text-decoration: none;
   transform: rotate(var(--rot)) translateY(var(--dy, 0px)); animation: r1PopIn 0.24s cubic-bezier(0.23, 1, 0.32, 1) both; animation-delay: calc(var(--i) * 45ms); transform-origin: bottom center; }
 .r1-pc:nth-child(even) { --rot: 2deg; --dy: 6px; }
 @keyframes r1PopIn { from { opacity: 0; transform: translateY(12px) scale(0.95) rotate(var(--rot)); } }
 .r1-pc img, .r1-pc__ph { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #1e293b; }
-.r1-pc__t { padding: 0.4rem 0.55rem 0.15rem; font-weight: 800; font-size: 0.74rem; line-height: 1.25; overflow-wrap: anywhere; }
+.r1-pc__t { padding: 0.5rem 0.65rem 0.6rem; font-weight: 800; font-size: 0.86rem; line-height: 1.25; overflow-wrap: anywhere; }
+.r1-pc__t small { display: block; margin-bottom: 0.15rem; font-size: 0.6rem; letter-spacing: 0.1em; color: #7cc1ff; }
+.r1-pc--evt { border-color: rgba(79,172,254,0.6); }
+.r1-day__tag { display: inline-block; margin-bottom: 0.15rem; padding: 0.05rem 0.3rem; border-radius: 4px; background: #4facfe; color: #05070d; font-weight: 800; font-size: 0.55rem; letter-spacing: 0.06em; }
+.r1-day__g--evt .r1-day__t { color: #cfe7ff; }
 .r1-pc__p { display: flex; gap: 0.2rem; flex-wrap: wrap; padding: 0 0.55rem 0.55rem; }
 .r1-pop--sheet { left: 0.8rem !important; right: 0.8rem; top: auto !important; bottom: calc(72px + env(safe-area-inset-bottom, 0px)); flex-wrap: wrap; justify-content: center; padding: 0.8rem; border-radius: 16px; background: rgba(7,7,15,0.96); border: 1px solid rgba(255,200,0,0.3); }
 .r1-pop--sheet .r1-pc { width: calc(50% - 0.3rem); }
@@ -183,19 +188,16 @@
 .r1-eb__i { position: relative; display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
 .r1-eb__tag { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.62rem; letter-spacing: 0.22em; color: var(--ec); }
 .r1-eb__t { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(1.25rem, 3vw, 2.1rem); line-height: 1.1; letter-spacing: 0.04em; overflow-wrap: anywhere; }
-.r1-eb__t span { display: inline-block; animation: r1Letter 4.5s ease-in-out infinite; animation-delay: calc(var(--i) * 70ms); }
-@keyframes r1Letter {
-  0%, 70%, 100% { transform: none; color: #fff; text-shadow: 0 0 8px color-mix(in srgb, var(--ec) 40%, transparent); }
-  80% { transform: translateY(-4px); color: var(--ec); text-shadow: 0 0 18px var(--ec), 0 0 36px var(--ec); }
-}
+.r1-eb__t { text-shadow: 0 0 14px color-mix(in srgb, var(--ec) 45%, transparent); }
 .r1-eb__d { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.74rem; letter-spacing: 0.06em; color: color-mix(in srgb, var(--ec) 55%, #fff); }
 .r1-eb .r1-cd { position: relative; }
 .r1-eb .r1-count { background: rgba(5,7,13,0.75); border-color: color-mix(in srgb, var(--ec) 35%, transparent); }
 .r1-eb .r1-count__lbl { display: none; }
 .r1-eb .r1-count__u b, .r1-eb .r1-count__sep { color: var(--ec); text-shadow: 0 0 12px color-mix(in srgb, var(--ec) 55%, transparent); }
-.r1-evbar__edit { position: absolute; top: 0.5rem; right: 0.7rem; z-index: 2; background: rgba(5,7,13,0.75); border: 1px solid rgba(255,255,255,0.15); border-radius: 999px; padding: 0.2rem 0.6rem; color: var(--txt3); font-size: 0.68rem; cursor: pointer; }
+.r1-evbar__edit { position: absolute; top: 6px; right: 6px; z-index: 2; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; padding: 0; background: rgba(5,7,13,0.75); border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; color: var(--txt3); font-size: 0.75rem; cursor: pointer; opacity: 0.7; }
+.r1-eb { padding-right: 2.8rem; }
 @media (hover: hover) and (pointer: fine) { .r1-eb:hover .r1-eb__img { opacity: 0.7; } .r1-evbar__edit:hover { color: #fff; } }
-@media (max-width: 640px) { .r1-eb { padding: 0.9rem 1rem; } .r1-eb__t span { animation: none; } }
+@media (max-width: 640px) { .r1-eb { padding: 0.9rem 1rem; } }
 
 /* calendario a todo el ancho, con casillas más grandes */
 .r1-calp { margin-top: 1.4rem; }
@@ -216,10 +218,10 @@
 .r1-party { background: linear-gradient(90deg, var(--party-c), var(--party-c2, #ff9d00)); box-shadow: 0 10px 40px color-mix(in srgb, var(--party-c) 35%, transparent); }
 .r1-party__logo { max-height: 46px; max-width: 200px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
 /* los colores del juego también en la barra y el calendario */
-.r1-fiesta .nav { border-bottom-color: var(--party-c); box-shadow: 0 2px 24px color-mix(in srgb, var(--party-c) 30%, transparent); }
+.r1-fiesta .nav { --nav-acc: var(--party-c, #f5c842); }
 .r1-fiesta .r1-panel { border-color: color-mix(in srgb, var(--party-c) 35%, transparent); }
 .r1-fiesta .r1-hero { border-color: color-mix(in srgb, var(--party-c) 55%, transparent); box-shadow: 0 0 40px color-mix(in srgb, var(--party-c) 22%, transparent); }
-@media (prefers-reduced-motion: reduce) { .r1-eb__scan, .r1-eb__t span { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .r1-eb__scan { animation: none; } }
 
 /* confeti del día de estreno */
 .r1-confetti { position: fixed; inset: 0; pointer-events: none; z-index: 500; overflow: hidden; }

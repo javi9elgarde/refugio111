@@ -272,11 +272,21 @@
   }
 
   /* ── CALENDARIO ──────────────────────────────────────────── */
+  // cada día: eventos especiales (con su portada) y juegos; los eventos llevan a la pestaña Eventos
+  function calItems(evs, games) {
+    return evs.map(function (ev) {
+      var img = ev.homeImg || ev.img || '';
+      return { evt: true, titulo: ev.nombre, img: /^https?:\/\//i.test(img) ? img : '', pos: 'center', href: 'eventos.html' };
+    }).concat(games.map(function (g) {
+      return { id: g.id, titulo: g.titulo, img: g.portadaUrl ? U.thumb(g.portadaUrl) : '', pos: g.portadaPos || 'center top', href: 'biblioteca.html?open=' + g.id };
+    }));
+  }
+
   function renderCal() {
     var y = cal.y, m = cal.m, t = todayIso();
     $('r1CalMonth').textContent = MESES[m] + ' ' + y;
     var prefix = y + '-' + pad(m + 1) + '-';
-    var byDay = {}, evByDay = {};
+    var byDay = {}, evByDay = {}, items = {};
     B.getAll().forEach(function (g) {
       var d = fullDate(g);
       if (d && d.indexOf(prefix) === 0) (byDay[+d.slice(8)] = byDay[+d.slice(8)] || []).push(g);
@@ -289,43 +299,41 @@
     for (var i = 0; i < first; i++) html += '<div class="r1-day r1-day--pad"></div>';
     for (var day = 1; day <= days; day++) {
       var games = (byDay[day] || []).sort(function (a, b) { return isEsperado(b) - isEsperado(a); });
-      var evs = evByDay[day] || [], shown = games.slice(0, 5);
+      var list = items[day] = calItems(evByDay[day] || [], games), shown = list.slice(0, 5);
       var isToday = prefix + pad(day) === t;
-      var cls = 'r1-day' + (isToday ? ' r1-day--today' : '') + (games.length ? ' r1-day--has' : '') + (games.length > 1 ? ' r1-day--multi' : '') + (evs.length ? ' r1-day--evt' : '');
-      // con varios juegos, las portadas y nombres van pasando dentro de la casilla (data-k)
-      html += '<div class="' + cls + '" data-day="' + day + '"' + (games.length === 1 ? ' title="' + esc(games[0].titulo) + '"' : '') + '>' +
-        shown.map(function (g, i) {
-          return g.portadaUrl ? '<img class="r1-day__bg' + (i ? '' : ' is-on') + '" data-k="' + i + '" src="' + esc(U.thumb(g.portadaUrl)) + '" alt="" loading="lazy" style="object-position:' + esc(g.portadaPos || 'center top') + '">' : '';
+      var cls = 'r1-day' + (isToday ? ' r1-day--today' : '') + (list.length ? ' r1-day--has' : '') + (list.length > 1 ? ' r1-day--multi' : '') + ((evByDay[day] || []).length ? ' r1-day--evt' : '');
+      // con varios, las portadas y nombres van pasando dentro de la casilla (data-k)
+      html += '<div class="' + cls + '" data-day="' + day + '"' + (list.length === 1 ? ' title="' + esc(list[0].titulo) + '"' : '') + '>' +
+        shown.map(function (it, i) {
+          return it.img ? '<img class="r1-day__bg' + (i ? '' : ' is-on') + '" data-k="' + i + '" src="' + esc(it.img) + '" alt="" loading="lazy" style="object-position:' + esc(it.pos) + '">' : '';
         }).join('') +
-        (games.length ? '<div class="r1-day__fade"></div>' : '') +
+        (list.length ? '<div class="r1-day__fade"></div>' : '') +
         '<div class="r1-day__n"><span>' + day + '</span>' + (isToday ? '<span class="r1-day__hoy">HOY</span>' : '') + '</div>' +
-        (games.length > 1 ? '<span class="r1-day__more">+' + (games.length - 1) + '</span>' : '') +
+        (list.length > 1 ? '<span class="r1-day__more">+' + (list.length - 1) + '</span>' : '') +
         '<div class="r1-day__info">' +
-          evs.map(function (ev) { return '<div class="r1-day__evt" title="' + esc(ev.nombre) + '">🎮 ' + esc(ev.nombre) + '</div>'; }).join('') +
-          (shown.length ? '<div class="r1-day__ts">' + shown.map(function (g, i) {
-            return '<div class="r1-day__g' + (i ? '' : ' is-on') + '" data-k="' + i + '"><div class="r1-day__t">' + esc(g.titulo) + '</div><div class="r1-day__pl">' +
-              (g.plataformas || []).slice(0, 2).map(function (p) { return '<span class="r1-pl">' + esc(p) + '</span>'; }).join('') + '</div></div>';
+          (shown.length ? '<div class="r1-day__ts">' + shown.map(function (it, i) {
+            return '<div class="r1-day__g' + (i ? '' : ' is-on') + (it.evt ? ' r1-day__g--evt' : '') + '" data-k="' + i + '">' +
+              (it.evt ? '<span class="r1-day__tag">🎮 EVENTO</span>' : '') + '<div class="r1-day__t">' + esc(it.titulo) + '</div></div>';
           }).join('') + '</div>' : '') +
         '</div></div>';
     }
     $('r1Cal').innerHTML = html;
-    $('r1Cal')._byDay = byDay;
+    $('r1Cal')._items = items;
   }
 
-  /* ventanitas flotantes: al pasar el ratón por un día con varios juegos (o al tocarlo en el móvil) */
+  /* ventanitas flotantes: al pasar el ratón por un día con varios juegos o eventos (o al tocarlo en el móvil) */
   var popCell = null;
   function showPop(cell) {
-    var games = ($('r1Cal')._byDay || {})[cell.dataset.day] || [];
+    var list = ($('r1Cal')._items || {})[cell.dataset.day] || [];
     var pop = $('r1Pop');
     clearTimeout(popTimer);
-    if (games.length < 2) { pop.hidden = true; return; }
+    if (list.length < 2) { pop.hidden = true; return; }
     if (popCell === cell && !pop.hidden) return; // ya abiertas para este día: no redibujar (si no, parpadean)
     popCell = cell;
-    pop.innerHTML = games.map(function (g, i) {
-      return '<a class="r1-pc" style="--i:' + i + '" href="biblioteca.html?open=' + esc(g.id) + '">' +
-        (g.portadaUrl ? '<img src="' + esc(U.thumb(g.portadaUrl)) + '" alt="" style="object-position:' + esc(g.portadaPos || 'center top') + '">' : '<div class="r1-pc__ph"></div>') +
-        '<div class="r1-pc__t">' + esc(g.titulo) + '</div>' +
-        '<div class="r1-pc__p">' + (g.plataformas || []).slice(0, 3).map(function (p) { return '<span class="r1-pl">' + esc(p) + '</span>'; }).join('') + '</div></a>';
+    pop.innerHTML = list.map(function (it, i) {
+      return '<a class="r1-pc' + (it.evt ? ' r1-pc--evt' : '') + '" style="--i:' + i + '" href="' + esc(it.href) + '">' +
+        (it.img ? '<img src="' + esc(it.img) + '" alt="" style="object-position:' + esc(it.pos) + '">' : '<div class="r1-pc__ph"></div>') +
+        '<div class="r1-pc__t">' + (it.evt ? '<small>🎮 EVENTO</small>' : '') + esc(it.titulo) + '</div></a>';
     }).join('');
     pop.hidden = false;
     var sheet = innerWidth < 640;
@@ -358,8 +366,8 @@
     grid.addEventListener('click', function (e) {
       var c = e.target.closest('.r1-day--has');
       if (!c) return;
-      var games = grid._byDay[c.dataset.day] || [];
-      if (games.length === 1) { GT.GameDetailModal.open(games[0].id); return; }
+      var list = grid._items[c.dataset.day] || [];
+      if (list.length === 1) { if (list[0].evt) location.href = list[0].href; else GT.GameDetailModal.open(list[0].id); return; }
       showPop(c); // en táctil el toque abre las ventanitas
     });
     document.addEventListener('click', function (e) { if (!e.target.closest('#r1Pop, .r1-day--multi')) pop.hidden = true; });
@@ -385,14 +393,12 @@
     if (!ev) { $('r1Evt').innerHTML = '<div class="r1-none">No hay eventos próximamente</div>'; return; }
     var d = new Date(ev.isoDate), img = ev.homeImg || ev.img || ''; // homeImg: imagen solo para este panel
     var accent = /^#[0-9a-f]{3,8}$/i.test(ev.accentColor || '') ? ev.accentColor : '#4facfe';
-    // cada letra en su span para la ola de luz del letrero
-    var letters = Array.from(ev.nombre || '').map(function (ch, i) { return ch === ' ' ? ' ' : '<span style="--i:' + i + '">' + esc(ch) + '</span>'; }).join('');
     $('r1Evt').innerHTML = '<a class="r1-eb" href="eventos.html" style="--ec:' + accent + '">' +
       (/^https?:\/\//i.test(img) ? '<img class="r1-eb__img" src="' + esc(img) + '" alt="">' : '') +
       '<div class="r1-eb__shade"></div><div class="r1-eb__scan"></div>' +
       '<div class="r1-eb__i">' +
         '<div class="r1-eb__tag">🎮 PRÓXIMO EVENTO</div>' +
-        '<div class="r1-eb__t" aria-label="' + esc(ev.nombre) + '">' + letters + '</div>' +
+        '<div class="r1-eb__t">' + esc(ev.nombre) + '</div>' +
         '<div class="r1-eb__d">📅 ' + esc(ev.fechaLabel || fmtLong(isoOf(d))) + '</div>' +
       '</div>' +
       '<div class="r1-cd" data-cd="' + isoOf(d) + '"></div></a>';
