@@ -216,7 +216,12 @@
 /* ── FIESTA DEL DÍA DE ESTRENO ─────────────────────────── */
 /* aviso con el logo del juego */
 .r1-party { background: linear-gradient(90deg, var(--party-c), var(--party-c2, #ff9d00)); box-shadow: 0 10px 40px color-mix(in srgb, var(--party-c) 35%, transparent); }
-.r1-party__logo { max-height: 46px; max-width: 200px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+/* a los lados: el logo del juego (del tema o de la ficha); sin logo, un rombo */
+.r1-party__logo { flex-shrink: 0; font-style: normal; font-size: 1rem; opacity: 0.85; }
+.r1-party__logo::before { content: '✦'; }
+.r1-party__logo.has-logo, .r1-tema--logo .r1-party__logo { width: 150px; height: 46px; background: var(--tm-logo, var(--logo)) center / contain no-repeat; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); opacity: 1; }
+.r1-party__logo.has-logo::before, .r1-tema--logo .r1-party__logo::before { content: none; }
+@media (max-width: 640px) { .r1-party__logo.has-logo, .r1-tema--logo .r1-party__logo { width: 70px; height: 30px; } }
 /* los colores del juego también en la barra y el calendario */
 .r1-fiesta .nav { --nav-acc: var(--party-c, #f5c842); }
 .r1-fiesta .r1-panel { border-color: color-mix(in srgb, var(--party-c) 35%, transparent); }

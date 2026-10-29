@@ -151,8 +151,9 @@
       party.hidden = true;
     } else {
       party.hidden = false;
-      party.innerHTML = (star.fiestaLogo ? '<img class="r1-party__logo" src="' + esc(star.fiestaLogo) + '" alt="">' : '') +
-        '<span>🎉 ¡HOY SALE <a href="biblioteca.html?open=' + esc(star.id) + '">' + esc(star.titulo.toUpperCase()) + '</a>! 🎉</span>';
+      // logo del juego a cada lado (el del tema, si tiene, manda: ver temas.css)
+      var logo = '<i class="r1-party__logo' + (star.fiestaLogo ? ' has-logo' : '') + '" style="--logo:' + esc(cssUrl(star.fiestaLogo)) + '" aria-hidden="true"></i>';
+      party.innerHTML = logo + '<span>¡HOY SALE <a href="biblioteca.html?open=' + esc(star.id) + '">' + esc(star.titulo.toUpperCase()) + '</a>!</span>' + logo;
       if (partyId !== star.id) { partyId = star.id; decorate(star, t); }
     }
 
@@ -251,6 +252,7 @@
     }).catch(function () {});
   }
 
+  GT.confetti = confetti; // también lo usan los temas programados
   function confetti() {
     if (!Element.prototype.animate || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     var cs = getComputedStyle(document.documentElement);
