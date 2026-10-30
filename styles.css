@@ -5881,7 +5881,7 @@ button.nav__dropbtn { background: none; border: 0; font: inherit; font-size: 0.8
 .nav__player-pill .nav__player-name { display: none; }
 .nav__player-pill .nav__player-av { width: 40px; height: 40px; border: 2px solid rgba(255,255,255,0.25); box-shadow: 0 0 0 0 transparent; transition: border-color 0.2s, box-shadow 0.2s; }
 .nav__player-pill:hover .nav__player-av { border-color: #fff; box-shadow: 0 0 14px rgba(255,255,255,0.25); }
-#playerSwitchModal.psw-heads { display: flex; gap: 0.6rem; min-width: 0; padding: 0.6rem; border-radius: 14px; }
+#playerSwitchModal.psw-heads { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; min-width: 0; padding: 0.6rem; border-radius: 14px; }
 .psw-head { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; padding: 0; border: 0; background: none; color: rgba(232,232,248,0.75); font-size: 0.68rem; font-weight: 700; cursor: pointer; }
 .psw-face { display: block; width: 52px; height: 52px; overflow: hidden; border-radius: 50%; background: #1e293b; border: 2px solid var(--psw-c); transition: transform 0.15s ease-out, box-shadow 0.2s; }
 .psw-face img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.9); transform-origin: 50% 30%; }
@@ -5896,3 +5896,7 @@ html.gt-embed .modal-overlay { background: transparent; }
 .gt-editframe iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; }
 html.gt-embed, html.gt-embed body { background: transparent !important; }
 html.gt-embed body > :not(#gameModal):not(.toast-container):not(script) { display: none !important; }
+
+/* cerrar sesión, bajo las caras del cambio de jugador */
+.psw-out { flex-basis: 100%; padding: 0.4rem 0.6rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; background: rgba(255,255,255,0.04); color: rgba(232,232,248,0.7); font-size: 0.72rem; cursor: pointer; }
+.psw-out:hover { color: #f87171; border-color: rgba(248,113,113,0.5); }

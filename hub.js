@@ -144,6 +144,8 @@
   zoneLeft.addEventListener('click', function () {
     openPlayerSelect();
   });
+  // recién entrado con Google: directo a «¿Quién juega?»
+  if (location.hash === '#jugar') { history.replaceState(null, '', location.pathname); openPlayerSelect(); }
 
   zoneRight.addEventListener('click', function () {
     playCinemaSound();

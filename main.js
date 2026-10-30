@@ -723,7 +723,8 @@ window.GT.Nav = (function () {
       return '<button type="button" class="psw-head" style="--psw-c:' + p.color + '" title="Cambiar a ' + p.key + '" ' +
         'onclick="window.GT.setActivePlayer(\'' + p.key + '\');location.reload()">' +
         '<span class="psw-face"><img src="cara_' + p.key.toLowerCase() + '.png" alt=""></span><span>' + p.key + '</span></button>';
-    }).join('');
+    }).join('') + (window.GT.auth && window.GT.auth.currentUser
+      ? '<button type="button" class="psw-out" onclick="window.GT.signOut()" title="' + window.GT.Utils.escapeHtml(window.GT.auth.currentUser.email) + '">⎋ Cerrar sesión</button>' : '');
     var r = anchor.getBoundingClientRect();
     modal.style.top = (r.bottom + 8) + 'px';
     modal.style.right = Math.max(8, document.documentElement.clientWidth - r.right) + 'px';
