@@ -40,7 +40,7 @@ La regla de «solo cuenta la primera nota de cada juego» no cambia: los cambios
 
 1. Entra en <https://console.firebase.google.com> → proyecto **proyectodmj-f3707**.
 2. Abre ⚙️ **Configuración del proyecto** → pestaña **Cloud Messaging**.
-3. Si **API de Firebase Cloud Messaging (V1)** sale desactivada, actívala con los tres puntos → «Administrar API en Google Cloud Console» → **Habilitar**.
+3. Comprueba que **API de Firebase Cloud Messaging (V1)** sale «Habilitada». Si no, actívala desde este enlace directo: <https://console.cloud.google.com/apis/library/fcm.googleapis.com?project=proyectodmj-f3707> → **Habilitar**. La «API de Cloud Messaging (heredada)» (`googlecloudmessaging.googleapis.com`) está retirada desde 2024 y su página da error: ni se usa ni hace falta.
 4. Baja a **Configuración web** → **Certificados push web** → **Generar par de claves**.
 5. Copia la clave (empieza por `B…`, unos 88 caracteres) y pégala en `js/push-manager.js`:
    ```js
