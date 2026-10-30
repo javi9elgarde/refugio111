@@ -59,19 +59,6 @@
   // las barras crecen desde 0 hasta --w / --h
   function grow(root) { requestAnimationFrame(function () { requestAnimationFrame(function () { root.classList.add('is-in'); }); }); }
 
-  /* ── EN DIRECTO: lo que está jugando ahora ───────────────── */
-  function renderLive(player) {
-    var el = document.getElementById('stLive');
-    var now = Registro.filter({ jugador: player, estado: 'Jugando' });
-    el.innerHTML = '<span class="st-live__tag"><i></i>EN DIRECTO</span>' + (now.length ? now.map(function (r) {
-      var g = Biblioteca.getById(r.juegoId);
-      return '<button type="button" class="st-live__g" data-game="' + esc(r.juegoId) + '">' +
-        (g && g.portadaUrl ? '<img src="' + esc(Utils.thumb(g.portadaUrl, 200)) + '" alt="">' : '') +
-        '<span><b>' + esc(g ? g.titulo : '—') + '</b><small>desde ' + esc((Utils.monthName(r.mes) || '').slice(0, 3) + ' ' + r.año) + '</small></span>' +
-        '<span class="st-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>';
-    }).join('') : '<span class="st-live__none">Ahora mismo no está jugando nada</span>');
-  }
-
   /* ── ESTE AÑO CONTRA EL ANTERIOR ─────────────────────────── */
   function renderVs(player, year) {
     var y = year || currentYear, a = statsOf(player, y), b = statsOf(player, y - 1);
@@ -92,17 +79,19 @@
     countUp(el);
   }
 
-  /* ── RITMO MES A MES (con el año anterior de fondo) ──────── */
-  function renderMonths(player, year) {
-    var y = year || currentYear, el = document.getElementById('stMonths');
-    var per = function (yy) { var c = []; for (var m = 1; m <= 12; m++) c.push(uniq(Registro.filter({ jugador: player, año: yy, mes: m }))); return c; };
-    var a = per(y), b = per(y - 1), max = Math.max.apply(null, a.concat(b, [1]));
-    el.innerHTML = '<div class="st-months__bars">' + a.map(function (v, i) {
-      return '<button type="button" class="st-m" data-month="' + (i + 1) + '" title="' + Utils.monthName(i + 1) + ': ' + v + ' juego' + (v !== 1 ? 's' : '') + ' (' + (y - 1) + ': ' + b[i] + ')">' +
-        '<span class="st-m__ghost" style="--h:' + (b[i] / max * 100) + '%"></span><span class="st-m__bar" style="--h:' + (v / max * 100) + '%"><i>' + (v || '') + '</i></span>' +
-        '<small>' + (Utils.monthName(i + 1) || '').charAt(0) + '</small></button>';
-    }).join('') + '</div><div class="st-legend"><span class="st-legend__a">' + y + '</span><span class="st-legend__b">' + (y - 1) + '</span></div>';
-    el.dataset.year = y;
+  /* ── DONDE MÁS HORAS: los 5 juegos con más horas ──────────── */
+  function renderTop(player, year) {
+    var el = document.getElementById('stTop'), h = {};
+    Registro.filter({ jugador: player, año: year || null }).forEach(function (r) { h[r.juegoId] = (h[r.juegoId] || 0) + (parseFloat(r.horas) || 0); });
+    var top = Object.keys(h).filter(function (id) { return h[id] > 0; }).sort(function (x, y) { return h[y] - h[x]; }).slice(0, 5);
+    if (!top.length) { el.innerHTML = '<p class="st-none">Sin horas registradas</p>'; return; }
+    el.innerHTML = top.map(function (id, i) {
+      var g = Biblioteca.getById(id);
+      return '<button type="button" class="st-top__g" data-game="' + esc(id) + '" style="--w:' + (h[id] / h[top[0]] * 100) + '%;--d:' + (i * 80) + 'ms">' +
+        '<span class="st-top__c">' + (g && g.portadaUrl ? '<img src="' + esc(Utils.thumb(g.portadaUrl, 420)) + '" alt="" loading="lazy">' : '') + '<i>' + (i + 1) + '</i></span>' +
+        '<span class="st-top__t"><b>' + esc(g ? g.titulo : '—') + '</b><span class="st-top__bar"><i></i></span></span>' +
+        '<strong>' + Utils.miles(Math.round(h[id])) + 'h</strong></button>';
+    }).join('');
     grow(el);
   }
 
@@ -173,11 +162,7 @@
         var f = FAMS.filter(function (x) { return x.k === b.dataset.fam; })[0];
         return window.GT_JG.showGames(p + ' · ' + f.k + (y ? ' · ' + y : ''), Registro.filter({ jugador: p, año: y }).filter(function (r) { return famOf(r.plataformaJugada) === f; }));
       }
-      if ((b = e.target.closest('[data-month]'))) {
-        var yy = parseInt(document.getElementById('stMonths').dataset.year, 10), m = parseInt(b.dataset.month, 10);
-        return window.GT_JG.showGames(p + ' · ' + Utils.monthName(m) + ' ' + yy, Registro.filter({ jugador: p, año: yy, mes: m }));
-      }
-      if ((b = e.target.closest('.st-live [data-game]'))) window.GT.GameDetailModal.open(b.dataset.game);
+      if ((b = e.target.closest('.st-top [data-game]'))) window.GT.GameDetailModal.open(b.dataset.game);
     });
   }
 
@@ -267,9 +252,8 @@
 
   /* ── RENDER ALL ─────────────────────────────────────────── */
   function renderAll(year, player) {
-    renderLive(player);
     renderVs(player, year);
-    renderMonths(player, year);
+    renderTop(player, year);
     renderGenres(player, year);
     renderPlats(player, year);
     renderDuel(year);

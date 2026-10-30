@@ -251,58 +251,25 @@
 
   // los récords con un año (El Retro) no llevan punto de miles
   function noYear(v) { return /^\d{4}$/.test(String(v)) ? String(v) : Utils.miles(v); }
+  // tarjeta: imagen limpia arriba, cartel con el récord en medio y el ganador abajo
+  var FACE = { David: '#3b82f6', Javi: '#dc2626', Mery: '#a855f7' };
   function renderLogros(el, year, player) {
-    var logros = computeLogros(year, player);
-
-    el.innerHTML = logros.map(function(l) {
-      var v = l.visual;
-
-      /* Banner visual content */
-      var bannerInner = '';
-      if (v.type === 'cover' && v.src) {
-        bannerInner = '<img class="logro-banner__cover" src="' + Utils.escapeHtml(v.src) +
-          '" style="object-position:' + Utils.escapeHtml(v.pos || 'center top') +
-          '" onerror="this.style.display=\'none\'">';
-      } else if (v.type === 'trophy') {
-        bannerInner = '<img class="logro-banner__trophy" src="' + Utils.escapeHtml(v.src) + '" alt="Platino" onerror="this.style.display=\'none\'">';
-      } else if (v.type === 'bigtext') {
-        bannerInner = '<div class="logro-banner__bignum">' + Utils.escapeHtml(noYear(v.text)) +
-          (v.sub ? '<span class="logro-banner__bignumsub">' + Utils.escapeHtml(v.sub) + '</span>' : '') +
-          '</div>';
-      } else {
-        bannerInner = '<div class="logro-banner__icon">' + (v.icon || '') + '</div>';
-      }
-
-      /* Footer */
-      var footerHtml;
-      if (l.winner) {
-        footerHtml =
-          '<div class="logro-footer__info">' +
-            '<div class="logro-winner-name" style="color:' + playerColor(l.winner) + '">' + Utils.escapeHtml(l.winner) + '</div>' +
-            '<div class="logro-winner-detail">' + Utils.escapeHtml(l.detail) + '</div>' +
-          '</div>' +
-          '<div class="logro-footer__val" style="color:' + (l.valColor || 'var(--txt2)') + '">' + Utils.escapeHtml(noYear(l.value)) + '</div>';
-      } else {
-        footerHtml =
-          '<div class="logro-footer__info">' +
-            '<div class="logro-winner-name" style="color:var(--txt3);font-size:0.85rem">Sin datos</div>' +
-            '<div class="logro-winner-detail">' + Utils.escapeHtml(l.detail || '') + '</div>' +
-          '</div>';
-      }
-
-      var cardClick = l.gameId
-        ? ' onclick="window.GT.GameDetailModal.open(\'' + l.gameId.replace(/'/g, "\\'") + '\')" style="cursor:pointer" title="Ver ficha del juego"'
-        : '';
-      return '<div class="logro-card"' + cardClick + '>' +
-        '<div class="logro-banner" style="background:' + v.bg + '">' +
-          bannerInner +
-          '<div class="logro-banner__overlay">' +
-            '<span class="logro-badge">' + Utils.escapeHtml(l.badge) + '</span>' +
-            '<span class="logro-desc-badge">' + Utils.escapeHtml(l.desc) + '</span>' +
-          '</div>' +
-        '</div>' +
-        '<div class="logro-footer">' + footerHtml + '</div>' +
-      '</div>';
+    var esc = Utils.escapeHtml;
+    el.innerHTML = computeLogros(year, player).map(function (l) {
+      var v = l.visual, art;
+      if (v.type === 'cover' && v.src) art = '<img class="rec__cover" src="' + esc(Utils.thumb(v.src, 640)) + '" style="object-position:' + esc(v.pos || 'center top') + '" alt="" onerror="this.style.display=\'none\'">';
+      else if (v.type === 'trophy') art = '<img class="rec__trophy" src="' + esc(v.src) + '" alt="">';
+      else if (v.type === 'bigtext') art = '<span class="rec__big">' + esc(noYear(v.text)) + (v.sub ? '<small>' + esc(v.sub) + '</small>' : '') + '</span>';
+      else art = '<span class="rec__big">' + (v.icon || '') + '</span>';
+      var who = l.winner
+        ? '<img class="rec__face" src="cara_' + l.winner.toLowerCase() + '.png" alt=""><span class="rec__who"><b>' + esc(l.winner) + '</b><small>' + esc(l.detail || '') + '</small></span>' +
+          '<strong class="rec__val">' + esc(noYear(l.value)) + '</strong>'
+        : '<span class="rec__who"><b class="rec__none">Sin datos</b><small>' + esc(l.detail || '') + '</small></span>';
+      var click = l.gameId ? ' onclick="window.GT.GameDetailModal.open(\'' + l.gameId.replace(/'/g, "\\'") + '\')" role="button" tabindex="0" title="Ver ficha del juego"' : '';
+      return '<div class="rec' + (l.gameId ? ' rec--game' : '') + '" style="--rc:' + (FACE[l.winner] || '#64748b') + '"' + click + '>' +
+        '<div class="rec__art" style="background:' + v.bg + '">' + art + '</div>' +
+        '<div class="rec__plate"><b>' + esc(l.badge) + '</b><small>' + esc(l.desc) + '</small></div>' +
+        '<div class="rec__foot">' + who + '</div></div>';
     }).join('');
   }
 

@@ -286,9 +286,8 @@
     renderSide(base);
     var mine = function (r) { return state.player === 'All' || r.jugador === state.player; };
     var activo = function (r) { return JUGANDO[r.estado] || RETOMAR[r.estado]; };
-    // lo que se está jugando sale aunque se empezara otro año o mes
-    var entries = base.filter(function (r) { return !activo(r) && mine(r); })
-      .concat(Registro.getAll().filter(function (r) { return activo(r) && mine(r); }));
+    // el año y el mes filtran todo, también lo que está en curso o por retomar
+    var entries = base.filter(mine);
 
     var container = document.getElementById('regContainer'), empty = document.getElementById('regEmpty');
     if (!entries.length) { container.innerHTML = ''; empty.classList.remove('hidden'); return; }
