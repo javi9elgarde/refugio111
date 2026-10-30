@@ -40,6 +40,7 @@
   var coverPreview = null;
   var _alphaObserver = null;
   var _activeAlpha   = '';
+  var _alphaAvail    = [];
   var _brokenCovers  = {}; // id → URL que falló al cargar (se ignora si la portada cambia)
   var _skipAnim      = false; // true mientras repinta un cambio remoto/de datos: sin re-animar todas las tarjetas
 
@@ -692,9 +693,36 @@
       });
     }
 
+    // En el móvil la tira de letras es demasiado pequeña: un botón abre una hoja con el abecedario en rejilla
+    var pick = document.createElement('button');
+    pick.type = 'button';
+    pick.className = 'alpha-pick';
+    pick.setAttribute('aria-label', 'Ir a una letra');
+    pick.innerHTML = '<span>🔤 Ir a la letra</span><b id="alphaPickCur">A</b><i aria-hidden="true">▾</i>';
+    bar.parentNode.appendChild(pick);
+    pick.addEventListener('click', function () {
+      var ov = document.createElement('div');
+      ov.className = 'm-sheet-overlay';
+      ov.innerHTML = '<div class="m-sheet" role="dialog" aria-modal="true" aria-label="Elegir letra">' +
+        '<h3>Ir a la letra</h3><div class="alpha-grid">' +
+        ALL_ALPHA.map(function (l) {
+          var on = _alphaAvail.indexOf(l) >= 0;
+          return '<button type="button" data-letter="' + l + '"' + (on ? '' : ' disabled') + (l === _activeAlpha ? ' class="is-active"' : '') + '>' + l + '</button>';
+        }).join('') + '</div>' +
+        '<div class="m-sheet__actions"><button type="button" data-sheet-close>Cerrar</button></div></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', function (e) {
+        var b = e.target.closest('button[data-letter]');
+        if (b && !b.disabled) { ov.remove(); goTo(b.dataset.letter); return; }
+        if (e.target === ov || e.target.closest('[data-sheet-close]')) ov.remove();
+      });
+    });
+
     function setActive(letter) {
       if (!letter || letter === _activeAlpha) return;
       _activeAlpha = letter;
+      var cur = document.getElementById('alphaPickCur');
+      if (cur) cur.textContent = letter;
       bar.querySelectorAll('.alpha-bar__letter').forEach(function(el) {
         el.classList.toggle('is-active', el.dataset.letter === letter);
       });
@@ -749,6 +777,9 @@
   }
 
   function updateAlphaAvailable(letters) {
+    _alphaAvail = letters.slice();
+    var pick = document.querySelector('.alpha-pick');
+    if (pick) pick.hidden = !letters.length; // sin orden alfabético (otros modos) no hay letras a las que ir
     var bar = document.getElementById('alphaBar');
     if (!bar) return;
     bar.querySelectorAll('.alpha-bar__letter').forEach(function(el) {

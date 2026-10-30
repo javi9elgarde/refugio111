@@ -340,7 +340,13 @@
     pop.hidden = false;
     var sheet = innerWidth < 640;
     pop.classList.toggle('r1-pop--sheet', sheet);
-    if (sheet) { pop.style.left = ''; pop.style.top = ''; return; }
+    if (sheet) {
+      // en el móvil salen en una hoja abajo: cabecera con el día y una X para cerrarla
+      pop.insertAdjacentHTML('afterbegin', '<div class="r1-pop__hd"><b>' + cell.dataset.day + ' de ' + MESES[cal.m].toLowerCase() +
+        ' · ' + list.length + ' en este día</b><button type="button" class="r1-pop__x" aria-label="Cerrar">✕</button></div>');
+      pop.style.left = ''; pop.style.top = '';
+      return;
+    }
     var r = cell.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
     var left = Math.max(12, Math.min(innerWidth - w - 12, r.left + r.width / 2 - w / 2));
     var top = r.top - h - 14 >= 70 ? r.top - h - 14 : r.bottom + 14; // arriba si cabe; si no, debajo
@@ -372,7 +378,7 @@
       if (list.length === 1) { if (list[0].evt) location.href = list[0].href; else GT.GameDetailModal.open(list[0].id); return; }
       showPop(c); // en táctil el toque abre las ventanitas
     });
-    document.addEventListener('click', function (e) { if (!e.target.closest('#r1Pop, .r1-day--multi')) pop.hidden = true; });
+    document.addEventListener('click', function (e) { if (!e.target.closest('#r1Pop, .r1-day--multi') || e.target.closest('.r1-pop__x')) pop.hidden = true; });
     addEventListener('scroll', function () { if (!pop.classList.contains('r1-pop--sheet')) pop.hidden = true; }, { passive: true });
     // días con varios juegos: van pasando sus portadas y nombres
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) setInterval(function () {

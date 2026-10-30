@@ -204,7 +204,7 @@
         : '<div class="blg-game-card__ph">' + Utils.escapeHtml(game.titulo.charAt(0)) + '</div>';
 
       return '<div class="blg-game-card" style="--pc:' + color + ';cursor:pointer" ' +
-          'onclick="window.GT.GameDetailModal.open(\'' + safeId + '\')">' +
+          'onclick="window.GT_Backlog.tapCard(this,\'' + safeId + '\')">' +
         '<div class="blg-game-card__img-wrap">' +
           imgHtml +
           '<div class="blg-game-card__overlay">' +
@@ -341,7 +341,24 @@
     render();
   }
 
-  window.GT_Backlog = { openDoneModal: openDoneModal };
+  /* En táctil (sin ratón que pase por encima) el primer toque ilumina la tarjeta y saca el ✓;
+     el segundo toque en la misma abre la ficha. Con ratón, un clic abre la ficha como siempre. */
+  function tapCard(card, gameId) {
+    var touch = !matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (touch && !card.classList.contains('is-picked')) {
+      document.querySelectorAll('.blg-game-card.is-picked').forEach(function (c) { c.classList.remove('is-picked'); });
+      card.classList.add('is-picked');
+      return;
+    }
+    card.classList.remove('is-picked');
+    window.GT.GameDetailModal.open(gameId);
+  }
+  // un toque fuera de las tarjetas las apaga
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.blg-game-card')) document.querySelectorAll('.blg-game-card.is-picked').forEach(function (c) { c.classList.remove('is-picked'); });
+  });
+
+  window.GT_Backlog = { openDoneModal: openDoneModal, tapCard: tapCard };
 
   document.addEventListener('DOMContentLoaded', function () {
     window.GT.onDataReady(function () {

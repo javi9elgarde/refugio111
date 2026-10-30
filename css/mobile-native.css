@@ -138,3 +138,110 @@
 /* botón de avisos dentro de la hoja «Más» */
 .nav__mobile .m-push-btn { grid-column: 1 / -1; display: flex; align-items: center; gap: 0.5rem; width: 100%; border: 0; background: rgba(245, 200, 66, 0.08); border-radius: 8px; cursor: pointer; font: inherit; text-align: left; }
 .m-push-btn.is-on { background: rgba(74, 222, 128, 0.1); }
+
+/* ── Barra inferior: Biblioteca · Registro · ⚙ Inicio · Pendientes · Más ── */
+@media (max-width: 768px) {
+  .tabbar { grid-template-columns: 1fr 1fr 78px 1fr 1fr; align-items: end; overflow: visible; }
+  .tabbar__home { position: relative; align-self: stretch; display: flex; justify-content: center; -webkit-tap-highlight-color: transparent; }
+  .tabbar__gear {
+    position: absolute; bottom: 6px; width: 68px; height: 68px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 40%, #182038, #07070f 72%);
+    border: 1px solid rgba(245, 200, 66, 0.3);
+    box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.55), 0 0 14px rgba(245, 200, 66, 0.12);
+    transition: transform 0.15s ease-out, box-shadow 0.2s, border-color 0.2s;
+  }
+  .tabbar__gear img { position: absolute; inset: 5px; width: calc(100% - 10px); height: calc(100% - 10px); object-fit: contain; pointer-events: none; }
+  .tabbar__gear-spin { animation: gearSpin 12s linear infinite; filter: drop-shadow(0 2px 8px rgba(79, 172, 254, 0.45)); }
+  .tabbar__home:active .tabbar__gear { transform: scale(0.94); }
+  .tabbar__home--active .tabbar__gear { border-color: #f5c842; box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.55), 0 0 22px rgba(245, 200, 66, 0.4); }
+  .tabbar__home--active .tabbar__gear-spin { animation-duration: 6s; }
+  .tabbar__home:focus-visible { outline: none; }
+  .tabbar__home:focus-visible .tabbar__gear { outline: 3px solid #f5c842; outline-offset: 2px; }
+}
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) { .tabbar__gear-spin { animation: none; } }
+
+/* ── Inicio en el móvil: el fondo del estreno se ve, todo centrado y más compacto ── */
+@media (max-width: 640px) {
+  .r1-slide__shade { background: linear-gradient(0deg, rgba(5, 7, 13, 0.94) 0%, rgba(5, 7, 13, 0.45) 22%, transparent 40%); }
+  /* cartel más pequeño y centrado arriba */
+  .r1-sign, .r1-slide--der .r1-sign { left: 0; right: 0; margin: 0 auto; width: min(250px, 74%); padding-top: 1.15rem; }
+  .r1-sign::before, .r1-sign::after { height: 1.3rem; }
+  .r1-sign__board { gap: 0.25rem; padding: 0.45rem 0.65rem 0.5rem; align-items: center; text-align: center; border-width: 1.5px; transform-origin: 50% -1.15rem; }
+  .r1-sign .r1-meta { justify-content: center; font-size: 0.56rem; }
+  .r1-sign .r1-title { font-size: 0.98rem; }
+  .r1-sign__pl { justify-content: center; }
+  .r1-sign__pl .r1-pl { font-size: 0.5rem; }
+  /* botones, cuenta atrás y flechas: en columna, centrados y pegados abajo */
+  .r1-slide__body { padding: 0.6rem 0.6rem 0.7rem; }
+  .r1-foot { flex-direction: column; align-items: center; gap: 0.45rem; }
+  .r1-actions { justify-content: center; gap: 0.45rem; }
+  .r1-foot .r1-btn { padding: 0.45rem 0.8rem; font-size: 0.72rem; border-radius: 10px; box-shadow: none; }
+  .r1-foot .r1-cd { min-height: 0; justify-content: center; }
+  .r1-count { gap: 0.25rem; padding: 0.25rem 0.4rem; border-radius: 10px; background: rgba(5, 7, 13, 0.72); }
+  .r1-count__u { min-width: 2.15rem; padding: 0.12rem 0.25rem; border-radius: 6px; }
+  .r1-count__u b { font-size: 0.86rem; }
+  .r1-count__u small { font-size: 0.42rem; }
+  .r1-count__sep { font-size: 0.7rem; }
+  .r1-live { padding: 0.35rem 0.7rem; font-size: 0.72rem; }
+  .r1-nav { justify-content: center; gap: 0.5rem; }
+  .r1-arrow { width: 34px; height: 34px; font-size: 0.85rem; }
+  .r1-dot { width: 8px; height: 8px; }
+  .r1-dot.is-on { width: 22px; }
+
+  /* próximo evento centrado */
+  .r1-eb { flex-direction: column; justify-content: center; text-align: center; padding: 0.9rem 0.9rem 1rem !important; gap: 0.6rem; }
+  .r1-eb__i { align-items: center; }
+  .r1-eb .r1-cd { display: flex; justify-content: center; }
+
+  /* cabeceras de paneles (calendario, récords) y selector del mes centrados */
+  .r1-ph { flex-direction: column; justify-content: center; text-align: center; }
+  .r1-month { width: 100%; justify-content: center; }
+  .r1-month b { flex: 0 1 190px; }
+  .r1-month button { width: 40px; height: 40px; }
+
+  /* ventanitas de un día con varios juegos: cabecera con X */
+  .r1-pop--sheet { padding-top: 0.5rem; max-height: 70vh; overflow-y: auto; }
+  .r1-pop__hd { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; width: 100%; padding: 0 0.1rem 0.2rem; }
+  .r1-pop__hd b { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 0.06em; color: #f5c842; }
+  .r1-pop__x { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.15); background: #0f1522; color: #e2e8f0; font-size: 1rem; cursor: pointer; }
+}
+
+/* ── Biblioteca en el móvil: filtros en rejilla y selector de letra ── */
+.alpha-pick { display: none; }
+@media (max-width: 768px) {
+  .bib-filter-selects { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 0.45rem; }
+  .bib-filter-selects .form-select--sm { display: block !important; width: 100% !important; height: 42px; text-overflow: ellipsis; }
+  .bib-filter-selects .btn--compact { height: 42px; width: 100%; font-size: 0.85rem; }
+  .bib-filter-selects .btn--compact::after { content: ' Limpiar filtros'; }
+  .bib-search-row .search-input { height: 46px; }
+  .alpha-bar { display: none; }
+  .alpha-bar-wrap { padding: 0.35rem 1rem; }
+  .alpha-pick {
+    display: flex; align-items: center; gap: 0.5rem; width: 100%; max-width: 420px; margin: 0 auto; min-height: 40px; padding: 0 0.9rem;
+    border-radius: 999px; border: 1px solid rgba(79, 172, 254, 0.3); background: rgba(15, 21, 34, 0.9); color: #cbd5e1;
+    font: 600 0.82rem Inter, system-ui, sans-serif; cursor: pointer;
+  }
+  .alpha-pick[hidden] { display: none; }
+  .alpha-pick b { margin-left: auto; min-width: 1.8rem; padding: 0.15rem 0.45rem; border-radius: 8px; background: #4facfe; color: #07070f; font-family: 'Orbitron', sans-serif; font-size: 0.8rem; text-align: center; }
+  .alpha-pick i { font-style: normal; color: #64748b; }
+}
+.alpha-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.45rem; margin-top: 0.6rem; }
+.alpha-grid button { aspect-ratio: 1; min-height: 44px; border-radius: 12px; border: 1px solid rgba(79, 172, 254, 0.25); background: #121a2b; color: #e2e8f0; font: 900 1rem Orbitron, sans-serif; cursor: pointer; }
+.alpha-grid button.is-active { background: #4facfe; border-color: #4facfe; color: #07070f; }
+.alpha-grid button:disabled { opacity: 0.2; cursor: default; }
+
+/* ── Pendientes en el móvil ── */
+@media (max-width: 768px) {
+  .blg-player-hero__meta { flex-direction: column; gap: 0.55rem; width: 100%; padding: 0 1rem; }
+  .blg-player-hero__count { text-align: center; white-space: nowrap; font-size: 0.85rem; }
+  .blg-filters { display: flex; width: 100%; max-width: 360px; }
+  .blg-filters select { flex: 1 1 0; min-width: 0; height: 42px; text-overflow: ellipsis; }
+  .blg-player-trio { gap: 1rem !important; }
+}
+/* primer toque: tarjeta iluminada con su ✓; segundo toque: ficha */
+.blg-game-card.is-picked { border-color: var(--pc, #4facfe); box-shadow: 0 0 0 2px var(--pc, #4facfe), 0 0 24px color-mix(in srgb, var(--pc, #4facfe) 45%, transparent); }
+.blg-game-card.is-picked .blg-game-card__img { transform: scale(1.04); }
+@media (hover: none), (pointer: coarse) {
+  .blg-game-card__check-btn { pointer-events: none; width: 40px !important; height: 40px !important; }
+  .blg-game-card.is-picked .blg-game-card__check-btn { opacity: 1; pointer-events: auto; background: var(--pc, #4facfe); border-color: var(--pc, #4facfe); color: #07070f; }
+}
