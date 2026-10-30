@@ -1,0 +1,140 @@
+/* ============================================================
+   REFUGIO 111 — Ajustes de app nativa en móvil
+   Complementa lo que ya hay en styles.css (barra inferior, modales desde abajo, inputs a 16px):
+   zonas seguras del notch, toques de 44px, hojas inferiores con asa y los avisos de red y conflictos.
+   ============================================================ */
+
+/* ── Comportamiento táctil de app ───────────────────────────── */
+@media (pointer: coarse) {
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: contain;
+  }
+  /* lo que se escribe o se lee con calma sí se puede seleccionar */
+  input, textarea, select, [contenteditable="true"], .detail-desc, .selectable {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+  }
+  /* iOS hace zoom al enfocar un campo con letra menor de 16px */
+  input, textarea, select { font-size: 16px !important; }
+
+  /* áreas de toque de al menos 44 × 44 px */
+  .btn, .tabbar__item, .mt-tabbar__item, .nav__mobile .nav__link,
+  .modal__close, .mt-modal__close, .honor-modal__x, .r1-month button, .m-sheet button {
+    min-height: 44px;
+  }
+  .modal__close, .mt-modal__close, .honor-modal__x, .r1-month button {
+    min-width: 44px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .btn { display: inline-flex; align-items: center; justify-content: center; }
+}
+
+/* ── Zonas seguras y solo barra inferior (páginas con .tabbar) ── */
+@media (max-width: 768px) {
+  /* la barra de arriba de escritorio desaparece: se navega con la .tabbar y la hoja «Más».
+     --nav-h pasa a ser solo el alto del notch, así .page, los sticky y las anclas se recolocan solos */
+  body:has(.tabbar) { --nav-h: env(safe-area-inset-top, 0px); }
+  body:has(.tabbar) > .nav { display: none !important; }
+  body:has(.tabbar) { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 60px); }
+  /* franja opaca bajo la barra de estado translúcida de iOS para que el contenido no pase por debajo del reloj */
+  body:has(.tabbar)::before {
+    content: ''; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px);
+    background: #07070f; z-index: 160; pointer-events: none;
+  }
+  .tabbar { min-height: 60px; }
+  .tabbar__item { justify-content: center; }
+
+  /* tableros y gráficos en una sola columna */
+  .jg-an__grid, .lgs, .st-vs { grid-template-columns: minmax(0, 1fr) !important; }
+  .st-vs__h { grid-column: auto !important; }
+  canvas { max-width: 100% !important; }
+}
+
+/* ── Ventanas emergentes como hojas inferiores (≤ 768 px) ───── */
+@keyframes mSheetUp { from { transform: translateY(100%); } to { transform: none; } }
+@media (max-width: 768px) {
+  .modal-overlay, .mt-modal-overlay { align-items: flex-end !important; padding: 0 !important; }
+  .modal, .mt-modal, #logrosPickerOverlay > div {
+    width: 100% !important; max-width: none !important; height: auto !important;
+    max-height: 92vh !important; max-height: 92dvh !important;
+    border-radius: 18px 18px 0 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    animation: mSheetUp 0.26s cubic-bezier(.2, .8, .2, 1);
+    overscroll-behavior: contain;
+    will-change: transform;
+  }
+  #logrosPickerOverlay { align-items: flex-end !important; }
+  #logrosPickerOverlay > div { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important; }
+  .mt-modal__body { flex: none; }
+
+  /* asa para arrastrar hacia abajo */
+  .modal::before, .mt-modal::before, #logrosPickerOverlay > div::before, .m-sheet::before {
+    content: ''; display: block; flex: none; position: sticky; top: 0; z-index: 5;
+    width: 42px; height: 5px; margin: 8px auto 2px; border-radius: 3px;
+    background: rgba(255, 255, 255, 0.28);
+  }
+  #logrosPickerOverlay > div::before { margin: -0.9rem auto 0.6rem; }
+  .m-sheet::before { margin: -0.6rem auto 0.7rem; }
+  .m-dragging { transition: none !important; animation: none !important; }
+}
+
+/* ── Hoja propia (avisos push, conflictos) ──────────────────── */
+.m-sheet-overlay {
+  position: fixed; inset: 0; z-index: 3500; display: flex; align-items: center; justify-content: center;
+  padding: 1rem; background: rgba(3, 4, 10, 0.82);
+}
+.m-sheet {
+  width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+  background: #0d111c; color: #e8e8f8; border: 1px solid rgba(79, 172, 254, 0.22); border-radius: 18px;
+  padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  font-family: Inter, system-ui, sans-serif;
+}
+.m-sheet h3 { margin: 0.4rem 0 0.4rem; font-family: Orbitron, sans-serif; font-size: 0.95rem; letter-spacing: 0.06em; color: #f5c842; }
+.m-sheet p { margin: 0 0 0.8rem; font-size: 0.88rem; line-height: 1.5; color: rgba(232, 232, 248, 0.75); }
+.m-sheet__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.m-sheet__actions button {
+  flex: 1 1 140px; padding: 0.7rem 0.9rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05); color: #e8e8f8; font: 600 0.88rem Inter, system-ui, sans-serif; cursor: pointer;
+}
+.m-sheet__actions button.is-primary { background: #4facfe; border-color: #4facfe; color: #07070f; }
+.m-sheet__actions button:focus-visible { outline: 3px solid #f5c842; outline-offset: 2px; }
+@media (max-width: 768px) {
+  .m-sheet-overlay { align-items: flex-end; padding: 0; }
+  .m-sheet { max-width: none; border-radius: 18px 18px 0 0; animation: mSheetUp 0.26s cubic-bezier(.2, .8, .2, 1); }
+}
+
+/* tabla comparativa del conflicto */
+.m-diff { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 0.4rem; }
+.m-diff th, .m-diff td { padding: 0.5rem 0.4rem; border-bottom: 1px solid rgba(255, 255, 255, 0.07); text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.m-diff th { font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(232, 232, 248, 0.45); }
+.m-diff td:first-child { font-weight: 700; white-space: nowrap; }
+.m-diff .m-diff__both td:first-child { color: #f87171; }
+.m-diff small { display: block; font-weight: 500; font-size: 0.66rem; color: rgba(232, 232, 248, 0.45); }
+
+/* ── Aviso de conexión ──────────────────────────────────────── */
+.m-netbar {
+  position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 8px); z-index: 4000;
+  transform: translate(-50%, -160%); transition: transform 0.3s ease;
+  padding: 0.45rem 0.95rem; border-radius: 999px; pointer-events: none;
+  font: 600 0.78rem Inter, system-ui, sans-serif; color: #e8e8f8; white-space: nowrap;
+  background: rgba(10, 14, 23, 0.94); border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+.m-netbar.is-shown { transform: translate(-50%, 0); }
+.m-netbar.is-offline { border-color: rgba(248, 113, 113, 0.5); }
+.m-netbar.is-online { border-color: rgba(74, 222, 128, 0.5); }
+@media (prefers-reduced-motion: reduce) {
+  .m-netbar { transition: none; }
+  .modal, .mt-modal, .m-sheet, #logrosPickerOverlay > div { animation: none !important; }
+}
+
+/* botón de avisos dentro de la hoja «Más» */
+.nav__mobile .m-push-btn { grid-column: 1 / -1; display: flex; align-items: center; gap: 0.5rem; width: 100%; border: 0; background: rgba(245, 200, 66, 0.08); border-radius: 8px; cursor: pointer; font: inherit; text-align: left; }
+.m-push-btn.is-on { background: rgba(74, 222, 128, 0.1); }

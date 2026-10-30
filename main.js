@@ -139,6 +139,23 @@ function firstScoresOnly(list) {
   console.assert(t[0].nota === null && t[0].notaRepetida === 10 && t[1].nota === 9 && t[2].nota === 7, 'firstScoresOnly');
 })();
 
+/* ── GUARDADO CON VERSIONES ─────────────────────────────────────
+   Con js/sync-manager.js cargado, las ediciones pasan por safeSaveDoc (versión + conflictos + bandeja sin red);
+   sin él, se guarda como siempre. */
+function saveDoc(col, id, data, prev, baseVersion, label) {
+  if (window.GT.Sync) {
+    var base = baseVersion != null ? baseVersion : (prev && prev.version) || 0;
+    window.GT.Sync.safeSaveDoc(col, id, data, base, prev).catch(function (e) { console.error(label + ':', e); });
+    return;
+  }
+  window.GT.db.collection(col).doc(id).update(data)
+    .catch(function(e){ console.error(label + ':', e); });
+}
+// los cambios hechos sin red que aún no han subido se vuelven a poner encima de lo que manda Firestore
+function withPending(col, list) {
+  return window.GT.Sync ? window.GT.Sync.overlay(col, list) : list;
+}
+
 /* ── FIRESTORE SYNC ─────────────────────────────────────────── */
 window.GT.FirestoreSync = (function () {
   var bibReady = false;
@@ -153,17 +170,17 @@ window.GT.FirestoreSync = (function () {
     if (!db) { console.error('Firestore no inicializado'); return; }
 
     db.collection('biblioteca').onSnapshot(function (snap) {
-      window.GT._cache.biblioteca = snap.docs.map(function (d) {
+      window.GT._cache.biblioteca = withPending('biblioteca', snap.docs.map(function (d) {
         return Object.assign({ id: d.id }, d.data());
-      });
+      }));
       if (!bibReady) { bibReady = true; checkReady(); }
       else { window.GT._notifyChange(); }
     }, function (err) { console.error('Biblioteca listener:', err); });
 
     db.collection('registro').onSnapshot(function (snap) {
-      window.GT._cache.registro = firstScoresOnly(snap.docs.map(function (d) {
+      window.GT._cache.registro = firstScoresOnly(withPending('registro', snap.docs.map(function (d) {
         return Object.assign({ id: d.id }, d.data());
-      }));
+      })));
       if (!regReady) { regReady = true; checkReady(); }
       else { window.GT._notifyChange(); }
     }, function (err) { console.error('Registro listener:', err); });
@@ -190,12 +207,13 @@ window.GT.Biblioteca = (function () {
     return game;
   }
 
-  function update(id, data) {
+  // baseVersion: versión del juego cuando se abrió el editor (si no se pasa, la de la caché)
+  function update(id, data, baseVersion) {
     var cache = window.GT._cache.biblioteca;
     var idx   = cache.findIndex(function(g){ return g.id === id; });
+    var prev  = idx !== -1 ? cache[idx] : null;
     if (idx !== -1) cache[idx] = Object.assign({}, cache[idx], data);
-    window.GT.db.collection('biblioteca').doc(id).update(data)
-      .catch(function(e){ console.error('Biblioteca.update:', e); });
+    saveDoc('biblioteca', id, data, prev, baseVersion, 'Biblioteca.update');
     return idx !== -1 ? cache[idx] : null;
   }
 
@@ -280,13 +298,13 @@ window.GT.Registro = (function () {
     return entry;
   }
 
-  function update(id, data) {
+  function update(id, data, baseVersion) {
     var cache = window.GT._cache.registro;
     var idx   = cache.findIndex(function(r){ return r.id === id; });
+    var prev  = idx !== -1 ? cache[idx] : null;
     if (idx !== -1) dropRepeatNota(Object.assign({}, cache[idx], data), data);
     if (idx !== -1) cache[idx] = Object.assign({}, cache[idx], data);
-    window.GT.db.collection('registro').doc(id).update(data)
-      .catch(function(e){ console.error('Registro.update:', e); });
+    saveDoc('registro', id, data, prev, baseVersion, 'Registro.update');
     return idx !== -1 ? cache[idx] : null;
   }
 

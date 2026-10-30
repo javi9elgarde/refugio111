@@ -1,0 +1,46 @@
+name: Avisos push de lanzamientos
+
+on:
+  schedule:
+    # 08:00 UTC = 09:00 (invierno) / 10:00 (verano) en Madrid. GitHub puede retrasarlo unos minutos.
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+    inputs:
+      fecha:
+        description: 'Fecha a comprobar (AAAA-MM-DD). Vacío = hoy'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Solo mostrar qué se enviaría'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fcm-notifications
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: .github/scripts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Instalar firebase-admin
+        run: npm install --no-audit --no-fund --omit=dev
+      - name: Enviar avisos
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FECHA: ${{ inputs.fecha }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: node send-release-push.js

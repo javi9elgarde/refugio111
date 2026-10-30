@@ -930,6 +930,7 @@
     var game = Biblioteca.getById(id);
     if (!game) return;
     state.editId = id;
+    state.editVersion = game.version || 0; // para detectar si otro lo cambia mientras editas
     selectedGeneros    = (game.generos || []).slice();
     selectedPlataformas = (game.plataformas || []).slice();
     document.getElementById('modalTitle').textContent = 'Editar Juego';
@@ -1231,7 +1232,7 @@
     };
 
     if (state.editId) {
-      Biblioteca.update(state.editId, data);
+      Biblioteca.update(state.editId, data, state.editVersion);
       Toast.show('Juego actualizado ✓');
     } else {
       Biblioteca.add(data);

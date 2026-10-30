@@ -408,6 +408,7 @@
     var r = Registro.getById(id);
     if (!r) return;
     state.editId = id;
+    state.editVersion = r.version || 0; // para detectar si otro lo cambia mientras editas
     document.getElementById('entryModalTitle').textContent = 'Editar Entrada';
     document.getElementById('entryEditId').value = id;
     populateGameSelect(r.juegoId);
@@ -466,7 +467,7 @@
     };
 
     if (state.editId) {
-      Registro.update(state.editId, data);
+      Registro.update(state.editId, data, state.editVersion);
       Toast.show('Entrada actualizada ✓');
     } else {
       Registro.add(data);

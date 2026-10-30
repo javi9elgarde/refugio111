@@ -1,0 +1,9 @@
+{
+  "name": "refugio111-push",
+  "private": true,
+  "description": "Envío de avisos push de Refugio 111 desde GitHub Actions (no se usa en la web).",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}
