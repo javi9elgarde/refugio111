@@ -238,3 +238,8 @@
 
 /* el atributo hidden debe ganar a los display de arriba */
 .r1 [hidden], .r1-pop[hidden] { display: none !important; }
+
+/* ── RÉCORDS DEL REFUGIO ─────────────────────────────────── */
+.r1-rec__y { padding: 0.45rem 0.9rem; border-radius: 10px; border: 1px solid var(--r1-line); background: #05070d; color: var(--r1-y); font-family: 'Orbitron', sans-serif; font-size: 0.8rem; cursor: pointer; }
+.r1-rec__y option { background: #0f1522; color: #e2e8f0; }
+.r1-rec .logros-grid { margin-top: 1rem; }

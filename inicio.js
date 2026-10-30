@@ -421,10 +421,21 @@
   }
 
   /* ── ARRANQUE ────────────────────────────────────────────── */
-  function renderAll() { renderParty(); renderHero(); renderCal(); renderEvents(); }
+  /* ── RÉCORDS DEL REFUGIO: año actual por defecto, o Global ── */
+  function initRecords() {
+    var sel = $('r1RecYear'), now = new Date().getFullYear();
+    var years = GT.Registro.getAll().map(function (r) { return r.año; }).concat([now])
+      .filter(function (y, i, a) { return y && a.indexOf(y) === i; }).sort(function (a, b) { return b - a; });
+    sel.innerHTML = '<option value="0">Global</option>' + years.map(function (y) { return '<option value="' + y + '">' + y + '</option>'; }).join('');
+    sel.value = String(now);
+    sel.addEventListener('change', renderRecords);
+  }
+  function renderRecords() { if (GT.Records) GT.Records.render($('r1Records'), parseInt($('r1RecYear').value, 10)); }
+
+  function renderAll() { renderParty(); renderHero(); renderCal(); renderEvents(); renderRecords(); }
 
   function init() {
-    initHero(); initCal(); initEvtEdit();
+    initHero(); initCal(); initEvtEdit(); initRecords();
     // «Más info» y los juegos del calendario abren la ficha aquí mismo (Ctrl/clic central siguen yendo a la Biblioteca)
     document.addEventListener('click', function (e) {
       var a = e.target.closest('a[href^="biblioteca.html?open="]');
@@ -440,7 +451,7 @@
     GT.db.collection('events').get()
       .then(function (snap) { events = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); }).filter(function (ev) { return ev.isoDate; }); renderCal(); renderEvents(); })
       .catch(function () { $('r1Evt').innerHTML = '<div class="r1-none">No se pudieron cargar los eventos</div>'; });
-    GT.onDataChange(function () { renderParty(); renderHero(); renderCal(); });
+    GT.onDataChange(function () { renderParty(); renderHero(); renderCal(); renderRecords(); });
   }
 
   document.addEventListener('DOMContentLoaded', function () { GT.onDataReady(init); });

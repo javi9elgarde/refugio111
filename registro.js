@@ -69,6 +69,7 @@
     document.getElementById('regQuickEstado').value = r.estado || 'Terminado';
     document.getElementById('regQuickNota').value   = (r.nota !== null && r.nota !== undefined && r.nota !== '') ? r.nota : '';
     document.getElementById('regQuickHoras').value  = r.horas || '';
+    lockNota(document.getElementById('regQuickNota'), r.jugador, r.juegoId, r.año, r.mes, r.id);
     document.getElementById('regQuickOverlay').classList.add('open');
   }
 
@@ -400,6 +401,7 @@
     document.getElementById('fComentario').value = '';
     document.getElementById('entryBtnDelete').style.display = 'none';
     document.getElementById('entryModal').classList.add('open');
+    syncNotaLock();
     document.getElementById('fJuego').focus();
   }
 
@@ -420,10 +422,25 @@
     document.getElementById('fComentario').value = r.comentario || '';
     document.getElementById('entryBtnDelete').style.display = 'inline-flex';
     document.getElementById('entryModal').classList.add('open');
+    syncNotaLock();
   }
 
   function closeModal() {
     document.getElementById('entryModal').classList.remove('open');
+  }
+
+  // si ya puntuó este juego en una partida anterior, la nota queda bloqueada (solo cuenta la primera)
+  function lockNota(input, jugador, juegoId, año, mes, exceptId) {
+    var f = juegoId && Registro.firstNota(jugador, juegoId, exceptId);
+    var locked = !!f && (f.año * 12 + f.mes) <= (año * 12 + mes);
+    input.disabled = locked;
+    if (locked) input.value = '';
+    input.placeholder = locked ? 'Ya puntuado: ' + Utils.formatScore(f.nota) + ' (' + when(f) + ')' : 'Ej: 9.5';
+    input.title = locked ? 'Solo cuenta la nota de la primera vez que lo jugaste' : '';
+  }
+  function syncNotaLock() {
+    lockNota(document.getElementById('fNota'), document.getElementById('fJugador').value, document.getElementById('fJuego').value,
+      parseInt(document.getElementById('fAño').value, 10) || 0, parseInt(document.getElementById('fMes').value, 10) || 0, state.editId);
   }
 
   /* ── SAVE / DELETE ──────────────────────────────────────── */
@@ -506,6 +523,10 @@
     injectQuickModal();
 
     initGameSearch();
+    ['fJugador', 'fJuego', 'fJuegoSearch', 'fAño', 'fMes'].forEach(function (id) {
+      document.getElementById(id).addEventListener('change', syncNotaLock);
+      document.getElementById(id).addEventListener('input', syncNotaLock);
+    });
 
     var _btnAddEntry = document.getElementById('btnAddEntry');
     if (_btnAddEntry) _btnAddEntry.addEventListener('click', openAdd);

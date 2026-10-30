@@ -8,6 +8,7 @@
   var Biblioteca = window.GT.Biblioteca;
   var Registro   = window.GT.Registro;
   var Toast      = window.GT.Toast;
+  var EMBED      = document.documentElement.classList.contains('gt-embed'); // formulario de edición dentro de otra página
 
   var GENRES_PRESET = ['Acción','Acción Aventura','Aventura','Aventura Gráfica','Carreras',
     'Estrategia','FPS','Gacha','Gestión','Hack and Slash','Indie','Metroidvania',
@@ -961,6 +962,8 @@
 
   function closeModal() {
     document.getElementById('gameModal').classList.remove('open');
+    // abierta desde otra página: avisa cuando Firebase tenga guardado el cambio
+    if (EMBED) window.GT.db.waitForPendingWrites().then(function () { parent.postMessage({ gt: 'editClosed' }, location.origin); });
   }
 
   /* ── SONIDO DE APERTURA DE FICHA ──────────────────────────── */

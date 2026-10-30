@@ -7,8 +7,8 @@
   <link rel="apple-touch-icon" href="logonuevo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Refugio 111 — Jugadores</title>
-  <link rel="stylesheet" href="styles.css?v=20261030a">
-  <link rel="stylesheet" href="jugadores.css?v=20261030d">
+  <link rel="stylesheet" href="styles.css?v=20261030b">
+  <link rel="stylesheet" href="jugadores.css?v=20261030f">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#07070f">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -90,23 +90,15 @@
         <h2>📊 ESTADÍSTICAS</h2>
         <select class="jg-sel" id="statsYear" aria-label="Año"></select>
       </div>
+      <div class="st-live" id="stLive"></div>
+      <div class="st-vs" id="stVs"></div>
       <div class="jg-an__grid">
-        <div class="jg-card"><h3>🎮 Géneros más jugados</h3><canvas id="chartGenres" class="chart-canvas"></canvas></div>
-        <div class="jg-card"><h3>🖥 Plataformas</h3><canvas id="chartPlatforms" class="chart-canvas"></canvas></div>
-        <div class="jg-card jg-card--wide"><h3>📈 Últimos 10 años</h3><div class="jg-hist"><canvas id="chartHistory"></canvas></div></div>
-        <div class="jg-card jg-card--cmp"><h3>👥 Comparativa</h3>
-          <table class="jg-cmp">
-            <thead><tr><th></th><th data-col="David"><img src="cara_david.png" alt="">David</th><th data-col="Javi"><img src="cara_javi.png" alt="">Javi</th><th data-col="Mery"><img src="cara_mery.png" alt="">Mery</th></tr></thead>
-            <tbody>
-              <tr><th>Juegos</th><td data-col="David" id="david-juegos">—</td><td data-col="Javi" id="javi-juegos">—</td><td data-col="Mery" id="mery-juegos">—</td></tr>
-              <tr><th>Horas</th><td data-col="David" id="david-horas">—</td><td data-col="Javi" id="javi-horas">—</td><td data-col="Mery" id="mery-horas">—</td></tr>
-              <tr><th>Nota media</th><td data-col="David" id="david-nota">—</td><td data-col="Javi" id="javi-nota">—</td><td data-col="Mery" id="mery-nota">—</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <div class="jg-card"><h3>📆 Ritmo del año</h3><div class="st-months" id="stMonths"></div></div>
+        <div class="jg-card"><h3>⚔️ Duelo del Refugio</h3><div class="st-duel" id="stDuel"></div></div>
+        <div class="jg-card"><h3>🎮 Géneros</h3><div class="st-genres" id="stGenres"></div></div>
+        <div class="jg-card"><h3>🕹 Plataformas</h3><div class="st-plats" id="stPlats"></div></div>
+        <div class="jg-card jg-card--full"><h3>📈 Últimos 10 años</h3><div class="jg-hist"><canvas id="chartHistory"></canvas></div></div>
       </div>
-      <h2 class="jg-an__sub">🏅 RÉCORDS DEL REFUGIO</h2>
-      <div class="logros-grid" id="logrosGrid"></div>
     </section>
 
     <details class="jg-data">
@@ -138,10 +130,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js?v=20260519b" defer></script>
-<script src="main.js?v=20261030b"            defer></script>
+<script src="main.js?v=20261030c"            defer></script>
 <script src="jugadores.js?v=20261030b"       defer></script>
 <script src="pendientes.js?v=20261030d"      defer></script>
-<script src="estadisticas.js?v=20261030d"    defer></script>
+<script src="estadisticas.js?v=20261030e"    defer></script>
 <script src="app.js?v=20261023a" defer></script>
 </body>
 </html>

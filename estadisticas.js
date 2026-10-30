@@ -24,149 +24,160 @@
     Mery:  'rgba(155,89,255,0.85)'
   };
 
-  /* ── STAT CARDS ─────────────────────────────────────────── */
-  function setTxt(id, v) { var el = document.getElementById(id); if (el) el.textContent = Utils.miles(v); }
-  function renderStatCards(year, player) {
-    var stats    = Registro.getStats(year);
-    var libCount = Biblioteca.getAll().length;
-
-    if (player === 'All') {
-      setTxt('sc-juegos', stats.totalJuegos);
-      setTxt('sc-horas', stats.totalHoras + 'h');
-      setTxt('sc-nota', stats.avgScore ? stats.avgScore.toFixed(2).replace('.', ',') : '—');
-    } else {
-      var ps = stats.porJugador[player] || { juegos: 0, horas: 0, avgScore: 0 };
-      setTxt('sc-juegos', ps.juegos);
-      setTxt('sc-horas', ps.horas + 'h');
-      setTxt('sc-nota', ps.avgScore ? ps.avgScore.toFixed(2).replace('.', ',') : '—');
-    }
-    setTxt('sc-biblioteca', libCount);
-
-    // Player comparison cards always show all 3 (year-filtered only)
-    ['David', 'Javi', 'Mery'].forEach(function(p) {
-      var key = p.toLowerCase();
-      var ps  = stats.porJugador[p] || { juegos: 0, horas: 0, avgScore: 0 };
-      setTxt(key + '-juegos', ps.juegos);
-      setTxt(key + '-horas', ps.horas + 'h');
-      setTxt(key + '-nota', ps.avgScore ? ps.avgScore.toFixed(2).replace('.', ',') : '—');
-    });
-  }
-
-  /* ── GENRE CHART (donut) ─────────────────────────────────── */
-  function renderGenreChart(year, player) {
-    var data  = Registro.getGenreStats(year, player).slice(0, 10);
-    var boxEl = document.getElementById('chartGenres');
-    if (!boxEl) return;
-    var ctx  = boxEl.getContext('2d');
-    if (charts.genres) { charts.genres.destroy(); charts.genres = null; }
-    if (!data.length) return;
-
-    var COLORS = ['#4facfe','#9b59ff','#22c55e','#ec4899','#f59e0b',
-                  '#06b6d4','#f97316','#84cc16','#ef4444','#a855f7'];
-
-    var total = data.reduce(function(s,d){ return s + d.count; }, 0);
-
-    // Render custom legend alongside canvas
-    var wrapId = 'chartGenresWrap';
-    var wrap = document.getElementById(wrapId);
-    if (!wrap) {
-      wrap = document.createElement('div');
-      wrap.id = wrapId;
-      wrap.className = 'chart-donut-wrap';
-      boxEl.parentNode.insertBefore(wrap, boxEl);
-      wrap.appendChild(boxEl);
-      var legendDiv = document.createElement('div');
-      legendDiv.id = 'chartGenresLegend';
-      legendDiv.className = 'chart-donut-legend';
-      wrap.appendChild(legendDiv);
-    }
-    var legendEl = document.getElementById('chartGenresLegend');
-    if (legendEl) {
-      legendEl.innerHTML = data.map(function(d, i) {
-        var pct = total > 0 ? Math.round(d.count / total * 100) : 0;
-        return '<div class="chart-legend-item">' +
-          '<div class="chart-legend-dot" style="background:' + COLORS[i % COLORS.length] + '"></div>' +
-          '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">' + d.genero + '</span>' +
-          '<span class="chart-legend-pct">' + pct + '%</span>' +
-        '</div>';
-      }).join('');
-    }
-
-    boxEl.style.maxHeight = '220px';
-    boxEl.style.maxWidth  = '220px';
-
-    charts.genres = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: data.map(function(d){ return d.genero; }),
-        datasets: [{
-          data: data.map(function(d){ return d.count; }),
-          backgroundColor: data.map(function(_, i){ return COLORS[i % COLORS.length]; }),
-          borderColor: 'rgba(7,7,15,0.7)',
-          borderWidth: 2,
-          hoverOffset: 8
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        cutout: '58%',
-        onClick: function (e, els) { if (els.length) pick('genero', data[els[0].index].genero, year, player); },
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: {
-            label: function(c){
-              var pct = total > 0 ? Math.round(c.raw / total * 100) : 0;
-              return ' ' + c.label + ': ' + c.raw + ' (' + pct + '%)';
-            }
-          }}
-        }
-      }
-    });
-  }
-
-  /* ── PLATFORM CHART ─────────────────────────────────────── */
-  function renderPlatformChart(year, player) {
-    var data = Registro.getPlatformStats(year, player).slice(0, 8);
-    var ctx  = document.getElementById('chartPlatforms').getContext('2d');
-    if (charts.platforms) { charts.platforms.destroy(); charts.platforms = null; }
-    if (!data.length) return;
-
-    var PLAT_COLORS = {
-      'PC': '#2a7fff', 'PS5': '#003aba', 'PS4': '#0a52cc', 'PS3': '#1565c0',
-      'Xbox Series X': '#107c10', 'Xbox One': '#1a9a1a', 'Xbox 360': '#2bb52b',
-      'Nintendo Switch 2': '#e60012', 'Nintendo Switch': '#e83e3e'
+  /* ── DATOS DE UN JUGADOR EN UN AÑO ──────────────────────── */
+  var DONE = { Terminado: 1, Platinado: 1, Rejugado: 1, Jugado: 1 };
+  function uniq(list, f) { var s = {}; list.forEach(function (r) { if (!f || f(r)) s[r.juegoId] = 1; }); return Object.keys(s).length; }
+  function statsOf(player, year) {
+    var e = Registro.filter({ jugador: player, año: year || null });
+    var notas = e.filter(function (r) { return r.nota !== null && r.nota !== undefined && r.nota !== ''; });
+    return {
+      juegos: uniq(e),
+      horas: Math.round(e.reduce(function (a, r) { return a + (parseFloat(r.horas) || 0); }, 0)),
+      nota: notas.length ? notas.reduce(function (a, r) { return a + parseFloat(r.nota); }, 0) / notas.length : null,
+      completados: uniq(e, function (r) { return DONE[r.estado]; }),
+      platinos: uniq(e, function (r) { return r.estado === 'Platinado'; })
     };
+  }
+  var esc = function (s) { return Utils.escapeHtml(s == null ? '' : String(s)); };
+  var nota = function (n) { return n === null ? '—' : n.toFixed(2).replace('.', ','); };
+  var REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    charts.platforms = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: data.map(function(d){ return d.plataforma; }),
-        datasets: [{
-          data: data.map(function(d){ return d.count; }),
-          backgroundColor: data.map(function(d){ return PLAT_COLORS[d.plataforma] || 'rgba(79,172,254,0.5)'; }),
-          borderColor: 'rgba(255,255,255,0.07)',
-          borderWidth: 2,
-          hoverOffset: 8
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        cutout: '60%',
-        onClick: function (e, els) { if (els.length) pick('plat', data[els[0].index].plataforma, year, player); },
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { color: 'rgba(232,232,248,0.7)', font: CHART_FONT, padding: 12, boxWidth: 14 }
-          },
-          tooltip: {
-            callbacks: {
-              label: function(c){ return ' ' + c.label + ': ' + c.raw + ' partida' + (c.raw !== 1 ? 's' : ''); }
-            }
-          }
-        }
+  // los números suben desde 0 hasta su valor
+  function countUp(root) {
+    root.querySelectorAll('[data-to]').forEach(function (el) {
+      var to = parseFloat(el.dataset.to), dec = parseInt(el.dataset.dec || '0', 10), suf = el.dataset.suf || '';
+      var fmt = function (v) { return (dec ? v.toFixed(dec).replace('.', ',') : Utils.miles(Math.round(v))) + suf; };
+      if (REDUCED) { el.textContent = fmt(to); return; }
+      var t0 = performance.now();
+      (function step(t) {
+        var k = Math.min(1, (t - t0) / 900), e = 1 - Math.pow(1 - k, 3);
+        el.textContent = fmt(to * e);
+        if (k < 1) requestAnimationFrame(step);
+      })(t0);
+    });
+  }
+  // las barras crecen desde 0 hasta --w / --h
+  function grow(root) { requestAnimationFrame(function () { requestAnimationFrame(function () { root.classList.add('is-in'); }); }); }
+
+  /* ── EN DIRECTO: lo que está jugando ahora ───────────────── */
+  function renderLive(player) {
+    var el = document.getElementById('stLive');
+    var now = Registro.filter({ jugador: player, estado: 'Jugando' });
+    el.innerHTML = '<span class="st-live__tag"><i></i>EN DIRECTO</span>' + (now.length ? now.map(function (r) {
+      var g = Biblioteca.getById(r.juegoId);
+      return '<button type="button" class="st-live__g" data-game="' + esc(r.juegoId) + '">' +
+        (g && g.portadaUrl ? '<img src="' + esc(Utils.thumb(g.portadaUrl, 200)) + '" alt="">' : '') +
+        '<span><b>' + esc(g ? g.titulo : '—') + '</b><small>desde ' + esc((Utils.monthName(r.mes) || '').slice(0, 3) + ' ' + r.año) + '</small></span>' +
+        '<span class="st-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button>';
+    }).join('') : '<span class="st-live__none">Ahora mismo no está jugando nada</span>');
+  }
+
+  /* ── ESTE AÑO CONTRA EL ANTERIOR ─────────────────────────── */
+  function renderVs(player, year) {
+    var y = year || currentYear, a = statsOf(player, y), b = statsOf(player, y - 1);
+    var card = function (lbl, ico, va, vb, opt) {
+      var d;
+      if (opt.dec) d = (va === null || vb === null) ? null : { txt: (va - vb >= 0 ? '+' : '') + (va - vb).toFixed(2).replace('.', ','), up: va >= vb };
+      else d = vb ? { txt: (va >= vb ? '+' : '') + Math.round((va - vb) / vb * 100) + '%', up: va >= vb } : (va ? { txt: 'nuevo', up: true } : null);
+      return '<div class="st-vs__c">' +
+        '<span class="st-vs__i">' + ico + '</span><small>' + lbl + '</small>' +
+        '<b' + (va === null ? '>—' : ' data-to="' + va + '" data-dec="' + (opt.dec || 0) + '" data-suf="' + (opt.suf || '') + '">0') + '</b>' +
+        (d ? '<span class="st-vs__d st-vs__d--' + (d.up ? 'up' : 'down') + '">' + (d.up ? '▲ ' : '▼ ') + d.txt + '</span>' : '<span class="st-vs__d">—</span>') +
+        '<em>' + (y - 1) + ': ' + (vb === null ? '—' : opt.dec ? nota(vb) : Utils.miles(vb) + (opt.suf || '')) + '</em></div>';
+    };
+    var el = document.getElementById('stVs');
+    el.innerHTML = '<div class="st-vs__h">' + y + ' <span>vs</span> ' + (y - 1) + '</div>' +
+      card('Juegos', '🎮', a.juegos, b.juegos, {}) + card('Horas', '⏱', a.horas, b.horas, { suf: 'h' }) +
+      card('Completados', '✅', a.completados, b.completados, {}) + card('Nota media', '⭐', a.nota, b.nota, { dec: 2 });
+    countUp(el);
+  }
+
+  /* ── RITMO MES A MES (con el año anterior de fondo) ──────── */
+  function renderMonths(player, year) {
+    var y = year || currentYear, el = document.getElementById('stMonths');
+    var per = function (yy) { var c = []; for (var m = 1; m <= 12; m++) c.push(uniq(Registro.filter({ jugador: player, año: yy, mes: m }))); return c; };
+    var a = per(y), b = per(y - 1), max = Math.max.apply(null, a.concat(b, [1]));
+    el.innerHTML = '<div class="st-months__bars">' + a.map(function (v, i) {
+      return '<button type="button" class="st-m" data-month="' + (i + 1) + '" title="' + Utils.monthName(i + 1) + ': ' + v + ' juego' + (v !== 1 ? 's' : '') + ' (' + (y - 1) + ': ' + b[i] + ')">' +
+        '<span class="st-m__ghost" style="--h:' + (b[i] / max * 100) + '%"></span><span class="st-m__bar" style="--h:' + (v / max * 100) + '%"><i>' + (v || '') + '</i></span>' +
+        '<small>' + (Utils.monthName(i + 1) || '').charAt(0) + '</small></button>';
+    }).join('') + '</div><div class="st-legend"><span class="st-legend__a">' + y + '</span><span class="st-legend__b">' + (y - 1) + '</span></div>';
+    el.dataset.year = y;
+    grow(el);
+  }
+
+  /* ── GÉNEROS: barras con icono ───────────────────────────── */
+  var GENRE_ICO = { 'Acción': '💥', 'Acción Aventura': '🗡️', 'Aventura': '🧭', 'Aventura Gráfica': '🖼️', 'Carreras': '🏎️', 'Deportes': '⚽', 'Estrategia': '♟️',
+    'Lucha': '🥊', 'Plataformas': '🍄', 'Puzzle': '🧩', 'RPG': '🐉', 'Shooter': '🔫', 'Simulación': '🚜', 'Terror': '👻', 'Sigilo': '🥷', 'Survival': '🔥',
+    'Roguelike': '🎲', 'Roguelike/Roguelite': '🎲', 'Metroidvania': '🦇', 'Souls-like': '⚔️', 'Soulslike': '⚔️', 'Mundo abierto': '🗺️', 'Sandbox': '🧱', 'Musical': '🎵', 'Party': '🎉', 'MMO': '🌐' };
+  function renderGenres(player, year) {
+    var el = document.getElementById('stGenres');
+    var data = Registro.getGenreStats(year, player).slice(0, 8), total = data.reduce(function (s, d) { return s + d.count; }, 0);
+    if (!data.length) { el.innerHTML = '<p class="st-none">Sin datos</p>'; return; }
+    el.innerHTML = data.map(function (d, i) {
+      return '<button type="button" class="st-gb" data-genero="' + esc(d.genero) + '" style="--w:' + (d.count / data[0].count * 100) + '%;--d:' + (i * 60) + 'ms">' +
+        '<span class="st-gb__i">' + (GENRE_ICO[d.genero] || '🎮') + '</span><span class="st-gb__t">' + esc(d.genero) + '</span>' +
+        '<span class="st-gb__bar"><i></i></span><span class="st-gb__n">' + d.count + ' <small>' + Math.round(d.count / total * 100) + '%</small></span></button>';
+    }).join('');
+    grow(el);
+  }
+
+  /* ── PLATAFORMAS: por marca, con su logo ─────────────────── */
+  var LOGO = 'https://cdn.jsdelivr.net/npm/simple-icons@9.0.0/icons/';
+  var FAMS = [
+    { k: 'PlayStation', re: /^PS/, ico: 'playstation', c: '#0070d1' },
+    { k: 'Xbox', re: /^Xbox/, ico: 'xbox', c: '#107c10' },
+    { k: 'Nintendo', re: /^Nintendo/, ico: 'nintendoswitch', c: '#e60012' },
+    { k: 'PC', re: /./, ico: 'steam', c: '#66c0f4' }
+  ];
+  function famOf(p) { return FAMS.filter(function (f) { return f.re.test(p || 'PC'); })[0]; }
+  function renderPlats(player, year) {
+    var el = document.getElementById('stPlats');
+    var data = Registro.getPlatformStats(year, player), total = data.reduce(function (s, d) { return s + d.count; }, 0);
+    if (!total) { el.innerHTML = '<p class="st-none">Sin datos</p>'; return; }
+    el.innerHTML = FAMS.map(function (f) {
+      var mine = data.filter(function (d) { return famOf(d.plataforma) === f; }), n = mine.reduce(function (s, d) { return s + d.count; }, 0);
+      if (!n) return '';
+      return '<button type="button" class="st-pf" data-fam="' + f.k + '" style="--c:' + f.c + ';--w:' + (n / total * 100) + '%">' +
+        '<img src="' + LOGO + f.ico + '.svg" alt="" loading="lazy"><span class="st-pf__t"><b>' + f.k + '</b><small>' + mine.map(function (d) { return esc(d.plataforma) + ' ' + d.count; }).join(' · ') + '</small></span>' +
+        '<span class="st-pf__p">' + Math.round(n / total * 100) + '%</span><span class="st-pf__bar"><i></i></span></button>';
+    }).join('');
+    grow(el);
+  }
+
+  /* ── DUELO: reparto entre los tres ───────────────────────── */
+  var PCOL = { David: '#3b82f6', Javi: '#dc2626', Mery: '#a855f7' };
+  function renderDuel(year) {
+    var el = document.getElementById('stDuel'), ps = ['David', 'Javi', 'Mery'];
+    var st = {}; ps.forEach(function (p) { st[p] = statsOf(p, year); });
+    var row = function (lbl, k, dec) {
+      var vals = ps.map(function (p) { return st[p][k] || 0; }), sum = vals.reduce(function (a, v) { return a + v; }, 0) || 1;
+      var best = Math.max.apply(null, vals);
+      return '<div class="st-du"><div class="st-du__h"><b>' + lbl + '</b></div><div class="st-du__bar">' + ps.map(function (p, i) {
+        return '<i style="--c:' + PCOL[p] + ';--w:' + (vals[i] / sum * 100) + '%" title="' + p + '"></i>';
+      }).join('') + '</div><div class="st-du__v">' + ps.map(function (p, i) {
+        return '<span style="color:' + PCOL[p] + '">' + (vals[i] === best && best ? '👑 ' : '') + (dec ? nota(st[p][k]) : Utils.miles(vals[i])) + '</span>';
+      }).join('') + '</div></div>';
+    };
+    el.innerHTML = '<div class="st-du__who">' + ps.map(function (p) { return '<span style="--c:' + PCOL[p] + '"><img src="cara_' + p.toLowerCase() + '.png" alt="">' + p + '</span>'; }).join('') + '</div>' +
+      row('Juegos', 'juegos') + row('Horas', 'horas') + row('Completados', 'completados') + row('Platinos', 'platinos') + row('Nota media', 'nota', true);
+    grow(el);
+  }
+
+  // pulsar cualquier barra abre la lista de juegos que hay detrás
+  function initClicks() {
+    document.getElementById('stats').addEventListener('click', function (e) {
+      var y = state.year || null, p = state.player, b;
+      if ((b = e.target.closest('[data-genero]'))) return pick('genero', b.dataset.genero, y, p);
+      if ((b = e.target.closest('[data-fam]'))) {
+        var f = FAMS.filter(function (x) { return x.k === b.dataset.fam; })[0];
+        return window.GT_JG.showGames(p + ' · ' + f.k + (y ? ' · ' + y : ''), Registro.filter({ jugador: p, año: y }).filter(function (r) { return famOf(r.plataformaJugada) === f; }));
       }
+      if ((b = e.target.closest('[data-month]'))) {
+        var yy = parseInt(document.getElementById('stMonths').dataset.year, 10), m = parseInt(b.dataset.month, 10);
+        return window.GT_JG.showGames(p + ' · ' + Utils.monthName(m) + ' ' + yy, Registro.filter({ jugador: p, año: yy, mes: m }));
+      }
+      if ((b = e.target.closest('.st-live [data-game]'))) window.GT.GameDetailModal.open(b.dataset.game);
     });
   }
 
@@ -254,311 +265,15 @@
     window.GT_JG.showGames((player !== 'All' ? player + ' · ' : '') + val + (kind !== 'año' && year ? ' · ' + year : ''), list);
   }
 
-  /* ── LOGROS ─────────────────────────────────────────────── */
-  function playerColor(p) {
-    return p === 'David' ? 'var(--player-david)' : p === 'Javi' ? 'var(--player-javi)' : p === 'Mery' ? 'var(--player-mery)' : 'var(--txt1)';
-  }
-
-  function computeLogros(year, player) {
-    var allReg  = Registro.getAll();
-    var entries = allReg.slice();
-    if (year) entries = entries.filter(function(r){ return r.año === year; });
-    if (player && player !== 'All') entries = entries.filter(function(r){ return r.jugador === player; });
-
-    var logros = [];
-
-    /* 1 — Rey del Maratón: registro individual con más horas */
-    var conHoras = entries.filter(function(r){ return parseFloat(r.horas) > 0; })
-                          .sort(function(a,b){ return (parseFloat(b.horas)||0) - (parseFloat(a.horas)||0); });
-    if (conHoras.length) {
-      var top1 = conHoras[0];
-      var game1 = Biblioteca.getById(top1.juegoId);
-      logros.push({
-        badge: '🎮 REY DEL MARATÓN', desc: 'Más horas en un único juego',
-        visual: { type: 'cover', src: game1 && game1.portadaUrl ? game1.portadaUrl : '',
-                  pos: game1 && game1.portadaPos ? game1.portadaPos : 'center top',
-                  bg: 'linear-gradient(160deg,#050d1f,#0b1c38)' },
-        gameId: top1.juegoId,
-        winner: top1.jugador, valColor: '#4facfe',
-        detail: game1 ? game1.titulo : '—',
-        value:  top1.horas + 'h'
-      });
-    } else {
-      logros.push({ badge:'🎮 REY DEL MARATÓN', desc:'Más horas en un único juego',
-        visual:{ type:'icon', icon:'🎮', bg:'linear-gradient(160deg,#050d1f,#0b1c38)' },
-        winner:null, detail:'Sin datos', value:'' });
-    }
-
-    /* 2 — Maratonista: más horas totales en el período */
-    var horasPJ = {};
-    entries.forEach(function(r){ horasPJ[r.jugador] = (horasPJ[r.jugador]||0) + (parseFloat(r.horas)||0); });
-    var topH = Object.keys(horasPJ).sort(function(a,b){ return horasPJ[b]-horasPJ[a]; })[0];
-    if (topH) {
-      logros.push({
-        badge: '⏱ MARATONISTA', desc: 'Más horas totales en el período',
-        visual: { type: 'bigtext', text: Math.round(horasPJ[topH]) + 'h',
-                  bg: 'linear-gradient(135deg,#0d0522,#1c0d40)' },
-        winner: topH, valColor: '#c084fc',
-        detail: Math.round(horasPJ[topH]) + ' horas jugadas',
-        value:  Math.round(horasPJ[topH]) + 'h'
-      });
-    } else {
-      logros.push({ badge:'⏱ MARATONISTA', desc:'Más horas totales',
-        visual:{ type:'icon', icon:'⏱', bg:'linear-gradient(135deg,#0d0522,#1c0d40)' },
-        winner:null, detail:'Sin datos', value:'' });
-    }
-
-    /* 3 — Platinero: más platinos (siempre global) */
-    var platPJ = {};
-    allReg.filter(function(r){ return r.estado === 'Platinado'; }).forEach(function(r){
-      if (!platPJ[r.jugador]) platPJ[r.jugador] = new Set();
-      platPJ[r.jugador].add(r.juegoId);
-    });
-    var topP = Object.keys(platPJ).sort(function(a,b){ return platPJ[b].size - platPJ[a].size; })[0];
-    logros.push({
-      badge: '🏆 PLATINERO', desc: 'Más trofeos platino — ranking global',
-      visual: { type: 'trophy', src: 'platinum-trophy.png', bg: 'linear-gradient(135deg,#020818,#060e2e)' },
-      winner: topP || null, valColor: '#93c5fd',
-      detail: topP ? platPJ[topP].size + ' platino' + (platPJ[topP].size !== 1 ? 's' : '') : 'Sin platinos aún',
-      value:  topP ? platPJ[topP].size : ''
-    });
-
-    /* 4 — Completista: más juegos terminados o platinados */
-    var termPJ = {};
-    entries.filter(function(r){ return r.estado === 'Terminado' || r.estado === 'Platinado'; }).forEach(function(r){
-      if (!termPJ[r.jugador]) termPJ[r.jugador] = new Set();
-      termPJ[r.jugador].add(r.juegoId);
-    });
-    var topC = Object.keys(termPJ).sort(function(a,b){ return termPJ[b].size - termPJ[a].size; })[0];
-    if (topC) {
-      logros.push({
-        badge: '✅ COMPLETISTA', desc: 'Más juegos completados o platinados',
-        visual: { type: 'bigtext', text: termPJ[topC].size + '',
-                  sub: termPJ[topC].size !== 1 ? 'juegos' : 'juego',
-                  bg: 'linear-gradient(135deg,#041a0c,#082e14)' },
-        winner: topC, valColor: '#4ade80',
-        detail: termPJ[topC].size + ' juego' + (termPJ[topC].size !== 1 ? 's' : '') + ' completado' + (termPJ[topC].size !== 1 ? 's' : ''),
-        value:  termPJ[topC].size
-      });
-    } else {
-      logros.push({ badge:'✅ COMPLETISTA', desc:'Más juegos completados',
-        visual:{ type:'icon', icon:'✅', bg:'linear-gradient(135deg,#041a0c,#082e14)' },
-        winner:null, detail:'Sin datos', value:'' });
-    }
-
-    /* 5 — El Exigente: nota media más baja */
-    var notasPJ = {};
-    entries.filter(function(r){ return r.nota !== null && r.nota !== '' && r.nota !== undefined; }).forEach(function(r){
-      if (!notasPJ[r.jugador]) notasPJ[r.jugador] = [];
-      notasPJ[r.jugador].push(parseFloat(r.nota));
-    });
-    var jugConNotas = Object.keys(notasPJ).filter(function(p){ return notasPJ[p].length >= 2; });
-    if (jugConNotas.length) {
-      var avgFn = function(arr){ return arr.reduce(function(s,x){return s+x;},0)/arr.length; };
-      var topE = jugConNotas.sort(function(a,b){ return avgFn(notasPJ[a]) - avgFn(notasPJ[b]); })[0];
-      var avgE = avgFn(notasPJ[topE]).toFixed(1).replace('.', ',');
-      logros.push({
-        badge: '⭐ EL EXIGENTE', desc: 'Nota media más baja — el más crítico',
-        visual: { type: 'bigtext', text: avgE, sub: '/ 10', bg: 'linear-gradient(135deg,#1a0505,#2e0808)' },
-        winner: topE, valColor: '#f87171',
-        detail: 'Media de ' + avgE + ' puntos sobre 10',
-        value:  avgE + ' ★'
-      });
-    } else {
-      logros.push({ badge:'⭐ EL EXIGENTE', desc:'Nota media más baja',
-        visual:{ type:'icon', icon:'⭐', bg:'linear-gradient(135deg,#1a0505,#2e0808)' },
-        winner:null, detail:'Necesita al menos 2 notas', value:'' });
-    }
-
-    /* 6 — El Optimista: nota media más alta */
-    var playersWithNotas = Object.keys(notasPJ).filter(function(p){ return notasPJ[p].length >= 2; });
-    if (playersWithNotas.length) {
-      var avgFnO = function(arr){ return arr.reduce(function(s,x){return s+x;},0)/arr.length; };
-      var topO = playersWithNotas.slice().sort(function(a,b){ return avgFnO(notasPJ[b]) - avgFnO(notasPJ[a]); })[0];
-      var avgO = avgFnO(notasPJ[topO]).toFixed(1).replace('.', ',');
-      logros.push({
-        badge: '🌟 EL OPTIMISTA', desc: 'Nota media más alta — el más generoso',
-        visual: { type: 'bigtext', text: avgO, sub: '/ 10', bg: 'linear-gradient(135deg,#1a1400,#2e2500)' },
-        winner: topO, valColor: '#fbbf24',
-        detail: 'Media de ' + avgO + ' puntos sobre 10',
-        value:  avgO + ' ★'
-      });
-    } else {
-      logros.push({ badge:'🌟 EL OPTIMISTA', desc:'Nota media más alta',
-        visual:{ type:'icon', icon:'🌟', bg:'linear-gradient(135deg,#1a1400,#2e2500)' },
-        winner:null, detail:'Necesita al menos 2 notas', value:'' });
-    }
-
-    /* 7 — Rejugador: más juegos con estado Rejugado */
-    var rejPJ = {};
-    entries.filter(function(r){ return r.estado === 'Rejugado'; }).forEach(function(r){
-      if (!rejPJ[r.jugador]) rejPJ[r.jugador] = new Set();
-      rejPJ[r.jugador].add(r.juegoId);
-    });
-    var topRej = Object.keys(rejPJ).sort(function(a,b){ return rejPJ[b].size - rejPJ[a].size; })[0];
-    if (topRej) {
-      logros.push({
-        badge: '🔥 REJUGADOR', desc: 'Más juegos completados más de una vez',
-        visual: { type: 'bigtext', text: rejPJ[topRej].size + '',
-                  sub: rejPJ[topRej].size !== 1 ? 'juegos' : 'juego',
-                  bg: 'linear-gradient(135deg,#1a0505,#2e0808)' },
-        winner: topRej, valColor: '#fb923c',
-        detail: rejPJ[topRej].size + ' juego' + (rejPJ[topRej].size !== 1 ? 's' : '') + ' rejugado' + (rejPJ[topRej].size !== 1 ? 's' : ''),
-        value:  rejPJ[topRej].size
-      });
-    } else {
-      logros.push({ badge:'🔥 REJUGADOR', desc:'Más juegos completados más de una vez',
-        visual:{ type:'icon', icon:'🔥', bg:'linear-gradient(135deg,#1a0505,#2e0808)' },
-        winner:null, detail:'Nadie ha rejugado aún', value:'' });
-    }
-
-    /* 9 — La nota más baja: registro individual con la puntuación más baja */
-    var conNotaMin = entries.filter(function(r){ return r.nota !== null && r.nota !== '' && r.nota !== undefined; })
-                            .sort(function(a,b){ return parseFloat(a.nota) - parseFloat(b.nota); });
-    if (conNotaMin.length) {
-      var minEntry = conNotaMin[0];
-      var minGame  = Biblioteca.getById(minEntry.juegoId);
-      var minNota  = parseFloat(minEntry.nota).toFixed(1).replace('.', ',');
-      logros.push({
-        badge: '💀 LA NOTA MÁS BAJA', desc: 'La puntuación individual más baja puesta',
-        visual: minGame && minGame.portadaUrl
-          ? { type: 'cover', src: minGame.portadaUrl, pos: minGame.portadaPos || 'center top', bg: 'linear-gradient(160deg,#1a0505,#2e0808)' }
-          : { type: 'bigtext', text: minNota, sub: '/ 10', bg: 'linear-gradient(160deg,#1a0505,#2e0808)' },
-        gameId: minGame ? minEntry.juegoId : null,
-        winner: minEntry.jugador, valColor: '#f87171',
-        detail: (minGame ? minGame.titulo : '—') + ' — ' + minNota + ' / 10',
-        value:  minNota + ' / 10'
-      });
-    } else {
-      logros.push({ badge:'💀 LA NOTA MÁS BAJA', desc:'La puntuación individual más baja puesta',
-        visual:{ type:'icon', icon:'💀', bg:'linear-gradient(160deg,#1a0505,#2e0808)' },
-        winner:null, detail:'Sin notas registradas', value:'' });
-    }
-
-    /* 10 — El Retro: jugador cuyo juego más antiguo tiene el año de lanzamiento más bajo */
-    var retroPJ = {}; /* jugador → { año, titulo } */
-    entries.forEach(function(r) {
-      var g = Biblioteca.getById(r.juegoId);
-      if (!g || !g.fechaLanzamiento) return;
-      var yr = parseInt((g.fechaLanzamiento + '').substring(0, 4));
-      if (!yr || isNaN(yr)) return;
-      if (!retroPJ[r.jugador] || yr < retroPJ[r.jugador].año) {
-        retroPJ[r.jugador] = { año: yr, titulo: g.titulo, portadaUrl: g.portadaUrl || '', portadaPos: g.portadaPos || 'center top', juegoId: r.juegoId };
-      }
-    });
-    var retroPlayers = Object.keys(retroPJ);
-    if (retroPlayers.length) {
-      var topRetro = retroPlayers.sort(function(a,b){ return retroPJ[a].año - retroPJ[b].año; })[0];
-      var retroGame = retroPJ[topRetro];
-      logros.push({
-        badge: '🕹️ EL RETRO', desc: 'Juego más antiguo jugado — viaje al pasado',
-        visual: retroGame.portadaUrl
-          ? { type: 'cover', src: retroGame.portadaUrl, pos: retroGame.portadaPos, bg: 'linear-gradient(160deg,#12080a,#251018)' }
-          : { type: 'bigtext', text: retroGame.año + '', sub: 'año', bg: 'linear-gradient(160deg,#12080a,#251018)' },
-        gameId: retroGame.juegoId || null,
-        winner: topRetro, valColor: '#f59e0b',
-        detail: retroGame.titulo + ' (' + retroGame.año + ')',
-        value:  retroGame.año + ''
-      });
-    } else {
-      logros.push({ badge:'🕹️ EL RETRO', desc:'Juego más antiguo jugado',
-        visual:{ type:'icon', icon:'🕹️', bg:'linear-gradient(160deg,#12080a,#251018)' },
-        winner:null, detail:'Sin datos de lanzamiento', value:'' });
-    }
-
-    /* 9 — Explorador: más géneros distintos jugados */
-    var genPJ = {};
-    entries.forEach(function(r){
-      var g = Biblioteca.getById(r.juegoId);
-      if (!g || !g.generos) return;
-      if (!genPJ[r.jugador]) genPJ[r.jugador] = new Set();
-      g.generos.forEach(function(gen){ genPJ[r.jugador].add(gen); });
-    });
-    var topG = Object.keys(genPJ).sort(function(a,b){ return genPJ[b].size - genPJ[a].size; })[0];
-    if (topG) {
-      logros.push({
-        badge: '🌍 EXPLORADOR', desc: 'Más géneros distintos explorados',
-        visual: { type: 'bigtext', text: genPJ[topG].size + '',
-                  sub: genPJ[topG].size !== 1 ? 'géneros' : 'género',
-                  bg: 'linear-gradient(135deg,#031420,#04203a)' },
-        winner: topG, valColor: '#22d3ee',
-        detail: genPJ[topG].size + ' géneros distintos',
-        value:  genPJ[topG].size + ' géneros'
-      });
-    } else {
-      logros.push({ badge:'🌍 EXPLORADOR', desc:'Más géneros explorados',
-        visual:{ type:'icon', icon:'🌍', bg:'linear-gradient(135deg,#031420,#04203a)' },
-        winner:null, detail:'Sin datos', value:'' });
-    }
-
-    return logros;
-  }
-
-  // los récords con un año (El Retro) no llevan punto de miles
-  function noYear(v) { return /^\d{4}$/.test(String(v)) ? String(v) : Utils.miles(v); }
-  function renderLogros(year, player) {
-    var el     = document.getElementById('logrosGrid');
-    var logros = computeLogros(year, player);
-
-    el.innerHTML = logros.map(function(l) {
-      var v = l.visual;
-
-      /* Banner visual content */
-      var bannerInner = '';
-      if (v.type === 'cover' && v.src) {
-        bannerInner = '<img class="logro-banner__cover" src="' + Utils.escapeHtml(v.src) +
-          '" style="object-position:' + Utils.escapeHtml(v.pos || 'center top') +
-          '" onerror="this.style.display=\'none\'">';
-      } else if (v.type === 'trophy') {
-        bannerInner = '<img class="logro-banner__trophy" src="' + Utils.escapeHtml(v.src) + '" alt="Platino" onerror="this.style.display=\'none\'">';
-      } else if (v.type === 'bigtext') {
-        bannerInner = '<div class="logro-banner__bignum">' + Utils.escapeHtml(noYear(v.text)) +
-          (v.sub ? '<span class="logro-banner__bignumsub">' + Utils.escapeHtml(v.sub) + '</span>' : '') +
-          '</div>';
-      } else {
-        bannerInner = '<div class="logro-banner__icon">' + (v.icon || '') + '</div>';
-      }
-
-      /* Footer */
-      var footerHtml;
-      if (l.winner) {
-        footerHtml =
-          '<div class="logro-footer__info">' +
-            '<div class="logro-winner-name" style="color:' + playerColor(l.winner) + '">' + Utils.escapeHtml(l.winner) + '</div>' +
-            '<div class="logro-winner-detail">' + Utils.escapeHtml(l.detail) + '</div>' +
-          '</div>' +
-          '<div class="logro-footer__val" style="color:' + (l.valColor || 'var(--txt2)') + '">' + Utils.escapeHtml(noYear(l.value)) + '</div>';
-      } else {
-        footerHtml =
-          '<div class="logro-footer__info">' +
-            '<div class="logro-winner-name" style="color:var(--txt3);font-size:0.85rem">Sin datos</div>' +
-            '<div class="logro-winner-detail">' + Utils.escapeHtml(l.detail || '') + '</div>' +
-          '</div>';
-      }
-
-      var cardClick = l.gameId
-        ? ' onclick="window.GT.GameDetailModal.open(\'' + l.gameId.replace(/'/g, "\\'") + '\')" style="cursor:pointer" title="Ver ficha del juego"'
-        : '';
-      return '<div class="logro-card"' + cardClick + '>' +
-        '<div class="logro-banner" style="background:' + v.bg + '">' +
-          bannerInner +
-          '<div class="logro-banner__overlay">' +
-            '<span class="logro-badge">' + Utils.escapeHtml(l.badge) + '</span>' +
-            '<span class="logro-desc-badge">' + Utils.escapeHtml(l.desc) + '</span>' +
-          '</div>' +
-        '</div>' +
-        '<div class="logro-footer">' + footerHtml + '</div>' +
-      '</div>';
-    }).join('');
-  }
-
   /* ── RENDER ALL ─────────────────────────────────────────── */
   function renderAll(year, player) {
-    renderStatCards(year, player);
-    renderGenreChart(year, player);
-    renderPlatformChart(year, player);
+    renderLive(player);
+    renderVs(player, year);
+    renderMonths(player, year);
+    renderGenres(player, year);
+    renderPlats(player, year);
+    renderDuel(year);
     renderHistoryChart(player);
-    renderLogros(year, player);
   }
 
   /* ── EXPORT / IMPORT ────────────────────────────────────── */
@@ -673,6 +388,7 @@
 
     buildYearOptions();
     buildPlayerTabs();
+    initClicks();
 
     /* Pre-select active player from localStorage */
     var ap = window.GT.getActivePlayer ? window.GT.getActivePlayer() : null;

@@ -116,6 +116,29 @@ window.GT.Utils = (function () {
            playerBadge, statusBadge, escapeHtml, platformBadgesHtml, genreBadgesHtml, MONTHS };
 })();
 
+/* ── UNA NOTA POR JUGADOR Y JUEGO ───────────────────────────────
+   Si alguien rejuega un juego, solo cuenta la nota de la primera vez que lo puntuó.
+   Las notas de partidas posteriores se apartan a notaRepetida (no se borran de Firestore). */
+function hasNota(r) { return r.nota !== null && r.nota !== undefined && r.nota !== ''; }
+function regOrder(a, b) { return (a.año - b.año) || (a.mes - b.mes) || String(a.fechaRegistro || '').localeCompare(String(b.fechaRegistro || '')); }
+function firstScoresOnly(list) {
+  var seen = {};
+  list.slice().sort(regOrder).forEach(function (r) {
+    if (!hasNota(r)) return;
+    var k = r.jugador + '|' + r.juegoId;
+    if (seen[k]) { r.notaRepetida = r.nota; r.nota = null; } else seen[k] = true;
+  });
+  return list;
+}
+(function () {
+  var t = firstScoresOnly([
+    { jugador: 'D', juegoId: 'g', año: 2026, mes: 1, nota: 10 },
+    { jugador: 'D', juegoId: 'g', año: 2019, mes: 4, nota: 9 },
+    { jugador: 'J', juegoId: 'g', año: 2025, mes: 1, nota: 7 }
+  ]);
+  console.assert(t[0].nota === null && t[0].notaRepetida === 10 && t[1].nota === 9 && t[2].nota === 7, 'firstScoresOnly');
+})();
+
 /* ── FIRESTORE SYNC ─────────────────────────────────────────── */
 window.GT.FirestoreSync = (function () {
   var bibReady = false;
@@ -138,9 +161,9 @@ window.GT.FirestoreSync = (function () {
     }, function (err) { console.error('Biblioteca listener:', err); });
 
     db.collection('registro').onSnapshot(function (snap) {
-      window.GT._cache.registro = snap.docs.map(function (d) {
+      window.GT._cache.registro = firstScoresOnly(snap.docs.map(function (d) {
         return Object.assign({ id: d.id }, d.data());
-      });
+      }));
       if (!regReady) { regReady = true; checkReady(); }
       else { window.GT._notifyChange(); }
     }, function (err) { console.error('Registro listener:', err); });
@@ -232,12 +255,26 @@ window.GT.Registro = (function () {
   function getAll()    { return (window.GT._cache.registro || []).slice(); }
   function getById(id) { return getAll().find(function(r){ return r.id === id; }) || null; }
 
+  // primera partida puntuada de ese jugador en ese juego (sin contar la entrada exceptId)
+  function firstNota(jugador, juegoId, exceptId) {
+    return getAll().filter(function(r){ return r.jugador === jugador && r.juegoId === juegoId && r.id !== exceptId && hasNota(r); })
+      .sort(regOrder)[0] || null;
+  }
+  // una partida posterior a la primera puntuada no guarda nota
+  function dropRepeatNota(entry, data) {
+    var f = hasNota(entry) && firstNota(entry.jugador, entry.juegoId, entry.id);
+    if (!f || regOrder(f, entry) > 0) return;
+    data.nota = null;
+    if (window.GT.Toast) window.GT.Toast.show('Ya lo puntuaste la primera vez que lo jugaste: esa nota es la que cuenta', 'error');
+  }
+
   function add(data) {
     var id    = Utils.uuid();
     var entry = Object.assign(
       { horas:null, comentario:'', plataformaJugada:'', fechaRegistro:new Date().toISOString() },
       data, { id:id }
     );
+    dropRepeatNota(entry, entry);
     window.GT.db.collection('registro').doc(id).set(entry)
       .catch(function(e){ console.error('Registro.add:', e); });
     return entry;
@@ -246,6 +283,7 @@ window.GT.Registro = (function () {
   function update(id, data) {
     var cache = window.GT._cache.registro;
     var idx   = cache.findIndex(function(r){ return r.id === id; });
+    if (idx !== -1) dropRepeatNota(Object.assign({}, cache[idx], data), data);
     if (idx !== -1) cache[idx] = Object.assign({}, cache[idx], data);
     window.GT.db.collection('registro').doc(id).update(data)
       .catch(function(e){ console.error('Registro.update:', e); });
@@ -359,7 +397,7 @@ window.GT.Registro = (function () {
                               .sort(function(a,b){ return b.count - a.count; });
   }
 
-  return { getAll, getById, add, update, remove, filter, getNotaMedia, getRanking, getStats, getGenreStats, getPlatformStats };
+  return { getAll, getById, add, update, remove, filter, firstNota, getNotaMedia, getRanking, getStats, getGenreStats, getPlatformStats };
 })();
 
 /* ── TOAST ──────────────────────────────────────────────────── */
@@ -423,7 +461,30 @@ window.GT.GameDetailModal = (function () {
     document.body.appendChild(overlay);
     overlay.addEventListener('click', function(e){ if (e.target === overlay) close(); });
     document.getElementById('gdClose').addEventListener('click', close);
+    // «Editar» abre el formulario aquí mismo en vez de ir a Biblioteca (Ctrl+clic sigue yendo)
+    document.getElementById('gdEditLink').addEventListener('click', function (e) {
+      if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+      e.preventDefault();
+      var id = _gdGameId;
+      close();
+      if (window.GT_Bib && window.GT_Bib.openEdit) window.GT_Bib.openEdit(id);
+      else editInPlace(id);
+    });
     document.addEventListener('keydown', function(e){ if (e.key === 'Escape') close(); });
+  }
+
+  // el formulario de Biblioteca dentro de una capa; al cerrarlo vuelve la ficha ya actualizada
+  function editInPlace(id) {
+    var box = document.createElement('div');
+    box.className = 'modal-overlay open gt-editframe';
+    box.innerHTML = '<iframe src="biblioteca.html?edit=' + encodeURIComponent(id) + '&embed=1" title="Editar juego"></iframe>';
+    document.body.appendChild(box);
+    window.addEventListener('message', function done(e) {
+      if (e.origin !== location.origin || !e.data || e.data.gt !== 'editClosed') return;
+      window.removeEventListener('message', done);
+      box.remove();
+      open(id);
+    });
   }
 
   function open(gameId) {
