@@ -12,7 +12,7 @@
   window.GT = window.GT || {};
 
   // Firebase Console → Configuración del proyecto → Cloud Messaging → Certificados push web → «Par de claves»
-  var VAPID_KEY = 'PEGA_AQUI_TU_CLAVE_VAPID';
+  var VAPID_KEY = 'BJfxjA-tdC3KsQwWoyKiaa1f2NdHzWGQF_fL207c7XSZUA2ASYPXB2hCSRCCyq8g-smqukOt0-sYC37charwrhU';
   var SDK = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js';
   var LS_TOKEN = 'GT_pushToken';
   var LS_SYNC  = 'GT_pushSync';   // «jugador|día» del último guardado del token
