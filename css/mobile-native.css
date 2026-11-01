@@ -255,12 +255,10 @@
   .r1-slide.is-on .r1-slide__bg { animation: none; }
   .r1-slide__shade { display: none; }
   /* panel de abajo: el cartel y el resto, sobre fondo propio */
-  .r1-sign, .r1-slide--der .r1-sign {
-    position: relative; inset: auto; z-index: 3; flex: none; width: 100%; margin: 0; padding: 0.7rem 0.75rem 0;
-    background: #05070d; border-top: 1px solid rgba(255, 200, 0, 0.25);
-  }
+  /* el cartel, arriba y de lado a lado (las esquinas de arriba las redondea la propia portada) */
+  .r1-sign, .r1-slide--der .r1-sign { order: -1; position: relative; inset: auto; z-index: 3; flex: none; width: 100%; margin: 0; padding: 0; }
   .r1-sign::before, .r1-sign::after, .r1-sign__board::before, .r1-sign__board::after { display: none; }
-  .r1-sign__board { animation: none; transform: none; width: min(320px, 100%); margin: 0 auto; }
-  .r1-slide__body { position: relative; inset: auto; z-index: 3; flex: none; padding: 0.55rem 0.6rem 0.7rem; background: #05070d; }
+  .r1-sign__board { animation: none; transform: none; width: 100%; margin: 0; border-radius: 14px 14px 0 0; padding: 0.6rem 0.75rem 0.65rem; }
+  .r1-slide__body { position: relative; inset: auto; z-index: 3; flex: none; padding: 0.65rem 0.6rem 0.7rem; background: #05070d; border-top: 1px solid rgba(255, 200, 0, 0.25); }
   .r1-count { background: #0b0f1a; }
 }
