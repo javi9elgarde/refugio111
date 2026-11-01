@@ -1,7 +1,7 @@
 /* Service worker de Refugio 111: la web se abre rápido, funciona sin conexión y muestra los avisos push.
    Los datos (Firestore, RAWG, IGDB) no pasan por aquí: Firestore guarda los suyos con su propia persistencia.
    Al cambiar este archivo, sube VERSION: se vuelven a descargar las páginas y se borra la caché vieja. */
-const VERSION = '20261101o';
+const VERSION = '20261101p';
 const CACHE = 'refugio111-' + VERSION;
 
 // las 28 páginas; los JS y CSS de cada una se sacan de su propio HTML (con su ?v=), así no hay que mantener otra lista
@@ -15,7 +15,7 @@ const PAGES = [
 ];
 // imágenes pequeñas que salen en todas partes (los fondos de varios MB se guardan solo al verlos)
 const EXTRA = [
-  'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'vaulty.webp', 'logonuevo.png', 'logonavegador.png',
+  'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'vaulty.webp', 'platinum-trophy.png', 'logonuevo.png', 'logonavegador.png',
   'logonuevorotar.png', 'logonuevosinrotar.png', 'cara_david.png', 'cara_javi.png', 'cara_mery.png'
 ];
 // librerías externas con versión fija: sin ellas la app no arranca sin conexión
