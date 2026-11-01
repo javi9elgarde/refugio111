@@ -1008,7 +1008,7 @@
           '</div>' : '') +
         '</div>' +
         '<div class="nuka-card__info"><div class="nuka-card__title">' + Utils.escapeHtml(g.titulo) + '</div>' +
-          '<span class="champ-score" style="color:' + Utils.scoreColor(c.nota) + '">' + Utils.formatScore(c.nota) + '</span></div>' +
+          '<span class="champ-score" style="--sc:' + Utils.scoreColor(c.nota) + '"><small>NOTA MEDIA</small><b><i>✦</i>' + Utils.formatScore(c.nota) + '<i>✦</i></b></span></div>' +
       '</div>';
     }).join('');
   }
