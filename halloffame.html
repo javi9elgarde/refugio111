@@ -68,10 +68,11 @@
   <header class="olimpo">
     <div class="olimpo__in">
       <div class="olimpo__col" aria-hidden="true"><i></i></div>
-      <div class="olimpo__trophy"><img src="vaulty.webp" alt="Trofeo VAULTY de Javi, Mery y David"></div>
+      <!-- el nombre ya va en el trofeo: el título queda solo para lectores de pantalla -->
       <div class="olimpo__c">
-        <div class="olimpo__eyebrow">✦ Refugio 111 · El Olimpo Videojueguil ✦</div>
         <h1 class="olimpo__title">VAULTY</h1>
+        <div class="olimpo__eyebrow">✦ Refugio 111 · El Olimpo Videojueguil ✦</div>
+        <div class="olimpo__trophy"><img src="vaulty.webp" alt="Trofeo VAULTY de Javi, Mery y David"></div>
         <p class="olimpo__sub">Los mejores juegos del año, elegidos por el Refugio</p>
       </div>
       <div class="olimpo__col" aria-hidden="true"><i></i></div>
@@ -188,14 +189,19 @@
   position: relative; overflow: hidden;
   padding: 2rem 1.5rem 0;
   background:
-    radial-gradient(ellipse 50% 90% at 22% 55%, rgba(245,200,66,0.20), transparent 70%),
+    radial-gradient(ellipse 45% 90% at 50% 55%, rgba(245,200,66,0.22), transparent 70%),
     radial-gradient(ellipse 70% 80% at 60% 0%, rgba(245,200,66,0.10), transparent 70%),
     linear-gradient(180deg, rgba(22,13,2,0.96), rgba(10,7,2,0.9));
 }
 .olimpo__in {
   position: relative; z-index: 1; max-width: 1150px; margin: 0 auto;
-  display: grid; grid-template-columns: 54px auto minmax(0, 1fr) 54px; align-items: stretch; gap: 2rem;
+  display: grid; grid-template-columns: 54px minmax(0, 1fr) 54px; align-items: stretch; gap: 2rem;
 }
+/* el trofeo en el centro, entre las dos columnas: frase arriba, trofeo y lema debajo */
+.olimpo__in { max-width: 980px; }
+.olimpo .olimpo__c { gap: 0.9rem; padding: 0.4rem 0 1.4rem; }
+.olimpo .olimpo__title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+.olimpo .olimpo__trophy { padding-bottom: 0; }
 /* columnas doradas: capitel, fuste estriado y basa */
 .olimpo__col { display: flex; flex-direction: column; align-items: center; min-height: 260px; }
 .olimpo__col::before, .olimpo__col::after {
