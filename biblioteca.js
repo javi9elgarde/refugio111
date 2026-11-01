@@ -1093,7 +1093,6 @@
     /* ── Stats ─────────────────────────────────────────────── */
     var stats = '';
     if (game.desarrollador)    stats += '<div class="detail-stat"><span class="detail-stat__icon">🏢</span><span>' + Utils.escapeHtml(game.desarrollador) + '</span></div>';
-    if (game.fechaEarlyAccess) stats += '<div class="detail-stat"><span class="detail-stat__icon">⚡</span><span>Early Access · ' + fmtDate(game.fechaEarlyAccess) + '</span></div>';
     if (game.fechaLanzamiento) stats += '<div class="detail-stat"><span class="detail-stat__icon">' + (game.fechaEarlyAccess ? '🚀' : '📅') + '</span><span>' + (game.fechaEarlyAccess ? '1.0 · ' : '') + fmtDate(game.fechaLanzamiento) + '</span></div>';
     if (game.duracion)         stats += '<div class="detail-stat"><span class="detail-stat__icon">⏱</span><span>' + Utils.formatDuracion(game.duracion, false) + '</span></div>';
 
@@ -1121,6 +1120,7 @@
           Utils.genreBadgesHtml(game.generos) +
         '</div>' +
         (stats ? '<div class="detail-stats-grid">' + stats + '</div>' : '') +
+        Utils.eaTimeline(game, fmtDate) +
         tipoHtml +
         (game.descripcion ? '<p class="detail-desc">' + Utils.escapeHtml(game.descripcion) + '</p>' : '') +
       '</div>';

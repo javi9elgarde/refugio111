@@ -5919,3 +5919,24 @@ html.gt-embed body > :not(#gameModal):not(.toast-container):not(script) { displa
 #gdModal .modal__body { padding: 0 1.5rem 1.5rem; }
 @media (max-width: 640px) { #gdModal .modal__body { padding: 0 0.85rem 1.25rem; } #gdModal .modal__title { font-size: clamp(0.6rem, 4vw, 0.9rem); padding: 0 1.75rem; } }
 #detailModal .detail-goty-banner, #gdModal .detail-goty-banner { margin-top: 0.5rem; }
+
+/* FICHA: línea de tiempo del Early Access (de la fecha de acceso anticipado a la 1.0) */
+.ea-time { margin: 0.9rem 0 0.4rem; padding: 0.85rem 1rem 0.8rem; border-radius: 12px; border: 1px solid rgba(168,85,247,0.35);
+  background: linear-gradient(100deg, rgba(168,85,247,0.12), rgba(34,197,94,0.06)); }
+.ea-time__hdr { font-family: 'Orbitron', sans-serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.18em; color: #c084fc; margin-bottom: 0.6rem; text-align: center; }
+.ea-time--done .ea-time__hdr { color: #a3e635; }
+.ea-time__row { display: grid; grid-template-columns: auto minmax(40px, 1fr) auto; align-items: center; gap: 0.8rem; }
+.ea-time__pt { display: flex; flex-direction: column; gap: 0.1rem; font-size: 0.78rem; white-space: nowrap; }
+.ea-time__pt b { font-size: 0.72rem; color: #c084fc; }
+.ea-time__pt span { color: var(--txt2, #cbd5e1); font-weight: 600; }
+.ea-time__pt--end { text-align: right; }
+.ea-time__pt--end b { color: #4ade80; }
+.ea-time:not(.ea-time--done) .ea-time__pt--end b { color: var(--txt3, #94a3b8); }
+.ea-time__bar { position: relative; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.ea-time__bar i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: linear-gradient(90deg, #a855f7, #22c55e); }
+.ea-time--live .ea-time__bar i { background: linear-gradient(90deg, #a855f7, #c084fc); box-shadow: 0 0 10px rgba(168,85,247,0.6); }
+.ea-time__cap { margin-top: 0.55rem; text-align: center; font-size: 0.76rem; color: var(--txt3, #94a3b8); }
+@media (max-width: 520px) {
+  .ea-time__row { grid-template-columns: 1fr 1fr; }
+  .ea-time__bar { grid-column: 1 / -1; grid-row: 2; }
+}

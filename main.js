@@ -118,6 +118,41 @@ window.GT.Utils = (function () {
     if (game.fechaEarlyAccess) return game.fechaEarlyAccess <= t && !(game.fechaLanzamiento && game.fechaLanzamiento <= t);
     return !!game.earlyAccess;
   }
+  // tiempo entre dos fechas AAAA-MM-DD en palabras: «1 año y 3 meses», «5 meses», «12 días»
+  function spanText(a, b) {
+    var d1 = new Date(a + 'T00:00:00'), d2 = new Date(b + 'T00:00:00');
+    if (isNaN(d1) || isNaN(d2) || d2 < d1) return '';
+    var m = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+    if (d2.getDate() < d1.getDate()) m--;
+    if (m < 1) { var n = Math.round((d2 - d1) / 864e5); return n + ' día' + (n === 1 ? '' : 's'); }
+    var y = Math.floor(m / 12), r = m % 12;
+    return (y ? y + ' año' + (y > 1 ? 's' : '') : '') + (y && r ? ' y ' : '') + (r ? r + ' mes' + (r > 1 ? 'es' : '') : '');
+  }
+  console.assert(spanText('2022-09-06', '2023-12-05') === '1 año y 2 meses' && spanText('2026-10-15', '2026-11-01') === '17 días', 'spanText');
+
+  // Línea de tiempo del Early Access para la ficha: de la fecha de acceso anticipado a la 1.0,
+  // con lo que duró (o lo que lleva). Solo para juegos con fecha de Early Access.
+  function eaTimeline(game, fmt) {
+    var ea = game && game.fechaEarlyAccess;
+    if (!ea) return '';
+    var t = new Date().toISOString().slice(0, 10), v = String(game.fechaLanzamiento || '');
+    var hasV = /^\d{4}-\d{2}-\d{2}$/.test(v), done = hasV && v <= t, started = ea <= t;
+    var pct = done ? 100 : !started ? 0 : hasV
+      ? Math.max(4, Math.min(96, Math.round((new Date(t) - new Date(ea)) / (new Date(v) - new Date(ea)) * 100))) : 60;
+    var cap = done ? '⏳ ' + spanText(ea, v) + ' en acceso anticipado'
+      : started ? '⏳ Lleva ' + spanText(ea, t) + ' en acceso anticipado' + (hasV ? ' · quedan ' + spanText(t, v) + ' para la 1.0' : '')
+      : '⚡ Sale en acceso anticipado dentro de ' + spanText(t, ea);
+    return '<div class="ea-time' + (done ? ' ea-time--done' : started ? ' ea-time--live' : '') + '">' +
+      '<div class="ea-time__hdr">' + (done ? 'PASÓ POR EARLY ACCESS' : started ? 'EN EARLY ACCESS AHORA' : 'EARLY ACCESS ANUNCIADO') + '</div>' +
+      '<div class="ea-time__row">' +
+        '<div class="ea-time__pt"><b>⚡ Early Access</b><span>' + fmt(ea) + '</span></div>' +
+        '<div class="ea-time__bar"><i style="width:' + pct + '%"></i></div>' +
+        '<div class="ea-time__pt ea-time__pt--end"><b>🚀 1.0' + (done ? '' : ' prevista') + '</b><span>' + (v ? fmt(v) : 'Sin fecha') + '</span></div>' +
+      '</div>' +
+      (cap ? '<div class="ea-time__cap">' + cap + '</div>' : '') +
+    '</div>';
+  }
+
   // ¿Esta partida del Registro se jugó antes de la 1.0? Solo en juegos con Early Access (fecha o casilla),
   // y por mes: si se registró el mismo mes en que salió la 1.0 no se sabe, así que no se marca
   function playedInEarlyAccess(r, game) {
@@ -135,7 +170,7 @@ window.GT.Utils = (function () {
   // 14213 → 14.213, también dentro de textos como «5957h» (no usar con años)
   function miles(v) { return String(v == null ? '' : v).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
   console.assert(miles(14213) === '14.213' && miles(5957) === '5.957' && miles('5957h') === '5.957h' && miles('8,35') === '8,35', 'miles');
-  return { uuid, inEarlyAccess, playedInEarlyAccess, trailerUrl, thumb, quietSide, miles, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
+  return { uuid, inEarlyAccess, playedInEarlyAccess, eaTimeline, trailerUrl, thumb, quietSide, miles, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
            playerBadge, statusBadge, escapeHtml, platformBadgesHtml, genreBadgesHtml, MONTHS };
 })();
 
@@ -572,7 +607,6 @@ window.GT.GameDetailModal = (function () {
     /* Stats */
     var stats = '';
     if (game.desarrollador)    stats += '<div class="detail-stat"><span class="detail-stat__icon">🏢</span><span>' + Utils.escapeHtml(game.desarrollador) + '</span></div>';
-    if (game.fechaEarlyAccess) stats += '<div class="detail-stat"><span class="detail-stat__icon">⚡</span><span>Early Access · ' + fmtDate(game.fechaEarlyAccess) + '</span></div>';
     if (game.fechaLanzamiento) stats += '<div class="detail-stat"><span class="detail-stat__icon">' + (game.fechaEarlyAccess ? '🚀' : '📅') + '</span><span>' + (game.fechaEarlyAccess ? '1.0 · ' : '') + fmtDate(game.fechaLanzamiento) + '</span></div>';
     if (game.duracion)         stats += '<div class="detail-stat"><span class="detail-stat__icon">⏱</span><span>' + Utils.formatDuracion(game.duracion, false) + '</span></div>';
 
@@ -593,6 +627,7 @@ window.GT.GameDetailModal = (function () {
           Utils.genreBadgesHtml(game.generos) +
         '</div>' +
         (stats ? '<div class="detail-stats-grid">' + stats + '</div>' : '') +
+        window.GT.Utils.eaTimeline(game, fmtDate) +
         tipoHtml +
         (game.descripcion ? '<p class="detail-desc">' + Utils.escapeHtml(game.descripcion) + '</p>' : '') +
       '</div>';
