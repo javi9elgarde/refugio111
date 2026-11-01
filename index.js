@@ -965,30 +965,47 @@
     }).join('');
   }
 
-  /* ── SALÓN DE CAMPEONES: el nº 1 del ranking VAULTY de cada año ya terminado (el año en curso aún no tiene campeón) ── */
-  function renderCampeones() {
-    var el = document.getElementById('campeonesGrid');
-    if (!el) return;
+  /* ── SALÓN DE CAMPEONES: el nº 1 del ranking VAULTY de cada año ya terminado (el año en curso aún no tiene campeón)
+     settings/campeones = { fotos: { año: { url, pos } } } — encuadre o imagen elegidos a mano para cada año */
+  var champ = { fotos: {} }, champDraft = null;
+
+  function campeonesList() {
     var yearSet = {}, now = new Date().getFullYear();
     Registro.getAll().forEach(function(r) { if (r.año && r.año < now) yearSet[r.año] = true; });
-    var champs = Object.keys(yearSet).map(Number).sort(function(a, b) { return b - a; }).map(function(y) {
+    return Object.keys(yearSet).map(Number).sort(function(a, b) { return b - a; }).map(function(y) {
       var top = Registro.getRanking(y)[0];
       var game = top && Biblioteca.getById(top.juegoId);
       return game ? { year: y, game: game, nota: top.notaMedia } : null;
     }).filter(Boolean);
+  }
+
+  function renderCampeones() {
+    var el = document.getElementById('campeonesGrid');
+    if (!el) return;
+    var editing = !!champDraft, st = champDraft || champ;
+    document.getElementById('campeones').classList.toggle('is-editing', editing);
+    document.getElementById('campeonesEdit').hidden = editing;
+    document.getElementById('campeonesEditor').hidden = !editing;
+    var champs = campeonesList();
     if (!champs.length) {
       el.innerHTML = '<div class="nuka-empty"><span class="nuka-empty__icon">🏆</span>EL PRIMER VAULTY SE ENTREGA AL ACABAR EL AÑO</div>';
       return;
     }
     el.innerHTML = champs.map(function(c) {
-      var g = c.game, sid = g.id.replace(/'/g, "\\'");
-      return '<div class="nuka-card champ-card" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" title="' + Utils.escapeHtml(g.titulo) + '">' +
+      var g = c.game, sid = g.id.replace(/'/g, "\\'"), foto = st.fotos[c.year] || {};
+      var url = foto.url || g.portadaUrl, pos = foto.pos || g.portadaPos || 'center top', xy = honorPos(foto.pos);
+      return '<div class="nuka-card champ-card" data-year="' + c.year + '"' + (editing ? '' : ' onclick="window.GT.GameDetailModal.open(\'' + sid + '\')"') + ' title="' + Utils.escapeHtml(g.titulo) + '">' +
         '<div class="nuka-card__cover">' +
-          (g.portadaUrl
-            ? '<img src="' + Utils.escapeHtml(Utils.thumb(g.portadaUrl, 640)) + '" alt="" loading="lazy" style="object-position:' + Utils.escapeHtml(g.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">'
+          (url
+            ? '<img src="' + Utils.escapeHtml(Utils.thumb(url, 640)) + '" alt="" loading="lazy" style="object-position:' + Utils.escapeHtml(pos) + '" onerror="this.style.display=\'none\'">'
             : '<div class="nuka-card__cover-ph">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>') +
           '<div class="nuka-card__glass"></div>' +
           '<div class="champ-year"><small>VAULTY</small>' + c.year + '</div>' +
+          (editing ? '<div class="honor-edit">' +
+            '<label>↔<input type="range" min="0" max="100" value="' + xy[0] + '" data-axis="0" aria-label="Mover imagen en horizontal"></label>' +
+            '<label>↕<input type="range" min="0" max="100" value="' + xy[1] + '" data-axis="1" aria-label="Mover imagen en vertical"></label>' +
+            '<button type="button" data-champ-img>🖼️ Cambiar imagen</button>' +
+          '</div>' : '') +
         '</div>' +
         '<div class="nuka-card__info"><div class="nuka-card__title">' + Utils.escapeHtml(g.titulo) + '</div>' +
           '<span class="champ-score" style="color:' + Utils.scoreColor(c.nota) + '">' + Utils.formatScore(c.nota) + '</span></div>' +
@@ -999,8 +1016,15 @@
   function initCampeones() {
     var modal = document.getElementById('campeonesModal'), opener = document.getElementById('campeonesOpen');
     if (!modal || !opener) return;
+    window.GT.db.collection('settings').doc('campeones').get().then(function(doc) {
+      champ = { fotos: (doc.exists && doc.data().fotos) || {} };
+      renderCampeones();
+    }).catch(function(err) { console.error('campeones:', err); });
+
     function close() {
       if (modal.hidden) return;
+      if (champDraft && !confirm('¿Salir sin guardar los cambios del Salón de Campeones?')) return;
+      champDraft = null;
       modal.hidden = true; document.body.classList.remove('honor-open'); opener.focus();
     }
     opener.addEventListener('click', function() {
@@ -1013,6 +1037,43 @@
     document.addEventListener('keydown', function(e) {
       var gd = document.getElementById('gdModal'); // con la ficha abierta, Escape solo cierra la ficha
       if (e.key === 'Escape' && !(gd && getComputedStyle(gd).display !== 'none')) close();
+    });
+
+    document.getElementById('campeonesEdit').addEventListener('click', function() {
+      champDraft = { fotos: JSON.parse(JSON.stringify(champ.fotos)) };
+      renderCampeones();
+    });
+    document.getElementById('campeonesCancel').addEventListener('click', function() { champDraft = null; renderCampeones(); });
+    document.getElementById('campeonesSave').addEventListener('click', function() {
+      var btn = this, next = champDraft;
+      btn.disabled = true;
+      window.GT.db.collection('settings').doc('campeones').set(next).then(function() {
+        champ = next; champDraft = null; renderCampeones();
+        if (window.GT.Toast) window.GT.Toast.show('🏆 Salón de Campeones guardado');
+      }).catch(function(err) { console.error('campeones:', err); alert('No se pudo guardar el Salón de Campeones'); })
+        .then(function() { btn.disabled = false; });
+    });
+    var grid = document.getElementById('campeonesGrid');
+    grid.addEventListener('input', function(e) { // mover la imagen dentro de la tarjeta, en vivo
+      var card = e.target.closest('.nuka-card');
+      if (!champDraft || !card || !e.target.dataset.axis) return;
+      var r = card.querySelectorAll('input[type=range]'), pos = r[0].value + '% ' + r[1].value + '%';
+      var img = card.querySelector('.nuka-card__cover img');
+      if (img) img.style.objectPosition = pos;
+      var f = champDraft.fotos[card.dataset.year] = champDraft.fotos[card.dataset.year] || {};
+      f.pos = pos;
+    });
+    grid.addEventListener('click', function(e) {
+      var card = e.target.closest('.nuka-card');
+      if (!champDraft || !card || !e.target.closest('[data-champ-img]')) return;
+      var f = champDraft.fotos[card.dataset.year] || {};
+      var url = prompt('Enlace de la imagen para el VAULTY ' + card.dataset.year + ' (vacío = la portada del juego):', f.url || '');
+      if (url === null) return;
+      url = url.trim();
+      if (url && !/^https?:\/\//i.test(url)) { alert('El enlace tiene que empezar por http:// o https://'); return; }
+      f.url = url;
+      champDraft.fotos[card.dataset.year] = f;
+      renderCampeones();
     });
   }
 

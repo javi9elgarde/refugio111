@@ -128,8 +128,18 @@
           <div class="nuka-header__eyebrow">🏆 REFUGIO 111 · TODOS LOS VAULTY 🏆</div>
           <h2 class="nuka-header__title">SALÓN DE CAMPEONES</h2>
           <div class="nuka-header__sub">El mejor juego del Refugio de cada año</div>
+          <button type="button" class="honor-btn" id="campeonesEdit">✏️ Editar</button>
         </div>
-        <div class="nuka-grid champ-grid" id="campeonesGrid"></div>
+        <div class="honor-editor" id="campeonesEditor" hidden>
+          <div class="honor-editor__top">
+            <b>Encuadra las portadas</b>
+            <span><button type="button" class="honor-btn" id="campeonesCancel">Cancelar</button> <button type="button" class="honor-btn honor-btn--y" id="campeonesSave">💾 Guardar</button></span>
+          </div>
+          <small>Mueve las barras ↔ ↕ para encuadrar la imagen, o pon otra con «Cambiar imagen». Los campeones salen solos del ranking de cada año.</small>
+        </div>
+        <section class="champ-sec" id="campeones">
+          <div class="nuka-grid champ-grid" id="campeonesGrid"></div>
+        </section>
       </section>
     </div>
   </div>
@@ -374,7 +384,9 @@ body.honor-open { overflow: hidden; }
 .honor-btn--y { background: #f5c518; color: #0a0d14; }
 .honor-btn[disabled] { opacity: 0.6; cursor: default; }
 .honor-editor { margin: 0 0 1.2rem; padding: 1rem; border-radius: 14px; border: 1px solid rgba(245,197,24,0.3); background: rgba(10,8,0,0.85); color: #e8e8f8; }
-.honor-editor[hidden], #salaHonorEdit[hidden] { display: none; }
+.honor-editor[hidden], #salaHonorEdit[hidden], #campeonesEdit[hidden] { display: none; }
+#campeones.is-editing .nuka-card { cursor: default; transform: none; }
+#campeones.is-editing .champ-year { top: 0.5rem; bottom: auto; } /* deja sitio abajo a las barras */
 .honor-editor__top { display: flex; justify-content: space-between; align-items: center; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
 .honor-editor__top .honor-btn { margin-top: 0; }
 .honor-editor small { display: block; margin-top: 0.7rem; color: rgba(232,232,248,0.5); }
@@ -646,7 +658,7 @@ body.honor-open { overflow: hidden; }
 <script src="firebase-config.js?v=20261030b" defer></script>
 <script src="js/sync-manager.js?v=20261030m" defer></script>
 <script src="main.js?v=20261101a"            defer></script>
-<script src="index.js?v=20261101b"           defer></script>
+<script src="index.js?v=20261101c"           defer></script>
 <script src="js/mobile-ui.js?v=20261030m" defer></script>
 <script src="js/push-manager.js?v=20261030n" defer></script>
 <script src="app.js?v=20261023a" defer></script>
