@@ -274,3 +274,5 @@
 /* día en que empezó el acceso anticipado de un juego */
 .r1-day__tag--ea { background: #a855f7; color: #fff; }
 .r1-pc__t small.r1-pc__ea { color: #c084fc; }
+.r1-day__tag--v10 { background: #22c55e; color: #05170b; }
+.r1-pc__t small.r1-pc__v10 { color: #4ade80; }

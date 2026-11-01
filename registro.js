@@ -225,7 +225,8 @@
       var plats = rs.map(function (r) { return r.plataformaJugada; }).filter(function (p, i, a) { return p && a.indexOf(p) === i; });
       return '<div class="rg-row">' +
         '<button type="button" class="rg-row__cover" onclick="window.GT.GameDetailModal.open(\'' + esc(id) + '\')" title="Ver ficha">' + cover(game, 420) + '</button>' +
-        '<div class="rg-row__t"><b>' + esc(game ? game.titulo : '(Juego eliminado)') + '</b><small><span class="rg-live"></span>Jugando · desde ' + when(r0) + '</small></div>' +
+        '<div class="rg-row__t"><b>' + esc(game ? game.titulo : '(Juego eliminado)') + '</b><small><span class="rg-live"></span>Jugando · desde ' + when(r0) +
+          (Utils.inEarlyAccess(game) ? ' · <span class="rg-ea">⚡ en Early Access</span>' : '') + '</small></div>' +
         '<div class="rg-row__p">' + plats.map(plat).join('') + '</div>' +
         '<div class="rg-row__who">' + (state.player === 'All'
           ? rs.map(function (r) { return '<button type="button" class="rg-who" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar la partida de ' + esc(r.jugador) + '">' + av(r.jugador) + '</button>'; }).join('')
@@ -244,6 +245,7 @@
         (r.estado === 'Platinado' ? '<span class="rg-card__ok" title="Platinado">🏆</span>' : '') + '</button>' +
       '<div class="rg-card__b">' +
         '<b title="' + esc(titulo) + '">' + esc(titulo) + '</b>' +
+        (Utils.playedInEarlyAccess(r, game) ? '<small class="rg-ea rg-ea--tag">⚡ Jugado en Early Access</small>' : '') +
         '<div class="rg-card__f">' + av(r.jugador) + (ret ? '<small class="rg-card__d">desde ' + when(r) + '</small>' : nota(r)) +
           '<button type="button" class="rg-card__ed" onclick="window.GT_Reg.openEdit(\'' + r.id + '\')" title="Editar">✏️</button>' +
           (ret ? '<button type="button" class="rg-card__go" onclick="window.GT_Reg.openQuickModal(\'' + r.id + '\')" title="Actualizar rápido">›</button>' : '') + '</div>' +

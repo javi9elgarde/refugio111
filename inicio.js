@@ -50,7 +50,7 @@
       '<div class="r1-slide__shade"></div>' +
       // cartel colgado arriba a la izquierda: deja ver el fondo
       '<div class="r1-sign"><div class="r1-sign__board">' +
-        '<div class="r1-meta"><span>' + (d === todayIso() ? '🎉 SALE HOY' : U.inEarlyAccess(g) ? '⚡ EN EARLY ACCESS · 1.0: ' + fmtLong(d) : '📅 ' + fmtLong(d)) + '</span></div>' +
+        '<div class="r1-meta"><span>' + (d === todayIso() ? (g.fechaEarlyAccess ? '🚀 ¡HOY SALE LA 1.0!' : '🎉 SALE HOY') : U.inEarlyAccess(g) ? '⚡ EN EARLY ACCESS · 1.0: ' + fmtLong(d) : '📅 ' + fmtLong(d)) + '</span></div>' +
         '<h2 class="r1-title">' + esc(g.titulo) + '</h2>' +
         ((g.plataformas || []).length ? '<div class="r1-sign__pl">' + g.plataformas.slice(0, 4).map(function (p) { return '<span class="r1-pl">' + esc(p) + '</span>'; }).join('') + '</div>' : '') +
       '</div></div>' +
@@ -60,7 +60,7 @@
             '<a class="r1-btn r1-btn--y" href="' + esc(trailerUrl(g)) + '" target="_blank" rel="noopener noreferrer">▶ Ver tráiler</a>' +
             '<a class="r1-btn" href="biblioteca.html?open=' + esc(g.id) + '">ⓘ Más info</a>' +
           '</div>' +
-          '<div class="r1-cd" data-cd="' + d + '"></div><div class="r1-nav-slot"></div>' +
+          '<div class="r1-cd" data-cd="' + d + '"' + (g.fechaEarlyAccess ? ' data-v10="1"' : '') + '></div><div class="r1-nav-slot"></div>' +
         '</div>' +
       '</div></div>';
   }
@@ -118,10 +118,11 @@
   }
   function tickOne(s) {
     var diff = new Date(s.dataset.cd + 'T00:00:00').getTime() - nowMs();
-    if (diff <= 0) { s.innerHTML = '<div class="r1-live">🎉 ¡YA A LA VENTA!</div>'; return; }
+    var v10 = !!s.dataset.v10; // juego que ya estaba en Early Access: lo que llega es la 1.0
+    if (diff <= 0) { s.innerHTML = '<div class="r1-live">' + (v10 ? '🚀 ¡YA SALIÓ LA 1.0!' : '🎉 ¡YA A LA VENTA!') + '</div>'; return; }
     var dd = Math.floor(diff / 864e5), hh = Math.floor(diff % 864e5 / 36e5), mm = Math.floor(diff % 36e5 / 6e4), ss = Math.floor(diff % 6e4 / 1e3);
     var u = function (v, l) { return '<div class="r1-count__u"><b>' + pad(v) + '</b><small>' + l + '</small></div>'; };
-    s.innerHTML = '<div class="r1-count"><span class="r1-count__lbl">FALTAN PARA EL ESTRENO</span>' +
+    s.innerHTML = '<div class="r1-count"><span class="r1-count__lbl">' + (v10 ? 'FALTAN PARA LA 1.0' : 'FALTAN PARA EL ESTRENO') + '</span>' +
       u(dd, 'DÍAS') + '<span class="r1-count__sep">:</span>' + u(hh, 'HORAS') + '<span class="r1-count__sep">:</span>' + u(mm, 'MIN') + '<span class="r1-count__sep">:</span>' + u(ss, 'SEG') + '</div>';
   }
 
@@ -153,13 +154,13 @@
       party.hidden = false;
       // logo del juego a cada lado (el del tema, si tiene, manda: ver temas.css)
       var logo = '<i class="r1-party__logo' + (star.fiestaLogo ? ' has-logo' : '') + '" style="--logo:' + esc(cssUrl(star.fiestaLogo)) + '" aria-hidden="true"></i>';
-      party.innerHTML = logo + '<span>¡HOY SALE <a href="biblioteca.html?open=' + esc(star.id) + '">' + esc(star.titulo.toUpperCase()) + '</a>!</span>' + logo;
+      party.innerHTML = logo + '<span>¡HOY SALE ' + (star.fechaEarlyAccess ? 'LA 1.0 DE ' : '') + '<a href="biblioteca.html?open=' + esc(star.id) + '">' + esc(star.titulo.toUpperCase()) + '</a>!</span>' + logo;
       if (partyId !== star.id) { partyId = star.id; decorate(star, t); }
     }
 
     var otros = hoy.filter(function (g) { return g !== star; });
     note.hidden = !otros.length;
-    note.innerHTML = otros.length ? '📅 Hoy también sale: ' + otros.map(function (g) { return '<a href="biblioteca.html?open=' + esc(g.id) + '" style="color:inherit">' + esc(g.titulo) + '</a>'; }).join(' · ') : '';
+    note.innerHTML = otros.length ? '📅 Hoy también sale: ' + otros.map(function (g) { return '<a href="biblioteca.html?open=' + esc(g.id) + '" style="color:inherit">' + esc(g.titulo) + '</a>' + (g.fechaEarlyAccess ? ' (1.0)' : ''); }).join(' · ') : '';
   }
 
   // decorado del día: colores, fondos laterales y confeti (una vez por juego)
@@ -280,7 +281,7 @@
       var img = ev.homeImg || ev.img || '';
       return { evt: true, titulo: ev.nombre, img: /^https?:\/\//i.test(img) ? img : '', pos: 'center', href: 'eventos.html' };
     }).concat(games.map(function (g) {
-      return { id: g.id, titulo: g.titulo, img: g.portadaUrl ? U.thumb(g.portadaUrl) : '', pos: g.portadaPos || 'center top', href: 'biblioteca.html?open=' + g.id };
+      return { v10: !!g.fechaEarlyAccess, id: g.id, titulo: g.titulo, img: g.portadaUrl ? U.thumb(g.portadaUrl) : '', pos: g.portadaPos || 'center top', href: 'biblioteca.html?open=' + g.id };
     })).concat((eas || []).map(function (g) { // el día que empezó su acceso anticipado
       return { ea: true, id: g.id, titulo: g.titulo, img: g.portadaUrl ? U.thumb(g.portadaUrl) : '', pos: g.portadaPos || 'center top', href: 'biblioteca.html?open=' + g.id };
     }));
@@ -318,7 +319,7 @@
         '<div class="r1-day__info">' +
           (shown.length ? '<div class="r1-day__ts">' + shown.map(function (it, i) {
             return '<div class="r1-day__g' + (i ? '' : ' is-on') + (it.evt ? ' r1-day__g--evt' : '') + '" data-k="' + i + '">' +
-              (it.evt ? '<span class="r1-day__tag">🎮 EVENTO</span>' : it.ea ? '<span class="r1-day__tag r1-day__tag--ea">⚡ EARLY ACCESS</span>' : '') + '<div class="r1-day__t">' + esc(it.titulo) + '</div></div>';
+              (it.evt ? '<span class="r1-day__tag">🎮 EVENTO</span>' : it.ea ? '<span class="r1-day__tag r1-day__tag--ea">⚡ EARLY ACCESS</span>' : it.v10 ? '<span class="r1-day__tag r1-day__tag--v10">🚀 SALE LA 1.0</span>' : '') + '<div class="r1-day__t">' + esc(it.titulo) + '</div></div>';
           }).join('') + '</div>' : '') +
         '</div></div>';
     }
@@ -338,7 +339,7 @@
     pop.innerHTML = list.map(function (it, i) {
       return '<a class="r1-pc' + (it.evt ? ' r1-pc--evt' : '') + '" style="--i:' + i + '" href="' + esc(it.href) + '">' +
         (it.img ? '<img src="' + esc(it.img) + '" alt="" style="object-position:' + esc(it.pos) + '">' : '<div class="r1-pc__ph"></div>') +
-        '<div class="r1-pc__t">' + (it.evt ? '<small>🎮 EVENTO</small>' : it.ea ? '<small class="r1-pc__ea">⚡ EARLY ACCESS</small>' : '') + esc(it.titulo) + '</div></a>';
+        '<div class="r1-pc__t">' + (it.evt ? '<small>🎮 EVENTO</small>' : it.ea ? '<small class="r1-pc__ea">⚡ EARLY ACCESS</small>' : it.v10 ? '<small class="r1-pc__v10">🚀 SALE LA 1.0</small>' : '') + esc(it.titulo) + '</div></a>';
     }).join('');
     pop.hidden = false;
     var sheet = innerWidth < 640;

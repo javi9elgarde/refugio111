@@ -264,3 +264,7 @@
   .rg-layout { padding-top: 1.2rem; }
 }
 .rg-players:has(.rg-all input:checked) .rg-pl__av { opacity: 1; filter: none; }
+
+/* partidas jugadas antes de la 1.0 de un juego con Early Access */
+.rg-ea { color: #c084fc; font-weight: 700; }
+.rg-ea--tag { display: inline-block; align-self: flex-start; margin-top: 0.15rem; padding: 0.1rem 0.45rem; border-radius: 6px; font-size: 0.66rem; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.35); }

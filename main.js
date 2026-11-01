@@ -118,13 +118,24 @@ window.GT.Utils = (function () {
     if (game.fechaEarlyAccess) return game.fechaEarlyAccess <= t && !(game.fechaLanzamiento && game.fechaLanzamiento <= t);
     return !!game.earlyAccess;
   }
+  // ¿Esta partida del Registro se jugó antes de la 1.0? Solo en juegos con Early Access (fecha o casilla),
+  // y por mes: si se registró el mismo mes en que salió la 1.0 no se sabe, así que no se marca
+  function playedInEarlyAccess(r, game) {
+    if (!r || !game || !(game.fechaEarlyAccess || game.earlyAccess)) return false;
+    var f = String(game.fechaLanzamiento || ''), y = parseInt(f.slice(0, 4), 10), m = parseInt(f.slice(5, 7), 10);
+    if (isNaN(y) || isNaN(m) || !r.año || !r.mes) return false;
+    return r.año * 100 + (+r.mes) < y * 100 + m;
+  }
+  console.assert(playedInEarlyAccess({ año: 2022, mes: 9 }, { fechaEarlyAccess: '2022-09-06', fechaLanzamiento: '2023-12-05' }) &&
+    !playedInEarlyAccess({ año: 2023, mes: 12 }, { fechaEarlyAccess: '2022-09-06', fechaLanzamiento: '2023-12-05' }) &&
+    !playedInEarlyAccess({ año: 2022, mes: 9 }, { fechaLanzamiento: '2023-12-05' }), 'playedInEarlyAccess');
   console.assert(inEarlyAccess({ fechaEarlyAccess: '2022-09-06', fechaLanzamiento: '2023-12-05' }, '2023-01-01') &&
     !inEarlyAccess({ fechaEarlyAccess: '2022-09-06', fechaLanzamiento: '2023-12-05' }, '2024-01-01') &&
     !inEarlyAccess({ fechaEarlyAccess: '2027-01-01' }, '2026-01-01') && inEarlyAccess({ earlyAccess: true }), 'inEarlyAccess');
   // 14213 → 14.213, también dentro de textos como «5957h» (no usar con años)
   function miles(v) { return String(v == null ? '' : v).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
   console.assert(miles(14213) === '14.213' && miles(5957) === '5.957' && miles('5957h') === '5.957h' && miles('8,35') === '8,35', 'miles');
-  return { uuid, inEarlyAccess, trailerUrl, thumb, quietSide, miles, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
+  return { uuid, inEarlyAccess, playedInEarlyAccess, trailerUrl, thumb, quietSide, miles, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
            playerBadge, statusBadge, escapeHtml, platformBadgesHtml, genreBadgesHtml, MONTHS };
 })();
 
@@ -594,6 +605,7 @@ window.GT.GameDetailModal = (function () {
             '<span class="badge ' + Utils.playerBadge(r.jugador) + '">' + Utils.escapeHtml(r.jugador) + '</span>' +
             '<span style="font-size:0.78rem;color:var(--txt3)">' + Utils.monthName(r.mes) + ' ' + r.año + '</span>' +
             '<span class="badge ' + Utils.statusBadge(r.estado) + '">' + Utils.escapeHtml(r.estado) + '</span>' +
+            (Utils.playedInEarlyAccess(r, game) ? '<span class="badge badge-ea">⚡ Jugado en Early Access</span>' : '') +
             (r.nota !== null && r.nota !== '' && r.nota !== undefined
               ? '<span class="detail-entry__score" style="color:' + rSc + '">' + Utils.formatScore(r.nota) + '</span>'
               : '') +

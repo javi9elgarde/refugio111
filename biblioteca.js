@@ -1134,6 +1134,7 @@
             '<span class="badge ' + Utils.playerBadge(r.jugador) + '">' + Utils.escapeHtml(r.jugador) + '</span>' +
             '<span style="font-size:0.78rem;color:var(--txt3)">' + Utils.monthName(r.mes) + ' ' + r.año + '</span>' +
             '<span class="badge ' + Utils.statusBadge(r.estado) + '">' + Utils.escapeHtml(r.estado) + '</span>' +
+            (Utils.playedInEarlyAccess(r, game) ? '<span class="badge badge-ea">⚡ Jugado en Early Access</span>' : '') +
             (r.nota !== null && r.nota !== '' && r.nota !== undefined
               ? '<span class="detail-entry__score" style="color:' + rSc + '">' + Utils.formatScore(r.nota) + '</span>'
               : '') +
