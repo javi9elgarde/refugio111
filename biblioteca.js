@@ -11,7 +11,7 @@
   var EMBED      = document.documentElement.classList.contains('gt-embed'); // formulario de edición dentro de otra página
 
   var GENRES_PRESET = ['Acción','Acción Aventura','Aventura','Aventura Gráfica','Carreras',
-    'Estrategia','FPS','Gacha','Gestión','Hack and Slash','Indie','Metroidvania',
+    'Cooperativo','Estrategia','FPS','Gacha','Gestión','Hack and Slash','Indie','Metroidvania',
     'Plataformas','Puzzle','RPG','Roguelike/Roguelite','Sandbox','Shooter','Sigilo',
     'Simulación','Soulslike','Supervivencia','Terror'];
 
@@ -587,7 +587,9 @@
   }
 
   function renderFilterDropdowns() {
+    // «Cooperativo» sale siempre en el filtro, aunque aún no haya ningún juego con esa etiqueta
     var genres = Biblioteca.getAllGenres();
+    if (genres.indexOf('Cooperativo') === -1) genres = genres.concat('Cooperativo').sort(function (a, b) { return a.localeCompare(b, 'es'); });
     var genreSel = document.getElementById('genreFilter');
     var prevG = genreSel.value;
     genreSel.innerHTML = '<option value="">🎮 Géneros</option>' +

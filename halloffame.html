@@ -97,19 +97,42 @@
     <div class="rank-list rank-list--top" id="rankingBody"></div>
   </div>
 
-  <!-- ENTRADA A LA SALA DE HONOR -->
+  <!-- DOS PUERTAS: los campeones de cada año y los favoritos de siempre -->
   <section class="section">
-    <div class="honor-gate">
-      <div class="olimpo__col" aria-hidden="true"><i></i></div>
-      <div class="honor-gate__c">
-        <div class="olimpo__eyebrow">🏛️ Hall of Fame</div>
-        <h2 class="honor-gate__title">SALA DE HONOR</h2>
-        <p class="olimpo__sub">Los juegos que dejaron huella en el Refugio</p>
-        <button type="button" class="honor-gate__btn" id="salaHonorOpen">Entrar en la Sala de Honor</button>
+    <div class="honor-gates">
+      <div class="honor-gate honor-gate--champ">
+        <div class="honor-gate__c">
+          <div class="olimpo__eyebrow">🏆 Año a año</div>
+          <h2 class="honor-gate__title">SALÓN DE CAMPEONES</h2>
+          <p class="olimpo__sub">Todos los VAULTY: el mejor juego de cada año</p>
+          <button type="button" class="honor-gate__btn" id="campeonesOpen">Ver los campeones</button>
+        </div>
       </div>
-      <div class="olimpo__col" aria-hidden="true"><i></i></div>
+      <div class="honor-gate">
+        <div class="honor-gate__c">
+          <div class="olimpo__eyebrow">🏛️ Hall of Fame</div>
+          <h2 class="honor-gate__title">SALA DE HONOR</h2>
+          <p class="olimpo__sub">Vuestros favoritos de siempre, hayan ganado o no</p>
+          <button type="button" class="honor-gate__btn" id="salaHonorOpen">Entrar en la Sala de Honor</button>
+        </div>
+      </div>
     </div>
   </section>
+
+  <!-- SALÓN DE CAMPEONES (ventana): el nº 1 de cada año ya terminado -->
+  <div class="honor-modal" id="campeonesModal" role="dialog" aria-modal="true" aria-label="Salón de Campeones" hidden>
+    <div class="honor-modal__box">
+      <button type="button" class="honor-modal__x" id="campeonesClose" aria-label="Cerrar el Salón de Campeones">✕</button>
+      <section class="nuka-section">
+        <div class="nuka-header">
+          <div class="nuka-header__eyebrow">🏆 REFUGIO 111 · TODOS LOS VAULTY 🏆</div>
+          <h2 class="nuka-header__title">SALÓN DE CAMPEONES</h2>
+          <div class="nuka-header__sub">El mejor juego del Refugio de cada año</div>
+        </div>
+        <div class="nuka-grid champ-grid" id="campeonesGrid"></div>
+      </section>
+    </div>
+  </div>
 
   <!-- SALA DE HONOR (ventana) -->
   <div class="honor-modal" id="honorModal" role="dialog" aria-modal="true" aria-label="Sala de Honor" hidden>
@@ -211,7 +234,11 @@
 }
 
 /* selector de año, justo debajo de la línea */
-.olimpo-year { display: flex; align-items: center; justify-content: center; gap: 0.9rem; margin: 1.6rem auto 0.4rem; }
+.olimpo-year { display: flex; align-items: center; justify-content: center; gap: 0.9rem; margin: 2.8rem auto; }
+/* misma distancia por arriba (línea dorada) y por abajo (podio) */
+.olimpo-year + .section { padding-top: 0; }
+.olimpo-year + .section .hof-podium { margin-top: 0; }
+@media (max-width: 760px) { .olimpo-year { margin: 1.8rem auto; } }
 .olimpo-year label { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 0.2em; color: rgba(245,200,66,0.75); }
 .olimpo-year__sel {
   appearance: none; -webkit-appearance: none; cursor: pointer;
@@ -301,6 +328,21 @@
 .honor-gate__btn:active { transform: scale(0.97); }
 @media (hover: hover) and (pointer: fine) { .honor-gate__btn:hover { box-shadow: 0 10px 34px rgba(245,200,66,0.5); } }
 @media (max-width: 760px) { .honor-gate { grid-template-columns: minmax(0, 1fr); } .honor-gate .olimpo__col { display: none; } }
+
+/* dos puertas, una al lado de la otra (una encima de otra en el móvil) */
+.honor-gates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; max-width: 1100px; margin: 0 auto; }
+.honor-gates .honor-gate { grid-template-columns: minmax(0, 1fr); max-width: none; margin: 0; }
+.honor-gate--champ { border-color: rgba(255,215,90,0.6); background: radial-gradient(ellipse 70% 100% at 50% 0%, rgba(255,215,90,0.24), transparent 70%), rgba(14,10,2,0.9); }
+@media (max-width: 760px) { .honor-gates { grid-template-columns: minmax(0, 1fr); } }
+
+/* tarjetas del Salón de Campeones: el año, bien grande, sobre la portada */
+.champ-card .nuka-card__cover { position: relative; }
+.champ-year { position: absolute; left: 50%; bottom: 0.6rem; transform: translateX(-50%); z-index: 3; padding: 0.3rem 0.9rem; border-radius: 10px;
+  background: linear-gradient(180deg, #ffe27a, #e0ad2a 55%, #b88a16); color: #1a1200; box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+  font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.08em; white-space: nowrap; }
+.champ-year small { display: block; font-size: 0.5rem; letter-spacing: 0.2em; text-align: center; }
+.champ-card .nuka-card__info { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+.champ-score { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.85rem; white-space: nowrap; }
 
 /* ── VENTANA DE LA SALA DE HONOR ── */
 .honor-modal { position: fixed; inset: 0; z-index: 1200; overflow-y: auto; overscroll-behavior: contain; padding: 1.5rem 1rem; background: #050400; }
@@ -604,7 +646,7 @@ body.honor-open { overflow: hidden; }
 <script src="firebase-config.js?v=20261030b" defer></script>
 <script src="js/sync-manager.js?v=20261030m" defer></script>
 <script src="main.js?v=20261101a"            defer></script>
-<script src="index.js?v=20261101a"           defer></script>
+<script src="index.js?v=20261101b"           defer></script>
 <script src="js/mobile-ui.js?v=20261030m" defer></script>
 <script src="js/push-manager.js?v=20261030n" defer></script>
 <script src="app.js?v=20261023a" defer></script>

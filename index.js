@@ -965,6 +965,57 @@
     }).join('');
   }
 
+  /* ── SALÓN DE CAMPEONES: el nº 1 del ranking VAULTY de cada año ya terminado (el año en curso aún no tiene campeón) ── */
+  function renderCampeones() {
+    var el = document.getElementById('campeonesGrid');
+    if (!el) return;
+    var yearSet = {}, now = new Date().getFullYear();
+    Registro.getAll().forEach(function(r) { if (r.año && r.año < now) yearSet[r.año] = true; });
+    var champs = Object.keys(yearSet).map(Number).sort(function(a, b) { return b - a; }).map(function(y) {
+      var top = Registro.getRanking(y)[0];
+      var game = top && Biblioteca.getById(top.juegoId);
+      return game ? { year: y, game: game, nota: top.notaMedia } : null;
+    }).filter(Boolean);
+    if (!champs.length) {
+      el.innerHTML = '<div class="nuka-empty"><span class="nuka-empty__icon">🏆</span>EL PRIMER VAULTY SE ENTREGA AL ACABAR EL AÑO</div>';
+      return;
+    }
+    el.innerHTML = champs.map(function(c) {
+      var g = c.game, sid = g.id.replace(/'/g, "\\'");
+      return '<div class="nuka-card champ-card" onclick="window.GT.GameDetailModal.open(\'' + sid + '\')" title="' + Utils.escapeHtml(g.titulo) + '">' +
+        '<div class="nuka-card__cover">' +
+          (g.portadaUrl
+            ? '<img src="' + Utils.escapeHtml(Utils.thumb(g.portadaUrl, 640)) + '" alt="" loading="lazy" style="object-position:' + Utils.escapeHtml(g.portadaPos || 'center top') + '" onerror="this.style.display=\'none\'">'
+            : '<div class="nuka-card__cover-ph">' + Utils.escapeHtml(g.titulo.charAt(0)) + '</div>') +
+          '<div class="nuka-card__glass"></div>' +
+          '<div class="champ-year"><small>VAULTY</small>' + c.year + '</div>' +
+        '</div>' +
+        '<div class="nuka-card__info"><div class="nuka-card__title">' + Utils.escapeHtml(g.titulo) + '</div>' +
+          '<span class="champ-score" style="color:' + Utils.scoreColor(c.nota) + '">' + Utils.formatScore(c.nota) + '</span></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function initCampeones() {
+    var modal = document.getElementById('campeonesModal'), opener = document.getElementById('campeonesOpen');
+    if (!modal || !opener) return;
+    function close() {
+      if (modal.hidden) return;
+      modal.hidden = true; document.body.classList.remove('honor-open'); opener.focus();
+    }
+    opener.addEventListener('click', function() {
+      renderCampeones();
+      modal.hidden = false; document.body.classList.add('honor-open');
+      document.getElementById('campeonesClose').focus();
+    });
+    document.getElementById('campeonesClose').addEventListener('click', close);
+    modal.addEventListener('click', function(e) { if (e.target === modal) close(); });
+    document.addEventListener('keydown', function(e) {
+      var gd = document.getElementById('gdModal'); // con la ficha abierta, Escape solo cierra la ficha
+      if (e.key === 'Escape' && !(gd && getComputedStyle(gd).display !== 'none')) close();
+    });
+  }
+
   function initSalaHonor() {
     var sec = document.getElementById('salaHonor');
     if (!sec) return;
@@ -1089,6 +1140,7 @@
       safe(renderUpcomingCards,   'renderUpcomingCards');
       safe(renderSalaNukaTop,     'renderSalaNukaTop');
       safe(initSalaHonor,         'initSalaHonor');
+      safe(initCampeones,         'initCampeones');
       safe(renderSalaHonor,       'renderSalaHonor');
       // Re-render when another user changes data in real time
       window.GT.onDataChange(function () {
@@ -1096,6 +1148,7 @@
         safe(initHeroPlayerStats,   'initHeroPlayerStats');
         safe(renderUpcomingCards,   'renderUpcomingCards');
         safe(renderSalaNukaTop,     'renderSalaNukaTop');
+        safe(renderCampeones,       'renderCampeones');
         var sel = document.getElementById('rankingYear');
         if (sel) safe(function(){ renderRanking(parseInt(sel.value)); }, 'renderRanking');
       });
