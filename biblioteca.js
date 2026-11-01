@@ -1154,6 +1154,7 @@
     }
 
     document.getElementById('detailBody').innerHTML = html;
+    document.getElementById('detailBody').scrollTop = 0; // cada ficha empieza arriba, aunque la anterior se quedara bajada
     document.getElementById('detailModal').classList.add('open');
     document.getElementById('detailEdit').onclick = function () { openEdit(id); };
     // Hype en el modal de detalle — solo para juegos no lanzados

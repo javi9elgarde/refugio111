@@ -620,6 +620,7 @@ window.GT.GameDetailModal = (function () {
     }
 
     document.getElementById('gdBody').innerHTML = html;
+    document.getElementById('gdBody').scrollTop = 0; // cada ficha empieza arriba, aunque la anterior se quedara bajada
     overlay.classList.add('open');
   }
 

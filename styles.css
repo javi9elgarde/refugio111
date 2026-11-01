@@ -5900,3 +5900,22 @@ html.gt-embed body > :not(#gameModal):not(.toast-container):not(script) { displa
 /* cerrar sesión, bajo las caras del cambio de jugador */
 .psw-out { flex-basis: 100%; padding: 0.4rem 0.6rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; background: rgba(255,255,255,0.04); color: rgba(232,232,248,0.7); font-size: 0.72rem; cursor: pointer; }
 .psw-out:hover { color: #f87171; border-color: rgba(248,113,113,0.5); }
+
+/* FICHAS DE JUEGO: la caja nunca pasa del alto de la pantalla; cabecera y botones fijos y el contenido con su propio scroll.
+   Antes el contenido podía medir casi toda la pantalla y, con el cartel de «Mejor juego del año», los botones se salían de la caja;
+   y la ficha que se abre fuera de la Biblioteca (#gdModal) no tenía scroll, así que no se llegaba a «Editar». */
+#detailModal .modal, #gdModal .modal { display: flex; flex-direction: column; max-height: 92vh; max-height: 92dvh; }
+#detailModal .modal__header, #gdModal .modal__header,
+#detailModal .modal__footer, #gdModal .modal__footer { flex: none; }
+#detailModal .modal__body, #gdModal .modal__body { flex: 1 1 auto; min-height: 0; max-height: none !important; overflow-y: auto; overscroll-behavior: contain; }
+/* la ficha que se abre fuera de la Biblioteca, con la misma cabecera que la de la Biblioteca */
+#gdModal .modal { max-width: 780px; }
+#gdModal .modal__header { position: relative; justify-content: center; border-bottom: none; padding-bottom: 0.5rem;
+  background: linear-gradient(135deg, rgba(79,172,254,0.04), rgba(168,85,247,0.04)); border-radius: 14px 14px 0 0; }
+#gdModal .modal__title { font-family: 'Orbitron', sans-serif; font-size: clamp(0.85rem, 2.2vw, 1.25rem); font-weight: 900; text-align: center;
+  background: linear-gradient(135deg, #fff 30%, rgba(79,172,254,0.9)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  letter-spacing: 0.05em; text-transform: uppercase; padding: 0 2.5rem; line-height: 1.3; }
+#gdModal .modal__close { position: absolute; right: 1.25rem; top: 50%; transform: translateY(-50%); }
+#gdModal .modal__body { padding: 0 1.5rem 1.5rem; }
+@media (max-width: 640px) { #gdModal .modal__body { padding: 0 0.85rem 1.25rem; } #gdModal .modal__title { font-size: clamp(0.6rem, 4vw, 0.9rem); padding: 0 1.75rem; } }
+#detailModal .detail-goty-banner, #gdModal .detail-goty-banner { margin-top: 0.5rem; }
