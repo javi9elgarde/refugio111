@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Refugio 111 — Etiquetar cooperativos</title>
+  <link rel="icon" type="image/png" href="logonavegador.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Inter, 'Segoe UI', system-ui, sans-serif; background: #07070f; color: #e8e8f8; padding: 1.5rem 1rem 4rem; max-width: 860px; margin: 0 auto; }
+    h1 { font-size: 1.35rem; color: #4facfe; margin-bottom: 0.4rem; }
+    .sub { color: #94a3b8; font-size: 0.88rem; line-height: 1.5; margin-bottom: 1.2rem; }
+    .bar { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; padding: 0.8rem 0; background: #07070f; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 1rem; }
+    .btn { min-height: 44px; padding: 0.6rem 1.3rem; border: 0; border-radius: 10px; cursor: pointer; font: 700 0.95rem inherit; font-family: inherit; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: #4facfe; color: #07070f; }
+    #status { font-size: 0.85rem; color: #94a3b8; }
+    .row { padding: 0.7rem 0.9rem; margin-bottom: 0.5rem; border-radius: 12px; background: #0e1220; border: 1px solid rgba(255,255,255,0.07); }
+    .row--miss { border-color: rgba(248,113,113,0.35); }
+    .row__q { font-weight: 700; font-size: 0.92rem; margin-bottom: 0.35rem; }
+    .row__none { color: #f87171; font-size: 0.82rem; }
+    label.cand { display: flex; align-items: center; gap: 0.6rem; min-height: 40px; font-size: 0.88rem; cursor: pointer; }
+    label.cand input { width: 20px; height: 20px; accent-color: #4facfe; flex: none; }
+    .tag { font-size: 0.68rem; padding: 0.1rem 0.4rem; border-radius: 4px; background: rgba(255,255,255,0.08); color: #94a3b8; }
+    .tag--done { background: rgba(74,222,128,0.15); color: #4ade80; }
+    .tag--fuzzy { background: rgba(245,200,66,0.15); color: #f5c842; }
+  </style>
+</head>
+<body>
+  <h1>🤝 Etiquetar juegos cooperativos</h1>
+  <p class="sub">Cada título de la lista con el juego de la Biblioteca que le corresponde. Los que coinciden exactamente ya van marcados;
+    los dudosos (en amarillo) revísalos. Al pulsar «Añadir etiqueta» se les pone el género <b>Cooperativo</b> sin tocar el resto de sus géneros.</p>
+  <div class="bar">
+    <button type="button" class="btn btn-primary" id="apply" disabled>Añadir etiqueta</button>
+    <span id="status">Cargando la biblioteca…</span>
+  </div>
+  <div id="list"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"      defer></script>
+<script src="firebase-config.js?v=20261030b" defer></script>
+<script src="js/sync-manager.js?v=20261030m" defer></script>
+<script src="main.js?v=20261101a"            defer></script>
+<script src="js/coop-match.js?v=20261101a"   defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  'use strict';
+  var LISTA = [
+    // Cooperativos puros
+    'A Way Out', 'It Takes Two', 'Split Fiction', 'Keep on Mining!', 'Raft', 'Plate Up!', 'Big Walk',
+    'Sackboy: Una Aventura a lo Grande', 'Little Big Planet', 'Over The Hill',
+    // Supervivencia, construcción y crafting
+    'Grounded 2', 'Core Keeper', 'Valheim / Sons of Valhalla', 'Minecraft', 'Minecraft Dungeons 2', 'Subnautica 2',
+    'Satisfactory', 'Stardew Valley', 'Luma Island',
+    // Shooters, looter shooters y extracción
+    'Helldivers II', 'ARC Raiders', 'Borderlands 4', 'Warhammer 40.000 Space Marine II', 'Remnant: From the Ashes',
+    'Destiny 2', 'Deep Rock Galactic / RoboQuest', 'Evil West', 'Aliens vs Predator', 'Left 4 Dead / Dead Island',
+    // ARPG, soulslike y roguelike
+    'Elden Ring Nightreign', 'Path of Exile 2', 'Lords of the Fallen', 'Warhammer 40,000: Rogue Trader', 'Wasteland 3', 'Tears of Metal',
+    // Party, casual y deporte
+    'Fall Guys', 'Rocket League', 'Nintendo Switch Sports Resort', 'Mario Kart World'
+  ];
+  var TAG = 'Cooperativo';
+  var GT = window.GT, esc = GT.Utils.escapeHtml;
+  var listEl = document.getElementById('list'), btn = document.getElementById('apply'), status = document.getElementById('status');
+
+  function hasTag(g) { return (g.generos || []).indexOf(TAG) !== -1; }
+
+  function render() {
+    var games = GT.Biblioteca.getAll();
+    var rows = GT_CoopMatch.match(LISTA, games);
+    listEl.innerHTML = rows.map(function (r) {
+      if (!r.cands.length) return '<div class="row row--miss"><div class="row__q">' + esc(r.item) + '</div><div class="row__none">No está en la Biblioteca (añádelo y vuelve a abrir esta página)</div></div>';
+      var only = r.cands.length === 1;
+      return '<div class="row"><div class="row__q">' + esc(r.item) + '</div>' + r.cands.map(function (c, i) {
+        var done = hasTag(c.g);
+        // marcado si coincide del todo, o si es el único candidato y se parece bastante
+        var on = !done && i === 0 && (c.s >= 0.99 || (only && c.s >= 0.55));
+        return '<label class="cand"><input type="checkbox" data-id="' + esc(c.g.id) + '"' + (on ? ' checked' : '') + (done ? ' disabled checked' : '') + '>' +
+          '<span>' + esc(c.g.titulo) + '</span>' +
+          (done ? '<span class="tag tag--done">ya es cooperativo</span>' : c.s < 0.99 ? '<span class="tag tag--fuzzy">¿es este?</span>' : '') +
+          '</label>';
+      }).join('') + '</div>';
+    }).join('');
+    update();
+  }
+
+  function picked() {
+    var ids = {};
+    listEl.querySelectorAll('input[data-id]:checked:not(:disabled)').forEach(function (i) { ids[i.dataset.id] = true; });
+    return Object.keys(ids);
+  }
+  function update() {
+    var n = picked().length;
+    btn.disabled = !n;
+    btn.textContent = n ? 'Añadir etiqueta a ' + n + ' juego' + (n === 1 ? '' : 's') : 'Añadir etiqueta';
+    status.textContent = n ? '' : 'Nada pendiente de etiquetar';
+  }
+  listEl.addEventListener('change', update);
+
+  btn.addEventListener('click', function () {
+    var ids = picked();
+    ids.forEach(function (id) {
+      var g = GT.Biblioteca.getById(id);
+      if (g && !hasTag(g)) GT.Biblioteca.update(id, { generos: (g.generos || []).concat(TAG) });
+    });
+    status.textContent = '✓ Etiqueta añadida a ' + ids.length + ' juegos. Ya salen en Biblioteca → Géneros → Cooperativo.';
+    render();
+    status.textContent = '✓ Etiqueta añadida a ' + ids.length + ' juegos. Ya salen en Biblioteca → Géneros → Cooperativo.';
+  });
+
+  GT.onDataReady(render);
+});
+</script>
+</body>
+</html>
