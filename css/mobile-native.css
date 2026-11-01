@@ -245,3 +245,15 @@
   .blg-game-card__check-btn { pointer-events: none; width: 40px !important; height: 40px !important; }
   .blg-game-card.is-picked .blg-game-card__check-btn { opacity: 1; pointer-events: auto; background: var(--pc, #4facfe); border-color: var(--pc, #4facfe); color: #07070f; }
 }
+
+/* ── Inicio en el móvil: el cartel baja junto a los botones y deja libre la parte de arriba del fondo
+      (ahí suelen estar las caras de los personajes) ── */
+@media (max-width: 640px) {
+  .r1-hero { height: 500px; }
+  .r1-slide { display: flex; flex-direction: column; justify-content: flex-end; }
+  .r1-slide__shade { background: linear-gradient(0deg, rgba(5, 7, 13, 0.96) 0%, rgba(5, 7, 13, 0.82) 30%, rgba(5, 7, 13, 0.35) 48%, transparent 60%); }
+  .r1-sign, .r1-slide--der .r1-sign { position: relative; inset: auto; z-index: 3; width: min(300px, 86%); margin: 0 auto 0.5rem; padding-top: 0; }
+  .r1-sign::before, .r1-sign::after, .r1-sign__board::before, .r1-sign__board::after { display: none; }
+  .r1-sign__board { animation: none; transform: none; background: rgba(5, 7, 13, 0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  .r1-slide__body { position: relative; inset: auto; padding-top: 0; }
+}
