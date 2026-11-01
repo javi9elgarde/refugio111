@@ -68,7 +68,7 @@
   <header class="olimpo">
     <div class="olimpo__in">
       <div class="olimpo__col" aria-hidden="true"><i></i></div>
-      <div class="olimpo__trophy"><img src="GOTY.png" alt="Trofeo VAULTY"></div>
+      <div class="olimpo__trophy"><img src="vaulty.webp" alt="Trofeo VAULTY de Javi, Mery y David"></div>
       <div class="olimpo__c">
         <div class="olimpo__eyebrow">✦ Refugio 111 · El Olimpo Videojueguil ✦</div>
         <h1 class="olimpo__title">VAULTY</h1>
@@ -184,7 +184,7 @@
   background: radial-gradient(ellipse at 50% 55%, rgba(255,215,90,0.38), rgba(245,200,66,0.10) 50%, transparent 70%);
 }
 .olimpo__trophy img {
-  position: relative; height: 270px; width: auto; display: block;
+  position: relative; height: 300px; width: auto; max-width: 100%; object-fit: contain; display: block;
   filter: drop-shadow(0 0 22px rgba(255,210,80,0.65)) drop-shadow(0 8px 20px rgba(0,0,0,0.8));
 }
 .olimpo__c { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-bottom: 1rem; }
@@ -229,7 +229,7 @@
   .olimpo__in { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
   .olimpo__in > .olimpo__col { display: none; }
   .olimpo__trophy { padding-bottom: 0; }
-  .olimpo__trophy img { height: 170px; }
+  .olimpo__trophy img { height: auto; width: min(320px, 86vw); }
   .olimpo__frieze { margin: 0 -1rem; }
   .olimpo__eyebrow { font-size: 0.55rem; letter-spacing: 0.16em; }
   .olimpo-year__sel { font-size: 1.2rem; }
