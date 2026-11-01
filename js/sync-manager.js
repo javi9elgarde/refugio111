@@ -151,12 +151,27 @@
       enqueue(item);
       return Promise.resolve({ estado: 'pendiente' });
     }
-    return attempt(item).catch(function (err) {
+    var p = attempt(item).catch(function (err) {
       if (isOfflineError(err)) { enqueue(item); return { estado: 'pendiente' }; }
       console.error('safeSaveDoc:', err);
       toast('No se pudo guardar: ' + (err && err.message || err), 'error');
       throw err;
     });
+    track(p);
+    return p;
+  }
+
+  // guardados que siguen de camino al servidor: una transacción no cuenta para waitForPendingWrites(),
+  // así que quien vaya a cerrar la página (el editor dentro de una capa) tiene que esperar a idle()
+  var inflight = [];
+  function track(p) {
+    inflight.push(p);
+    var done = function () { inflight = inflight.filter(function (x) { return x !== p; }); };
+    p.then(done, done);
+  }
+  function idle() {
+    if (!inflight.length) return Promise.resolve();
+    return Promise.all(inflight.map(function (p) { return p.catch(function () {}); })).then(idle);
   }
 
   function attempt(item) {
@@ -308,6 +323,7 @@
     safeSaveDoc: safeSaveDoc,
     overlay: overlay,
     flush: flush,
+    idle: idle,
     pending: function () { return readOutbox().length; }
   };
   window.safeSaveDoc = safeSaveDoc;

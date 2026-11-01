@@ -997,7 +997,9 @@
   function closeModal() {
     document.getElementById('gameModal').classList.remove('open');
     // abierta desde otra página: avisa cuando Firebase tenga guardado el cambio
-    if (EMBED) window.GT.db.waitForPendingWrites().then(function () { parent.postMessage({ gt: 'editClosed' }, location.origin); });
+    // la capa del editor se cierra cuando lo guardado ha llegado: las escrituras normales y las transacciones del control de versiones
+    if (EMBED) Promise.all([window.GT.db.waitForPendingWrites(), window.GT.Sync ? window.GT.Sync.idle() : null])
+      .catch(function () {}).then(function () { parent.postMessage({ gt: 'editClosed' }, location.origin); });
   }
 
   /* ── SONIDO DE APERTURA DE FICHA ──────────────────────────── */
