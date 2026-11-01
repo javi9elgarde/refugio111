@@ -614,7 +614,7 @@ window.GT.GameDetailModal = (function () {
         '<span class="detail-goty-emoji">' + _emojis[_gotyMedal.pos - 1] + '</span>' +
         '<div>' +
           '<div class="detail-goty-label">' + _labels[_gotyMedal.pos - 1] + '</div>' +
-          '<div class="detail-goty-year">Game of the Year ' + _gotyMedal.year + ' · Refugio 111</div>' +
+          '<div class="detail-goty-year">VAULTY ' + _gotyMedal.year + ' · Refugio 111</div>' +
         '</div>' +
       '</div>' + html;
     }

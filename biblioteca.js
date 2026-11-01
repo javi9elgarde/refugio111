@@ -1146,7 +1146,7 @@
         '<span class="detail-goty-emoji">' + _emoji + '</span>' +
         '<div>' +
           '<div class="detail-goty-label">' + _labels[gotyMedal.pos - 1] + '</div>' +
-          '<div class="detail-goty-year">Game of the Year ' + gotyMedal.year + ' · Refugio 111</div>' +
+          '<div class="detail-goty-year">VAULTY ' + gotyMedal.year + ' · Refugio 111</div>' +
         '</div>' +
       '</div>' + html;
     }
