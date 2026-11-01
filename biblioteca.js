@@ -1120,9 +1120,6 @@
           Utils.genreBadgesHtml(game.generos) +
         '</div>' +
         (stats ? '<div class="detail-stats-grid">' + stats + '</div>' : '') +
-        Utils.eaTimeline(game, fmtDate) +
-        tipoHtml +
-        (game.descripcion ? '<p class="detail-desc">' + Utils.escapeHtml(game.descripcion) + '</p>' : '') +
       '</div>';
 
     /* ── Entradas del registro ─────────────────────────────── */
@@ -1142,6 +1139,12 @@
           '</div>';
         }).join('');
     }
+
+    // el Registro va justo después de los datos básicos, para verlo de un vistazo;
+    // lo complementario (Early Access, tipo de lanzamiento, descripción) queda debajo
+    var more = Utils.eaTimeline(game, fmtDate) + tipoHtml +
+      (game.descripcion ? '<p class="detail-desc">' + Utils.escapeHtml(game.descripcion) + '</p>' : '');
+    if (more) html += '<div class="detail-info detail-info--more">' + more + '</div>';
 
     // ── Medalla GOTY (años pasados) ──────────────────────
     var gotyMedal  = getGameGotyMedal(id);

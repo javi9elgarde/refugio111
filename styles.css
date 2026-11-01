@@ -5940,3 +5940,15 @@ html.gt-embed body > :not(#gameModal):not(.toast-container):not(script) { displa
   .ea-time__row { grid-template-columns: 1fr 1fr; }
   .ea-time__bar { grid-column: 1 / -1; grid-row: 2; }
 }
+
+/* FICHA más compacta: el Registro sube y se ve sin bajar */
+.detail-info--more { margin-top: 0.9rem; }
+.detail-info--more .ea-time { margin-top: 0; }
+.ea-time { padding: 0.55rem 0.85rem 0.6rem; }
+.ea-time__hdr { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.2rem 0.8rem; margin-bottom: 0.45rem; text-align: left; letter-spacing: 0; font-family: inherit; }
+.ea-time__hdr b { font-family: 'Orbitron', sans-serif; font-size: 0.6rem; letter-spacing: 0.16em; }
+.ea-time__hdr span { font-size: 0.74rem; font-weight: 500; color: var(--txt3, #94a3b8); }
+/* en pantallas con poca altura, la portada se queda más baja para dejar sitio al resto */
+@media (max-height: 1000px) and (min-width: 641px) {
+  #detailModal .detail-cover__wrap, #gdModal .detail-cover__wrap { max-height: 36vh; }
+}

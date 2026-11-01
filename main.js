@@ -143,13 +143,13 @@ window.GT.Utils = (function () {
       : started ? '⏳ Lleva ' + spanText(ea, t) + ' en acceso anticipado' + (hasV ? ' · quedan ' + spanText(t, v) + ' para la 1.0' : '')
       : '⚡ Sale en acceso anticipado dentro de ' + spanText(t, ea);
     return '<div class="ea-time' + (done ? ' ea-time--done' : started ? ' ea-time--live' : '') + '">' +
-      '<div class="ea-time__hdr">' + (done ? 'PASÓ POR EARLY ACCESS' : started ? 'EN EARLY ACCESS AHORA' : 'EARLY ACCESS ANUNCIADO') + '</div>' +
+      '<div class="ea-time__hdr"><b>' + (done ? 'PASÓ POR EARLY ACCESS' : started ? 'EN EARLY ACCESS AHORA' : 'EARLY ACCESS ANUNCIADO') + '</b>' +
+        (cap ? '<span>' + cap + '</span>' : '') + '</div>' +
       '<div class="ea-time__row">' +
         '<div class="ea-time__pt"><b>⚡ Early Access</b><span>' + fmt(ea) + '</span></div>' +
         '<div class="ea-time__bar"><i style="width:' + pct + '%"></i></div>' +
         '<div class="ea-time__pt ea-time__pt--end"><b>🚀 1.0' + (done ? '' : ' prevista') + '</b><span>' + (v ? fmt(v) : 'Sin fecha') + '</span></div>' +
       '</div>' +
-      (cap ? '<div class="ea-time__cap">' + cap + '</div>' : '') +
     '</div>';
   }
 
@@ -627,9 +627,6 @@ window.GT.GameDetailModal = (function () {
           Utils.genreBadgesHtml(game.generos) +
         '</div>' +
         (stats ? '<div class="detail-stats-grid">' + stats + '</div>' : '') +
-        window.GT.Utils.eaTimeline(game, fmtDate) +
-        tipoHtml +
-        (game.descripcion ? '<p class="detail-desc">' + Utils.escapeHtml(game.descripcion) + '</p>' : '') +
       '</div>';
 
     if (entries.length) {
@@ -648,6 +645,12 @@ window.GT.GameDetailModal = (function () {
           '</div>';
         }).join('');
     }
+
+    // el Registro va justo después de los datos básicos, para verlo de un vistazo;
+    // lo complementario (Early Access, tipo de lanzamiento, descripción) queda debajo
+    var more = window.GT.Utils.eaTimeline(game, fmtDate) + tipoHtml +
+      (game.descripcion ? '<p class="detail-desc">' + Utils.escapeHtml(game.descripcion) + '</p>' : '');
+    if (more) html += '<div class="detail-info detail-info--more">' + more + '</div>';
 
     /* ── GOTY Medal: check si el juego ganó top-3 en año pasado ── */
     overlay.classList.remove('goty-gold', 'goty-silver', 'goty-bronze');
