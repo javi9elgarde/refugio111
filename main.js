@@ -500,6 +500,86 @@ window.GT.Toast = (function () {
   return { show };
 })();
 
+/* ── EDITAR PARTIDAS DESDE LA FICHA DEL JUEGO ──────────────────
+   Cada entrada del Registro de la ficha lleva un ✏️ que la convierte en un formulario ahí mismo
+   (sin ir a Registro a buscar el año). Se guarda con Registro.update: control de versiones y la regla
+   de «solo cuenta la primera nota» incluidos. */
+window.GT.EntryEditor = (function () {
+  var ESTADOS = ['Terminado', 'Jugando', 'Rejugado', 'Platinado', 'Retomar', 'Abandonado', 'Jugado'];
+  var PLATS = ['PC', 'PS5', 'PS4', 'PS3', 'Xbox Series X', 'Xbox One', 'Xbox 360', 'Nintendo Switch 2', 'Nintendo Switch'];
+  function esc(t) { return window.GT.Utils.escapeHtml(t == null ? '' : String(t)); }
+  function opts(list, cur, label) {
+    return list.map(function (v, i) {
+      var val = label ? i + 1 : v;
+      return '<option value="' + esc(val) + '"' + (String(val) === String(cur) ? ' selected' : '') + '>' + esc(label ? label[i] : v) + '</option>';
+    }).join('');
+  }
+
+  // el botón que va al final de cada entrada
+  function button() { return '<button type="button" class="detail-entry__ed" data-entry-edit title="Editar esta partida" aria-label="Editar esta partida">✏️</button>'; }
+
+  function form(r) {
+    var nota = r.nota != null && r.nota !== '' ? r.nota : '';
+    var plats = PLATS.indexOf(r.plataformaJugada) === -1 && r.plataformaJugada ? PLATS.concat(r.plataformaJugada) : PLATS;
+    return '<form class="entry-ed" data-rid="' + esc(r.id) + '">' +
+      '<div class="entry-ed__top"><span class="badge ' + window.GT.Utils.playerBadge(r.jugador) + '">' + esc(r.jugador) + '</span><b>Editar partida</b></div>' +
+      '<div class="entry-ed__grid">' +
+        '<label>Estado<select name="estado">' + opts(ESTADOS, r.estado) + '</select></label>' +
+        '<label>Nota (0–10)<input name="nota" type="number" min="0" max="10" step="0.05" value="' + esc(nota) + '"' +
+          (r.notaRepetida != null ? ' placeholder="No cuenta: ya lo puntuó antes"' : ' placeholder="Sin nota"') + '></label>' +
+        '<label>Horas<input name="horas" type="number" min="0" step="0.5" value="' + esc(r.horas || '') + '"></label>' +
+        '<label>Mes<select name="mes">' + opts(window.GT.Utils.MONTHS, r.mes, window.GT.Utils.MONTHS) + '</select></label>' +
+        '<label>Año<input name="año" type="number" min="2000" max="2099" value="' + esc(r.año) + '"></label>' +
+        '<label>Plataforma<select name="plataformaJugada"><option value="">—</option>' + opts(plats, r.plataformaJugada) + '</select></label>' +
+        '<label class="entry-ed__wide">Comentario<textarea name="comentario" rows="2">' + esc(r.comentario) + '</textarea></label>' +
+      '</div>' +
+      '<div class="entry-ed__btns"><button type="button" class="btn btn-secondary btn-sm" data-entry-cancel>Cancelar</button>' +
+        '<button type="submit" class="btn btn-primary btn-sm">💾 Guardar</button></div>' +
+    '</form>';
+  }
+
+  // engancha el contenedor de la ficha una sola vez; refresh() vuelve a pintar la ficha
+  function attach(container, refresh) {
+    if (!container || container._entryEd) return;
+    container._entryEd = true;
+    var again = function () { var top = container.scrollTop; refresh(); container.scrollTop = top; };
+    container.addEventListener('click', function (e) {
+      if (e.target.closest('[data-entry-cancel]')) { again(); return; }
+      var ed = e.target.closest('[data-entry-edit]');
+      if (!ed) return;
+      var row = ed.closest('.detail-entry'), r = row && window.GT.Registro.getById(row.dataset.rid);
+      if (!r) return;
+      row.outerHTML = form(r);
+      var f = container.querySelector('.entry-ed[data-rid="' + r.id.replace(/"/g, '\\"') + '"]');
+      if (f) { f.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); f.elements.estado.focus(); }
+    });
+    container.addEventListener('submit', function (e) {
+      var f = e.target.closest('.entry-ed');
+      if (!f) return;
+      e.preventDefault();
+      var r = window.GT.Registro.getById(f.dataset.rid);
+      if (!r) return;
+      var el = f.elements, notaRaw = String(el.nota.value).trim().replace(',', '.');
+      var nota = notaRaw !== '' ? parseFloat(notaRaw) : null;
+      if (nota !== null && (isNaN(nota) || nota < 0 || nota > 10)) { window.GT.Toast.show('La nota debe estar entre 0 y 10', 'error'); return; }
+      var año = parseInt(el['año'].value, 10);
+      if (!año || año < 2000 || año > 2099) { window.GT.Toast.show('Pon un año válido', 'error'); return; }
+      window.GT.Registro.update(r.id, {
+        estado: el.estado.value,
+        nota: nota,
+        horas: parseFloat(el.horas.value) || null,
+        mes: parseInt(el.mes.value, 10),
+        año: año,
+        plataformaJugada: el.plataformaJugada.value,
+        comentario: el.comentario.value.trim()
+      }, r.version || 0);
+      window.GT.Toast.show('Partida actualizada ✓');
+      again();
+    });
+  }
+  return { button: button, attach: attach };
+})();
+
 /* ── GAME DETAIL MODAL (universal, any page) ───────────────── */
 window.GT.GameDetailModal = (function () {
   var overlay;
@@ -633,7 +713,7 @@ window.GT.GameDetailModal = (function () {
       html += '<div class="detail-entries-hdr">Entradas en el Registro</div>' +
         entries.map(function(r) {
           var rSc = Utils.scoreColor(r.nota);
-          return '<div class="detail-entry">' +
+          return '<div class="detail-entry" data-rid="' + Utils.escapeHtml(r.id) + '">' +
             '<span class="badge ' + Utils.playerBadge(r.jugador) + '">' + Utils.escapeHtml(r.jugador) + '</span>' +
             '<span style="font-size:0.78rem;color:var(--txt3)">' + Utils.monthName(r.mes) + ' ' + r.año + '</span>' +
             '<span class="badge ' + Utils.statusBadge(r.estado) + '">' + Utils.escapeHtml(r.estado) + '</span>' +
@@ -642,6 +722,7 @@ window.GT.GameDetailModal = (function () {
               ? '<span class="detail-entry__score" style="color:' + rSc + '">' + Utils.formatScore(r.nota) + '</span>'
               : '') +
             (r.horas ? '<span class="detail-entry__hours">' + r.horas + 'h</span>' : '') +
+            window.GT.EntryEditor.button() +
           '</div>';
         }).join('');
     }
@@ -684,6 +765,7 @@ window.GT.GameDetailModal = (function () {
     }
 
     document.getElementById('gdBody').innerHTML = html;
+    window.GT.EntryEditor.attach(document.getElementById('gdBody'), function () { open(_gdGameId); }); // la ficha que esté abierta
     document.getElementById('gdBody').scrollTop = 0; // cada ficha empieza arriba, aunque la anterior se quedara bajada
     overlay.classList.add('open');
   }

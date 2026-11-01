@@ -1127,7 +1127,7 @@
       html += '<div class="detail-entries-hdr">Entradas en el Registro</div>' +
         entries.map(function (r) {
           var rSc = Utils.scoreColor(r.nota);
-          return '<div class="detail-entry">' +
+          return '<div class="detail-entry" data-rid="' + Utils.escapeHtml(r.id) + '">' +
             '<span class="badge ' + Utils.playerBadge(r.jugador) + '">' + Utils.escapeHtml(r.jugador) + '</span>' +
             '<span style="font-size:0.78rem;color:var(--txt3)">' + Utils.monthName(r.mes) + ' ' + r.año + '</span>' +
             '<span class="badge ' + Utils.statusBadge(r.estado) + '">' + Utils.escapeHtml(r.estado) + '</span>' +
@@ -1136,6 +1136,7 @@
               ? '<span class="detail-entry__score" style="color:' + rSc + '">' + Utils.formatScore(r.nota) + '</span>'
               : '') +
             (r.horas ? '<span class="detail-entry__hours">' + r.horas + 'h</span>' : '') +
+            window.GT.EntryEditor.button() +
           '</div>';
         }).join('');
     }
@@ -1165,6 +1166,7 @@
     }
 
     document.getElementById('detailBody').innerHTML = html;
+    window.GT.EntryEditor.attach(document.getElementById('detailBody'), function () { openDetail(state.detailId); });
     document.getElementById('detailBody').scrollTop = 0; // cada ficha empieza arriba, aunque la anterior se quedara bajada
     document.getElementById('detailModal').classList.add('open');
     document.getElementById('detailEdit').onclick = function () { openEdit(id); };

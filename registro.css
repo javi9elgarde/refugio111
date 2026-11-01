@@ -268,3 +268,18 @@
 /* partidas jugadas antes de la 1.0 de un juego con Early Access */
 .rg-ea { color: #c084fc; font-weight: 700; }
 .rg-ea--tag { display: inline-block; align-self: flex-start; margin-top: 0.15rem; padding: 0.1rem 0.45rem; border-radius: 6px; font-size: 0.66rem; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.35); }
+
+/* buscador por juego, al lado de los filtros */
+.rg-tools { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+.rg-search { display: flex; align-items: center; gap: 0.45rem; padding: 0 0.85rem; min-height: 36px; border-radius: 999px;
+  border: 1px solid var(--rg-line); background: var(--rg-panel); color: #94a3b8; cursor: text; }
+.rg-search:focus-within { border-color: var(--rg-acc); box-shadow: 0 0 14px rgba(67,233,123,0.2); color: var(--rg-acc); }
+.rg-search input { width: 190px; border: 0; background: transparent; color: #e2e8f0; font-size: 0.82rem; outline: none; }
+.rg-search input::placeholder { color: #64748b; }
+/* mientras se busca, año y mes no cuentan: se apagan */
+.rg-filters.is-searching #filterYear, .rg-filters.is-searching #filterMonth { opacity: 0.35; }
+@media (max-width: 768px) {
+  .rg-tools { width: 100%; }
+  .rg-search { flex: 1 1 100%; min-height: 44px; }
+  .rg-search input { width: 100%; }
+}

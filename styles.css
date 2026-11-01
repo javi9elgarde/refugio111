@@ -5952,3 +5952,20 @@ html.gt-embed body > :not(#gameModal):not(.toast-container):not(script) { displa
 @media (max-height: 1000px) and (min-width: 641px) {
   #detailModal .detail-cover__wrap, #gdModal .detail-cover__wrap { max-height: 36vh; }
 }
+
+/* FICHA: editar una partida ahí mismo */
+.detail-entry__ed { flex: none; width: 32px; height: 32px; margin-left: 0.2rem; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); cursor: pointer; font-size: 0.8rem; opacity: 0.55; transition: opacity 0.15s, border-color 0.15s; }
+.detail-entry:hover .detail-entry__ed, .detail-entry__ed:focus-visible { opacity: 1; border-color: rgba(79,172,254,0.5); }
+@media (hover: none) { .detail-entry__ed { opacity: 0.9; width: 40px; height: 40px; } }
+.detail-entry:not(:has(.detail-entry__score, .detail-entry__hours)) .detail-entry__ed { margin-left: auto; }
+.entry-ed { margin-bottom: 0.45rem; padding: 0.8rem 0.9rem; border-radius: 10px; border: 1px solid rgba(79,172,254,0.45); background: rgba(79,172,254,0.06); }
+.entry-ed__top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; font-size: 0.82rem; }
+.entry-ed__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.55rem 0.7rem; }
+.entry-ed__grid label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; color: var(--txt3); text-transform: uppercase; }
+.entry-ed__grid input, .entry-ed__grid select, .entry-ed__grid textarea { width: 100%; min-height: 38px; padding: 0.4rem 0.55rem; border-radius: 8px; border: 1px solid var(--border, rgba(255,255,255,0.12));
+  background: rgba(7,7,15,0.8); color: var(--txt, #e8e8f8); font: 500 0.85rem Inter, system-ui, sans-serif; text-transform: none; letter-spacing: 0; }
+.entry-ed__grid textarea { resize: vertical; }
+.entry-ed__wide { grid-column: 1 / -1; }
+.entry-ed__btns { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.7rem; }
+@media (max-width: 520px) { .entry-ed__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

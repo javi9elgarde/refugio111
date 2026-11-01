@@ -10,7 +10,7 @@
   var Registro   = window.GT.Registro;
   var Toast      = window.GT.Toast;
 
-  var state      = { player: 'All', year: 0, month: '', tab: '', rel: {}, editId: null, sort: 'desc' };
+  var state      = { player: 'All', year: 0, month: '', tab: '', rel: {}, editId: null, sort: 'desc', q: '' };
   var _quickModal = { entryId: null };
 
   function safe(fn, name) {
@@ -280,11 +280,18 @@
     return (state.sort === 'asc' ? 1 : -1) * byDate(a, b);
   }
 
+  // «Zelda» encuentra «The Legend of Zelda»; sin tildes ni mayúsculas
+  function norm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+
   function renderTable() {
     var opts = {};
-    if (state.year)  opts.año = state.year;
-    if (state.month) opts.mes = parseInt(state.month);
+    // buscando un juego se mira en todos los años y meses (para encontrar partidas antiguas sin cambiar filtros)
+    var q = norm(state.q).trim();
+    if (state.year && !q)  opts.año = state.year;
+    if (state.month && !q) opts.mes = parseInt(state.month);
+    document.querySelector('.rg-filters').classList.toggle('is-searching', !!q);
     var base = Registro.filter(Object.assign({ jugador: 'All' }, opts));
+    if (q) base = base.filter(function (r) { var g = Biblioteca.getById(r.juegoId); return g && norm(g.titulo).indexOf(q) !== -1; });
     renderSide(base);
     var mine = function (r) { return state.player === 'All' || r.jugador === state.player; };
     var activo = function (r) { return JUGANDO[r.estado] || RETOMAR[r.estado]; };
@@ -301,10 +308,10 @@
 
     var t = state.tab, html = '';
     var cards = function (list, max, emptyTxt) { return list.length ? '<div class="rg-cards">' + list.slice(0, max || list.length).map(card).join('') + '</div>' : '<p class="rg-none">' + emptyTxt + '</p>'; };
-    if (!t || t === 'curso') html += section('curso', 'EN CURSO', curso.length, curso.length ? '<div class="rg-rows">' + cursoRows(curso, t ? 0 : 6) + '</div>' : '<p class="rg-none">Nadie está jugando nada ahora mismo</p>', t ? '' : 'curso');
-    if (!t || t === 'retomar') html += section('retomar', 'RETOMAR', retomar.length, cards(retomar, t ? 0 : 5, 'Nada pendiente de retomar'), t ? '' : 'retomar');
-    if (!t || t === 'hecho') html += section('hecho', 'COMPLETADOS', hecho.length, cards(hecho, t ? 0 : 10, 'Sin juegos completados'), t ? '' : 'hecho');
-    if (!t || t === 'otros') html += section('otros', 'ABANDONADOS', otros.length, cards(otros, t ? 0 : 5, 'Ningún juego abandonado'), t ? '' : 'otros');
+    if ((!t || t === 'curso') && (!q || curso.length)) html += section('curso', 'EN CURSO', curso.length, curso.length ? '<div class="rg-rows">' + cursoRows(curso, t || q ? 0 : 6) + '</div>' : '<p class="rg-none">Nadie está jugando nada ahora mismo</p>', t ? '' : 'curso');
+    if ((!t || t === 'retomar') && (!q || retomar.length)) html += section('retomar', 'RETOMAR', retomar.length, cards(retomar, t || q ? 0 : 5, 'Nada pendiente de retomar'), t ? '' : 'retomar');
+    if ((!t || t === 'hecho') && (!q || hecho.length)) html += section('hecho', 'COMPLETADOS', hecho.length, cards(hecho, t || q ? 0 : 10, 'Sin juegos completados'), t ? '' : 'hecho');
+    if ((!t || t === 'otros') && (!q || otros.length)) html += section('otros', 'ABANDONADOS', otros.length, cards(otros, t || q ? 0 : 5, 'Ningún juego abandonado'), t ? '' : 'otros');
     container.innerHTML = html;
   }
 
@@ -519,6 +526,8 @@
     initPlayerCards();
 
     document.getElementById('filterMonth').addEventListener('change', function() { state.month = this.value; renderTable(); });
+    var search = document.getElementById('regSearch');
+    if (search) search.addEventListener('input', function () { state.q = this.value; renderTable(); });
     initTabs();
 
 

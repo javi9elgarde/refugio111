@@ -7,8 +7,8 @@
   <link rel="apple-touch-icon" href="logonuevo.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Refugio 111 — Registro</title>
-  <link rel="stylesheet" href="styles.css?v=20261101e">
-  <link rel="stylesheet" href="registro.css?v=20261101a">
+  <link rel="stylesheet" href="styles.css?v=20261101f">
+  <link rel="stylesheet" href="registro.css?v=20261101b">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#07070f">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -94,6 +94,12 @@
           <button type="button" role="tab" data-tab="hecho">COMPLETADOS</button>
           <button type="button" role="tab" data-tab="otros">ABANDONADOS</button>
         </div>
+        <div class="rg-tools">
+        <!-- buscar por juego: busca en todos los años mientras se escribe -->
+        <label class="rg-search" title="Busca en todos los años">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" id="regSearch" placeholder="Buscar juego…" autocomplete="off" aria-label="Buscar partidas por juego">
+        </label>
         <div class="rg-filters">
           <select id="filterYear" aria-label="Año"></select>
           <select id="filterMonth" aria-label="Mes">
@@ -104,6 +110,7 @@
             <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
           </select>
           <select id="regSort" aria-label="Orden"><option value="desc">Más recientes</option><option value="asc">Más antiguos</option><option value="best">Mejores notas</option><option value="worst">Peores notas</option></select>
+        </div>
         </div>
       </div>
 
@@ -166,8 +173,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"      defer></script>
 <script src="firebase-config.js?v=20261030b" defer></script>
 <script src="js/sync-manager.js?v=20261101a" defer></script>
-<script src="main.js?v=20261101f"            defer></script>
-<script src="registro.js?v=20261101a"        defer></script>
+<script src="main.js?v=20261101g"            defer></script>
+<script src="registro.js?v=20261101c"        defer></script>
 <script src="js/mobile-ui.js?v=20261030m" defer></script>
 <script src="js/push-manager.js?v=20261030n" defer></script>
 <script src="app.js?v=20261023a" defer></script>
