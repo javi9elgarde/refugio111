@@ -270,3 +270,7 @@
 @media (hover: hover) and (pointer: fine) { .rec:hover { transform: translateY(-4px); box-shadow: 0 16px 34px rgba(0,0,0,0.55), 0 0 22px color-mix(in srgb, var(--rc) 30%, transparent); } }
 @media (max-width: 1200px) { .rec-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .rec-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem; } .rec__art { height: 96px; } .rec__big { font-size: 1.8rem; } }
+
+/* día en que empezó el acceso anticipado de un juego */
+.r1-day__tag--ea { background: #a855f7; color: #fff; }
+.r1-pc__t small.r1-pc__ea { color: #c084fc; }

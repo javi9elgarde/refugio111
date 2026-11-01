@@ -109,10 +109,22 @@ window.GT.Utils = (function () {
     img.onerror = function () { cb(_sides[url] = null); };
     img.src = thumb(url, 200);
   }
+  // ¿Está ahora en acceso anticipado? Con fecha de Early Access va solo: desde ese día hasta la salida oficial (1.0).
+  // Sin esa fecha manda la casilla «Early Access» de siempre. La fecha oficial (fechaLanzamiento) es la de la 1.0
+  // y es la que cuenta para el VAULTY, el calendario de estrenos y los filtros por año.
+  function inEarlyAccess(game, today) {
+    if (!game) return false;
+    var t = today || new Date().toISOString().slice(0, 10);
+    if (game.fechaEarlyAccess) return game.fechaEarlyAccess <= t && !(game.fechaLanzamiento && game.fechaLanzamiento <= t);
+    return !!game.earlyAccess;
+  }
+  console.assert(inEarlyAccess({ fechaEarlyAccess: '2022-09-06', fechaLanzamiento: '2023-12-05' }, '2023-01-01') &&
+    !inEarlyAccess({ fechaEarlyAccess: '2022-09-06', fechaLanzamiento: '2023-12-05' }, '2024-01-01') &&
+    !inEarlyAccess({ fechaEarlyAccess: '2027-01-01' }, '2026-01-01') && inEarlyAccess({ earlyAccess: true }), 'inEarlyAccess');
   // 14213 → 14.213, también dentro de textos como «5957h» (no usar con años)
   function miles(v) { return String(v == null ? '' : v).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
   console.assert(miles(14213) === '14.213' && miles(5957) === '5.957' && miles('5957h') === '5.957h' && miles('8,35') === '8,35', 'miles');
-  return { uuid, trailerUrl, thumb, quietSide, miles, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
+  return { uuid, inEarlyAccess, trailerUrl, thumb, quietSide, miles, scoreColor, scoreWidth, formatScore, formatDuracion, monthName, platformClass,
            playerBadge, statusBadge, escapeHtml, platformBadgesHtml, genreBadgesHtml, MONTHS };
 })();
 
@@ -532,8 +544,9 @@ window.GT.GameDetailModal = (function () {
     var _todayBand  = new Date().toISOString().slice(0, 10);
     var _hasDurBand = game.duracion !== null && game.duracion !== undefined && game.duracion !== '' && parseFloat(game.duracion) > 0;
     var _isFutBand  = game.fechaLanzamiento && game.fechaLanzamiento > _todayBand;
-    if (game.earlyAccess)               coverInner += '<div class="detail-cover__ea-band">⚡ EARLY ACCESS</div>';
-    if (!_hasDurBand && _isFutBand)     coverInner += '<div class="detail-cover__prox-band">PRÓXIMAMENTE</div>';
+    var _inEA = window.GT.Utils.inEarlyAccess(game);
+    if (_inEA)                          coverInner += '<div class="detail-cover__ea-band">⚡ EARLY ACCESS</div>';
+    if (!_hasDurBand && _isFutBand && !_inEA) coverInner += '<div class="detail-cover__prox-band">PRÓXIMAMENTE</div>'; // en EA ya se juega
 
     var scGlow = notaMedia !== null ? sc.replace('hsl(', 'hsla(').replace(')', ',0.35)') : 'transparent';
     var scoreBadge = notaMedia !== null
@@ -548,7 +561,8 @@ window.GT.GameDetailModal = (function () {
     /* Stats */
     var stats = '';
     if (game.desarrollador)    stats += '<div class="detail-stat"><span class="detail-stat__icon">🏢</span><span>' + Utils.escapeHtml(game.desarrollador) + '</span></div>';
-    if (game.fechaLanzamiento) stats += '<div class="detail-stat"><span class="detail-stat__icon">📅</span><span>' + fmtDate(game.fechaLanzamiento) + '</span></div>';
+    if (game.fechaEarlyAccess) stats += '<div class="detail-stat"><span class="detail-stat__icon">⚡</span><span>Early Access · ' + fmtDate(game.fechaEarlyAccess) + '</span></div>';
+    if (game.fechaLanzamiento) stats += '<div class="detail-stat"><span class="detail-stat__icon">' + (game.fechaEarlyAccess ? '🚀' : '📅') + '</span><span>' + (game.fechaEarlyAccess ? '1.0 · ' : '') + fmtDate(game.fechaLanzamiento) + '</span></div>';
     if (game.duracion)         stats += '<div class="detail-stat"><span class="detail-stat__icon">⏱</span><span>' + Utils.formatDuracion(game.duracion, false) + '</span></div>';
 
     var tipoMap  = { remake:'🔄 Remake', remaster:'✨ Remaster', relanzamiento:'📦 Relanzamiento / Port' };
@@ -563,7 +577,7 @@ window.GT.GameDetailModal = (function () {
       '</div>' +
       '<div class="detail-info">' +
         '<div class="detail-badges-row">' +
-          (game.earlyAccess ? '<span class="badge badge-ea">⚡ Early Access</span>' : '') +
+          (_inEA ? '<span class="badge badge-ea">⚡ Early Access</span>' : '') +
           Utils.platformBadgesHtml(game.plataformas) +
           Utils.genreBadgesHtml(game.generos) +
         '</div>' +

@@ -228,7 +228,7 @@
           <datalist id="devSuggestions"></datalist>
         </div>
         <div class="form-group">
-          <label class="form-label">Fecha de Lanzamiento</label>
+          <label class="form-label">Fecha de Lanzamiento (oficial / 1.0)</label>
           <div class="date-selects-row">
             <select class="form-select" id="fFechaDia"><option value="">DD</option></select>
             <select class="form-select" id="fFechaMes">
@@ -267,6 +267,11 @@
             <span class="ea-toggle__label">⚡ Acceso anticipado</span>
           </label>
           <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Se mostrará una etiqueta ⚡ EA en la tarjeta y ficha</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="fFechaEA">Fecha de Early Access</label>
+          <input type="date" class="form-input" id="fFechaEA">
+          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Opcional. Si el juego salió antes en acceso anticipado: arriba va la <b>fecha oficial (1.0)</b>, que es la que cuenta para el VAULTY, y aquí la del Early Access. Con esta fecha la etiqueta ⚡ se pone y se quita sola.</small>
         </div>
         <div class="form-group">
           <label class="form-label">Saga / Franquicia</label>
@@ -415,10 +420,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"      defer></script>
 <script src="firebase-config.js?v=20261030b" defer></script>
 <script src="js/sync-manager.js?v=20261101a" defer></script>
-<script src="main.js?v=20261101b"            defer></script>
+<script src="main.js?v=20261101c"            defer></script>
 <script src="rawg.js?v=20261022a"            defer></script>
 <script src="igdb.js?v=20261022a"            defer></script>
-<script src="biblioteca.js?v=20261101d"      defer></script>
+<script src="biblioteca.js?v=20261101e"      defer></script>
 <script src="js/mobile-ui.js?v=20261030m" defer></script>
 <script src="js/push-manager.js?v=20261030n" defer></script>
 <script src="app.js?v=20261023a" defer></script>

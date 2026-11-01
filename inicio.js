@@ -50,7 +50,7 @@
       '<div class="r1-slide__shade"></div>' +
       // cartel colgado arriba a la izquierda: deja ver el fondo
       '<div class="r1-sign"><div class="r1-sign__board">' +
-        '<div class="r1-meta"><span>' + (d === todayIso() ? '🎉 SALE HOY' : '📅 ' + fmtLong(d)) + '</span></div>' +
+        '<div class="r1-meta"><span>' + (d === todayIso() ? '🎉 SALE HOY' : U.inEarlyAccess(g) ? '⚡ EN EARLY ACCESS · 1.0: ' + fmtLong(d) : '📅 ' + fmtLong(d)) + '</span></div>' +
         '<h2 class="r1-title">' + esc(g.titulo) + '</h2>' +
         ((g.plataformas || []).length ? '<div class="r1-sign__pl">' + g.plataformas.slice(0, 4).map(function (p) { return '<span class="r1-pl">' + esc(p) + '</span>'; }).join('') + '</div>' : '') +
       '</div></div>' +
@@ -275,12 +275,14 @@
 
   /* ── CALENDARIO ──────────────────────────────────────────── */
   // cada día: eventos especiales (con su portada) y juegos; los eventos llevan a la pestaña Eventos
-  function calItems(evs, games) {
+  function calItems(evs, games, eas) {
     return evs.map(function (ev) {
       var img = ev.homeImg || ev.img || '';
       return { evt: true, titulo: ev.nombre, img: /^https?:\/\//i.test(img) ? img : '', pos: 'center', href: 'eventos.html' };
     }).concat(games.map(function (g) {
       return { id: g.id, titulo: g.titulo, img: g.portadaUrl ? U.thumb(g.portadaUrl) : '', pos: g.portadaPos || 'center top', href: 'biblioteca.html?open=' + g.id };
+    })).concat((eas || []).map(function (g) { // el día que empezó su acceso anticipado
+      return { ea: true, id: g.id, titulo: g.titulo, img: g.portadaUrl ? U.thumb(g.portadaUrl) : '', pos: g.portadaPos || 'center top', href: 'biblioteca.html?open=' + g.id };
     }));
   }
 
@@ -288,10 +290,11 @@
     var y = cal.y, m = cal.m, t = todayIso();
     $('r1CalMonth').textContent = MESES[m] + ' ' + y;
     var prefix = y + '-' + pad(m + 1) + '-';
-    var byDay = {}, evByDay = {}, items = {};
+    var byDay = {}, evByDay = {}, eaByDay = {}, items = {};
     B.getAll().forEach(function (g) {
-      var d = fullDate(g);
+      var d = fullDate(g), ea = g.fechaEarlyAccess || '';
       if (d && d.indexOf(prefix) === 0) (byDay[+d.slice(8)] = byDay[+d.slice(8)] || []).push(g);
+      if (ea.indexOf(prefix) === 0) (eaByDay[+ea.slice(8)] = eaByDay[+ea.slice(8)] || []).push(g);
     });
     events.forEach(function (ev) {
       var d = new Date(ev.isoDate);
@@ -301,7 +304,7 @@
     for (var i = 0; i < first; i++) html += '<div class="r1-day r1-day--pad"></div>';
     for (var day = 1; day <= days; day++) {
       var games = (byDay[day] || []).sort(function (a, b) { return isEsperado(b) - isEsperado(a); });
-      var list = items[day] = calItems(evByDay[day] || [], games), shown = list.slice(0, 5);
+      var list = items[day] = calItems(evByDay[day] || [], games, eaByDay[day]), shown = list.slice(0, 5);
       var isToday = prefix + pad(day) === t;
       var cls = 'r1-day' + (isToday ? ' r1-day--today' : '') + (list.length ? ' r1-day--has' : '') + (list.length > 1 ? ' r1-day--multi' : '') + ((evByDay[day] || []).length ? ' r1-day--evt' : '');
       // con varios, las portadas y nombres van pasando dentro de la casilla (data-k)
@@ -315,7 +318,7 @@
         '<div class="r1-day__info">' +
           (shown.length ? '<div class="r1-day__ts">' + shown.map(function (it, i) {
             return '<div class="r1-day__g' + (i ? '' : ' is-on') + (it.evt ? ' r1-day__g--evt' : '') + '" data-k="' + i + '">' +
-              (it.evt ? '<span class="r1-day__tag">🎮 EVENTO</span>' : '') + '<div class="r1-day__t">' + esc(it.titulo) + '</div></div>';
+              (it.evt ? '<span class="r1-day__tag">🎮 EVENTO</span>' : it.ea ? '<span class="r1-day__tag r1-day__tag--ea">⚡ EARLY ACCESS</span>' : '') + '<div class="r1-day__t">' + esc(it.titulo) + '</div></div>';
           }).join('') + '</div>' : '') +
         '</div></div>';
     }
@@ -335,7 +338,7 @@
     pop.innerHTML = list.map(function (it, i) {
       return '<a class="r1-pc' + (it.evt ? ' r1-pc--evt' : '') + '" style="--i:' + i + '" href="' + esc(it.href) + '">' +
         (it.img ? '<img src="' + esc(it.img) + '" alt="" style="object-position:' + esc(it.pos) + '">' : '<div class="r1-pc__ph"></div>') +
-        '<div class="r1-pc__t">' + (it.evt ? '<small>🎮 EVENTO</small>' : '') + esc(it.titulo) + '</div></a>';
+        '<div class="r1-pc__t">' + (it.evt ? '<small>🎮 EVENTO</small>' : it.ea ? '<small class="r1-pc__ea">⚡ EARLY ACCESS</small>' : '') + esc(it.titulo) + '</div></a>';
     }).join('');
     pop.hidden = false;
     var sheet = innerWidth < 640;

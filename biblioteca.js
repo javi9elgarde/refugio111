@@ -242,14 +242,15 @@
     var hasDur = game.duracion !== null && game.duracion !== undefined && game.duracion !== '' && parseFloat(game.duracion) > 0;
     var isFuture = game.fechaLanzamiento && game.fechaLanzamiento > today;
     var isReleasedNoDur = !hasDur && game.fechaLanzamiento && game.fechaLanzamiento <= today;
-    // Próximamente automático: cualquier juego sin duración con fecha futura O sin fecha
-    var showProx = !hasDur && (isFuture || !game.fechaLanzamiento);
+    var inEA = Utils.inEarlyAccess(game, today);
+    // Próximamente automático: cualquier juego sin duración con fecha futura O sin fecha (en Early Access ya se juega)
+    var showProx = !hasDur && !inEA && (isFuture || !game.fechaLanzamiento);
     var noDateProx = !hasDur && !game.fechaLanzamiento;
 
     var durStr = hasDur ? '⏱ ' + Utils.formatDuracion(game.duracion, true) : '';
     var proxClass = 'game-card__prox' + (noDateProx ? ' game-card__prox--nofecha' : '');
     var proxRibbon = showProx ? '<div class="' + proxClass + '">PRÓXIMAMENTE</div>' : '';
-    var eaBadge    = game.earlyAccess ? '<div class="game-card__ea' + (showProx ? ' game-card__ea--above' : '') + '">⚡ EARLY ACCESS</div>' : '';
+    var eaBadge    = inEA ? '<div class="game-card__ea' + (showProx ? ' game-card__ea--above' : '') + '">⚡ EARLY ACCESS</div>' : '';
 
     // Derecha del meta row: nota si está disponible, fueguitos de hype si no ha salido
     var hypeVal = showProx ? (parseInt(game.hype) || 0) : 0;
@@ -268,7 +269,7 @@
       : (isReleasedNoDur
           ? '<span class="game-card__dur game-card__dur--missing">⏱ ~0h</span>'
           : (game.fechaLanzamiento
-              ? '<span class="game-card__prox-date">📅 ' + fmtDate(game.fechaLanzamiento) + '</span>'
+              ? '<span class="game-card__prox-date">' + (inEA ? '🚀 1.0 · ' : '📅 ') + fmtDate(game.fechaLanzamiento) + '</span>'
               : '<span class="game-card__no-date">Sin fecha</span>'));
 
     // Saga: texto oculto que aparece en el hover de la portada
@@ -946,6 +947,7 @@
     document.getElementById('fPendMery').checked  = false;
     document.getElementById('fTipoLanzamiento').value = '';
     document.getElementById('fEarlyAccess').checked = false;
+    document.getElementById('fFechaEA').value = '';
     document.getElementById('fSaga').value = '';
     setHypeSelector(0);
     updateHypeFormVisibility();
@@ -981,6 +983,7 @@
     document.getElementById('fPendMery').checked  = pPor.includes('Mery');
     document.getElementById('fTipoLanzamiento').value = game.tipoLanzamiento || '';
     document.getElementById('fEarlyAccess').checked   = !!game.earlyAccess;
+    document.getElementById('fFechaEA').value          = game.fechaEarlyAccess || '';
     document.getElementById('fSaga').value = game.saga || '';
     setHypeSelector(parseInt(game.hype) || 0);
     updateHypeFormVisibility();
@@ -1072,8 +1075,9 @@
     var _today2  = new Date().toISOString().slice(0, 10);
     var _hasDur2 = game.duracion !== null && game.duracion !== undefined && game.duracion !== '' && parseFloat(game.duracion) > 0;
     var _isFut2  = game.fechaLanzamiento && game.fechaLanzamiento > _today2;
-    if (game.earlyAccess)                              coverInner += '<div class="detail-cover__ea-band">⚡ EARLY ACCESS</div>';
-    if (!_hasDur2 && (_isFut2 || !game.fechaLanzamiento)) coverInner += '<div class="detail-cover__prox-band">PRÓXIMAMENTE</div>';
+    var _inEA2   = Utils.inEarlyAccess(game, _today2);
+    if (_inEA2)                                        coverInner += '<div class="detail-cover__ea-band">⚡ EARLY ACCESS</div>';
+    if (!_hasDur2 && !_inEA2 && (_isFut2 || !game.fechaLanzamiento)) coverInner += '<div class="detail-cover__prox-band">PRÓXIMAMENTE</div>';
 
     var scGlow = notaMedia !== null ? sc.replace('hsl(', 'hsla(').replace(')', ',0.35)') : 'transparent';
 
@@ -1089,7 +1093,8 @@
     /* ── Stats ─────────────────────────────────────────────── */
     var stats = '';
     if (game.desarrollador)    stats += '<div class="detail-stat"><span class="detail-stat__icon">🏢</span><span>' + Utils.escapeHtml(game.desarrollador) + '</span></div>';
-    if (game.fechaLanzamiento) stats += '<div class="detail-stat"><span class="detail-stat__icon">📅</span><span>' + fmtDate(game.fechaLanzamiento) + '</span></div>';
+    if (game.fechaEarlyAccess) stats += '<div class="detail-stat"><span class="detail-stat__icon">⚡</span><span>Early Access · ' + fmtDate(game.fechaEarlyAccess) + '</span></div>';
+    if (game.fechaLanzamiento) stats += '<div class="detail-stat"><span class="detail-stat__icon">' + (game.fechaEarlyAccess ? '🚀' : '📅') + '</span><span>' + (game.fechaEarlyAccess ? '1.0 · ' : '') + fmtDate(game.fechaLanzamiento) + '</span></div>';
     if (game.duracion)         stats += '<div class="detail-stat"><span class="detail-stat__icon">⏱</span><span>' + Utils.formatDuracion(game.duracion, false) + '</span></div>';
 
     /* ── Tipo lanzamiento ──────────────────────────────────── */
@@ -1098,7 +1103,7 @@
       ? '<div class="detail-tipo">' + (tipoMap[game.tipoLanzamiento] || '') + ' <span style="opacity:0.6">· no computa en rankings</span></div>'
       : '';
 
-    var eaHtml = game.earlyAccess
+    var eaHtml = _inEA2
       ? '<span class="badge badge-ea">⚡ Early Access</span>'
       : '';
 
@@ -1261,6 +1266,7 @@
                         document.getElementById('fPendMery').checked,
       tipoLanzamiento:  document.getElementById('fTipoLanzamiento').value,
       earlyAccess:      !!document.getElementById('fEarlyAccess').checked,
+      fechaEarlyAccess: document.getElementById('fFechaEA').value || '',
       saga:             document.getElementById('fSaga').value.trim(),
       hype:             getHypeValue(),
       generos:          selectedGeneros.slice(),
