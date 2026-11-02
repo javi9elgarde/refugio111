@@ -33,7 +33,6 @@
   var _topScope    = '2026';   // '2026' | 'hist'
   var _topExpanded = { peliculas: false, series: false, anime: false };
 
-  var _statsPlayer = 'Javi';
 
   var _view        = new Date();
   var _addCat        = 'peliculas';
@@ -52,7 +51,6 @@
   /* ══ INIT ═══════════════════════════════════════════════════ */
   function init() {
     _view = new Date(); _view.setDate(1);
-    _statsPlayer = (window.MT && window.MT.getPlayer && window.MT.getPlayer()) || 'Javi';
 
     waitForMT(function () {
       loadItems();
@@ -78,20 +76,12 @@
       renderTops();
     });
 
-    /* Stats: selector de jugador */
-    var sp = document.getElementById('statsPlayer');
-    sp.value = _statsPlayer;
-    sp.addEventListener('change', function () { _statsPlayer = this.value; renderStats(); });
-
-    /* Calendario (modal) */
-    document.getElementById('openCalendar').addEventListener('click', openCalendar);
-    document.getElementById('calModalClose').addEventListener('click', closeCalendar);
-    document.getElementById('calendarModal').addEventListener('click', function (e) { if (e.target === this) closeCalendar(); });
+    /* Calendario (en la página, debajo de la portada) */
     document.getElementById('calPrev').addEventListener('click', function () { _view.setMonth(_view.getMonth() - 1); renderCalendar(); });
     document.getElementById('calNext').addEventListener('click', function () { _view.setMonth(_view.getMonth() + 1); renderCalendar(); });
     document.getElementById('calToday').addEventListener('click', function () { _view = new Date(); _view.setDate(1); renderCalendar(); });
 
-    /* Auto-abrir calendario si se llega con ?cal=1 (desde "Estrenos" del menú) */
+    /* Ir al calendario si se llega con ?cal=1 (desde "Estrenos" del menú) */
     if (new URLSearchParams(window.location.search).get('cal') === '1') {
       setTimeout(openCalendar, 300);
     }
@@ -127,7 +117,6 @@
     _unsubItems = db.collection('mt_items').onSnapshot(function (snap) {
       _items = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
       renderTops();
-      renderStats();
       window.MT.hideLoading();
     }, function (err) { console.error('items:', err); window.MT.hideLoading(); });
   }
@@ -138,9 +127,8 @@
     _unsubRel = db.collection('mt_estrenos').onSnapshot(function (snap) {
       _releases = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
       buildHero();
-      renderUpcoming();
       renderCalendar();
-    }, function () { buildHero(); renderUpcoming(); renderCalendar(); });
+    }, function () { buildHero(); renderCalendar(); });
   }
 
   /* ══ HERO (estrenos destacados) ═════════════════════════════ */
@@ -154,7 +142,7 @@
     if (_heroIdx >= _hero.length) _heroIdx = 0;
     renderHero();
     /* Enriquecer con TMDB (backdrop, sinopsis, tráiler) */
-    _hero.forEach(function (r) { if (r.tmdbId && !_heroDetails[r.tmdbId]) fetchDetail(r).then(function () { renderHero(); }); });
+    _hero.forEach(function (r) { if (r.tmdbId && !_heroDetails[r.tmdbId]) fetchDetail(r).then(function () { renderHero(); renderCalendar(); }); });
     restartHeroTimer();
   }
 
@@ -246,7 +234,10 @@
             '<div class="ficha-meta">' + catLabel + ' · 📅 ' + fmtDate(r.fecha) + '</div>' +
             (det.genres && det.genres.length ? '<div class="ficha-genres">' + det.genres.map(function (g) { return '<span class="mt-badge mt-badge--genre">' + esc(g) + '</span>'; }).join('') + '</div>' : '') +
             (det.overview ? '<p class="ficha-overview">' + esc(det.overview) + '</p>' : '<p class="ficha-overview" style="color:var(--txt3)">Sin sinopsis disponible.</p>') +
-            '<button class="gen-hero__btn gen-hero__btn--play" style="margin-top:0.6rem" onclick="window.MTGen._trailerR(\'' + r.tmdbId + '\',\'' + safeTitle + '\')">▶ Ver tráiler en YouTube</button>' +
+            '<div class="gen-hero__actions" style="margin-top:0.6rem">' +
+              '<button class="gen-hero__btn gen-hero__btn--play" onclick="window.MTGen._trailerR(\'' + r.tmdbId + '\',\'' + safeTitle + '\')">▶ Ver tráiler en YouTube</button>' +
+              (r.id ? '<button class="gen-hero__btn gen-hero__btn--info" onclick="window.MTGen._editFromFicha(\'' + String(r.id).replace(/'/g, "\\'") + '\')">✏️ Editar estreno</button>' : '') +
+            '</div>' +
           '</div>' +
         '</div>';
     };
@@ -336,46 +327,8 @@
 
   function toggleTop(cat) { _topExpanded[cat] = !_topExpanded[cat]; renderTops(); }
 
-  /* ══ PRÓXIMOS ESTRENOS (columna derecha) ════════════════════ */
-  function renderUpcoming() {
-    var el = document.getElementById('genUpcoming');
-    var todayStr = new Date().toISOString().slice(0, 10);
-    var list = _releases.filter(function (r) { return r.fecha && r.fecha >= todayStr; })
-      .sort(function (a, b) { return a.fecha < b.fecha ? -1 : 1; }).slice(0, 8);
-    if (!list.length) { el.innerHTML = '<div class="mt-upcoming__empty">No hay estrenos próximos.</div>'; return; }
-    el.innerHTML = list.map(function (r) {
-      var poster = r.portadaUrl ? '<img src="' + esc(r.portadaUrl) + '" onerror="this.style.display=\'none\'">' : '<div class="mt-upcoming__ph">' + U().catEmoji(r.tipo) + '</div>';
-      var sid = r.id.replace(/'/g, "\\'");
-      return '<div class="mt-upcoming__item mt-upcoming__item--' + (r.tipo || 'peliculas') + '" title="Editar fecha" onclick="window.MTGen._editRel(\'' + sid + '\')">' +
-        '<div class="mt-upcoming__poster">' + poster + '</div>' +
-        '<div class="mt-upcoming__info"><div class="mt-upcoming__title">' + esc(r.titulo) + '</div>' +
-          '<div class="mt-upcoming__meta">' + fmtDateShort(r.fecha) + '</div></div>' +
-        '<button class="mt-upcoming__del" title="Eliminar" onclick="event.stopPropagation();window.MTGen._delRel(\'' + sid + '\')">✕</button>' +
-      '</div>';
-    }).join('');
-  }
-
-  /* ══ ESTADÍSTICAS ═══════════════════════════════════════════ */
-  function renderStats() {
-    var u = U(), p = _statsPlayer;
-    var pel = 0, ser = 0, ani = 0, mins = 0;
-    _items.forEach(function (it) {
-      var n = u.normEstado(u.resolvePlayerEstado(it, p));
-      if (!(n === 'visto' || n === 'vista')) return;
-      if (it.tipo === 'peliculas') { pel++; mins += parseFloat(it.duracion) || 0; }
-      else if (it.tipo === 'series') { ser++; mins += (parseInt(it.episodios) || 0) * 45; }
-      else if (it.tipo === 'anime') { ani++; mins += (parseInt(it.episodios) || 0) * 24; }
-    });
-    var horas = Math.round(mins / 60);
-    document.getElementById('statPel').textContent   = pel;
-    document.getElementById('statSer').textContent   = ser;
-    document.getElementById('statAni').textContent   = ani;
-    document.getElementById('statHoras').textContent = horas > 999 ? (Math.round(horas / 100) / 10) + 'k' : horas;
-  }
-
-  /* ══ CALENDARIO (modal) ═════════════════════════════════════ */
-  function openCalendar() { renderCalendar(); document.getElementById('calendarModal').classList.add('open'); }
-  function closeCalendar() { document.getElementById('calendarModal').classList.remove('open'); }
+  /* ══ CALENDARIO (en la página, como el de videojuegos) ═══════ */
+  function openCalendar() { renderCalendar(); var c = document.getElementById('genCal'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 
   function releasesOn(y, m, d) {
     return _releases.filter(function (r) {
@@ -399,11 +352,15 @@
     for (var i = 0; i < firstDow; i++) cells += '<div class="mt-cal__cell mt-cal__cell--empty"></div>';
     for (var d = 1; d <= daysInMonth; d++) {
       var rels = releasesOn(y, m, d);
-      var relHtml = rels.map(function (r) {
-        return '<div class="mt-cal__rel mt-cal__rel--' + (r.tipo || 'peliculas') + '" title="' + esc(r.titulo) + ' — editar" ' +
-          'onclick="window.MTGen._editRel(\'' + r.id.replace(/'/g, "\\'") + '\')">' + esc(r.titulo) + '</div>';
+      // la portada del primero de fondo; cada título abre su ficha (desde ella se edita la fecha)
+      var first = rels[0], det = first && _heroDetails[first.tmdbId], bg = first ? ((det && det.backdrop) || first.portadaUrl || '') : '';
+      var relHtml = rels.slice(0, 2).map(function (r) {
+        return '<div class="mt-cal__rel mt-cal__rel--' + (r.tipo || 'peliculas') + '" title="' + esc(r.titulo) + '" ' +
+          'onclick="window.MTGen._fichaRel(\'' + r.id.replace(/'/g, "\\'") + '\')">' + esc(r.titulo) + '</div>';
       }).join('');
       cells += '<div class="mt-cal__cell' + (isToday(d) ? ' mt-cal__cell--today' : '') + (rels.length ? ' mt-cal__cell--has' : '') + '">' +
+        (bg ? '<img class="mt-cal__bg" src="' + esc(bg) + '" alt="" loading="lazy" onerror="this.remove()"><div class="mt-cal__fade"></div>' : '') +
+        (rels.length > 2 ? '<span class="mt-cal__more">+' + (rels.length - 2) + '</span>' : '') +
         '<div class="mt-cal__daynum">' + d + '</div><div class="mt-cal__rels">' + relHtml + '</div></div>';
     }
     host.innerHTML = '<div class="mt-cal__grid mt-cal__grid--head">' + head + '</div><div class="mt-cal__grid">' + cells + '</div>';
@@ -543,6 +500,8 @@
     _toggleTop: toggleTop,
     _delRel   : delRel,
     _editRel  : editRel,
+    _fichaRel : function (id) { var r = _releases.find(function (x) { return x.id === id; }); if (r) openFicha(r); },
+    _editFromFicha: function (id) { closeFicha(); editRel(id); },
     _pickTMDB : pickTMDB
   };
 

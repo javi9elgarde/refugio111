@@ -271,6 +271,60 @@
     .mt-add-result__meta { font-size: 0.73rem; color: var(--txt3); }
     .estreno-back { background: none; border: none; color: var(--txt3); font-size: 0.78rem; cursor: pointer; padding: 0.25rem 0; margin-bottom: 0.75rem; }
     .estreno-back:hover { color: var(--txt1); }
+
+    /* ══ INICIO EN UNA COLUMNA (como el de videojuegos) ═══════════
+       Menú lateral común (mt-sidebar), portada del mismo alto que la de videojuegos,
+       calendario de estrenos debajo y tops más juntos. */
+    .gen-layout { grid-template-columns: minmax(0, 1fr) !important; max-width: 1400px; padding: 1.5rem 2rem 2.5rem; }
+    @media (max-width: 640px) { .gen-layout { padding: 1rem 0.85rem 2rem; } }
+    .gen-hero { height: clamp(440px, 62vh, 600px); }
+    @media (max-width: 640px) { .gen-hero { height: 440px; } }
+    .gen-hero__slide { background-position: center 25%; }
+
+    /* calendario de estrenos */
+    .gen-cal { margin-top: 1.4rem; padding: 1.2rem; border-radius: 18px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); }
+    .gen-cal__head { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); }
+    .gen-cal__title { margin: 0; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.95rem; letter-spacing: 0.04em; color: var(--txt1); }
+    .gen-cal__title small { display: block; margin-top: 0.2rem; font-family: ui-monospace, monospace; font-weight: 400; font-size: 0.66rem; letter-spacing: 0.1em; color: var(--txt3); }
+    .gen-cal__nav { display: flex; align-items: center; gap: 0.5rem; }
+    .gen-cal__nav .mt-cal__monthlabel { min-width: 180px; padding: 0.45rem 0.9rem; border-radius: 10px; border: 1px solid var(--border); background: #05070d; font-size: 0.85rem; text-transform: uppercase; }
+    .gen-cal__add { padding: 0.55rem 1rem; border-radius: 10px; border: 1px solid rgba(var(--accent-rgb),0.45); background: var(--accent-dim); color: var(--accent);
+      font-family: 'Orbitron', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; }
+    .gen-cal__add:hover { background: rgba(var(--accent-rgb),0.2); }
+    .gen-cal .mt-cal__grid { gap: 0.5rem; }
+    .gen-cal .mt-cal__dow { color: var(--accent); }
+    .gen-cal .mt-cal__cell { position: relative; height: 92px; min-height: 0; padding: 0.35rem 0.45rem; justify-content: space-between; background: rgba(5,7,13,0.9); }
+    .gen-cal .mt-cal__cell--empty { background: none; }
+    .gen-cal .mt-cal__daynum { position: relative; z-index: 2; align-self: flex-start; }
+    .gen-cal .mt-cal__rels { position: relative; z-index: 2; }
+    .mt-cal__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.55; transition: opacity 0.3s, transform 0.3s; }
+    .mt-cal__fade { position: absolute; inset: 0; background: linear-gradient(0deg, #07070f 0%, rgba(7,7,15,0.45) 60%, transparent 100%); }
+    .gen-cal .mt-cal__cell--has:hover .mt-cal__bg { opacity: 0.8; transform: scale(1.06); }
+    .gen-cal .mt-cal__rel { background: rgba(7,7,15,0.75); }
+    .mt-cal__more { position: absolute; top: 0.3rem; right: 0.35rem; z-index: 3; padding: 0.05rem 0.4rem; border-radius: 999px; background: var(--accent); color: #fff; font-family: 'Orbitron', sans-serif; font-size: 0.55rem; font-weight: 900; }
+    @media (max-width: 640px) {
+      .gen-cal { padding: 0.85rem; }
+      .gen-cal__head { flex-direction: column; text-align: center; }
+      .gen-cal__nav .mt-cal__monthlabel { min-width: 0; flex: 1; }
+      .gen-cal .mt-cal__grid { gap: 0.22rem; }
+      .gen-cal .mt-cal__dow { font-size: 0.55rem; letter-spacing: 0; }
+      .gen-cal .mt-cal__cell { height: 64px; padding: 0.2rem 0.25rem; border-radius: 8px; }
+      .gen-cal .mt-cal__rel { font-size: 0.5rem; padding: 0.08rem 0.2rem; border-left-width: 2px; }
+      .gen-cal .mt-cal__rel + .mt-cal__rel { display: none; }
+    }
+
+    /* con el menú lateral a la vista, el logo de la barra de arriba sobra (ya está en el menú) */
+    @media (min-width: 1100px) { .gen-brand { display: none; } }
+
+    /* tops más juntos: columnas estrechas y centradas, la nota pegada al título */
+    .gen-tops { grid-template-columns: repeat(3, minmax(0, 380px)); justify-content: center; }
+    @media (max-width: 1180px) { .gen-tops { grid-template-columns: minmax(0, 460px); } }
+    .gen-tops-head { justify-content: center; gap: 1.2rem; }
+    .gen-top { padding: 0.9rem; }
+    .mt-top-row { grid-template-columns: 22px 34px minmax(0, 1fr) auto; gap: 0.6rem; padding: 0.35rem 0.6rem; }
+    .mt-top-row__poster { width: 34px; height: 50px; }
+    .mt-top-row__title { font-size: 0.8rem; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.25; }
+    .mt-top-row__nota { font-size: 0.95rem; }
   </style>
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -278,7 +332,22 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="stylesheet" href="css/mobile-native.css?v=20261101c">
 </head>
-<body>
+<body class="mt-has-sidebar">
+<!-- ── MENÚ LATERAL (el mismo en todas las pestañas) ─────────── -->
+<aside class="mt-sidebar">
+  <a href="mt-general.html" class="mt-sidebar__brand"><img src="logonuevo.png" onerror="this.style.display='none'"><span>Refugio 111</span></a>
+  <div class="mt-sidebar__group">Menú</div>
+  <a href="mt-general.html"    class="mt-sidebar__item mt-sidebar__item--active"><span class="mt-sidebar__ico">🏠</span> Inicio</a>
+  <div class="mt-sidebar__group">Mi zona</div>
+  <a href="mt-biblioteca.html" class="mt-sidebar__item"><span class="mt-sidebar__ico">📚</span> Biblioteca</a>
+  <a href="mt-registro.html"   class="mt-sidebar__item"><span class="mt-sidebar__ico">📝</span> Registro</a>
+  <a href="mt-pendientes.html" class="mt-sidebar__item"><span class="mt-sidebar__ico">🕒</span> Pendientes</a>
+  <a href="mt-favoritos.html"  class="mt-sidebar__item"><span class="mt-sidebar__ico">⭐</span> Favoritos</a>
+  <div class="mt-sidebar__group">Explorar</div>
+  <a href="mt-general.html?cal=1" class="mt-sidebar__item"><span class="mt-sidebar__ico">📅</span> Estrenos</a>
+  <a href="hub.html" class="mt-sidebar__item" style="margin-top:auto"><span class="mt-sidebar__ico">←</span> Hub Friki</a>
+</aside>
+<div class="mt-drawer-overlay"></div>
 
 <!-- Loading overlay -->
 <div id="mtLoading">
@@ -307,23 +376,6 @@
 <!-- ══ DASHBOARD ══ -->
 <div class="gen-layout">
 
-  <!-- SIDEBAR -->
-  <aside class="gen-sidebar">
-    <div class="gen-nav__group">Menú</div>
-    <a href="mt-general.html"    class="gen-nav__item gen-nav__item--active"><span class="gen-nav__ico">🏠</span> Inicio</a>
-
-    <div class="gen-nav__group">Mi zona</div>
-    <a href="mt-biblioteca.html" class="gen-nav__item"><span class="gen-nav__ico">📚</span> Biblioteca</a>
-    <a href="mt-registro.html"   class="gen-nav__item"><span class="gen-nav__ico">📝</span> Registro</a>
-    <a href="mt-pendientes.html" class="gen-nav__item"><span class="gen-nav__ico">🕒</span> Pendientes</a>
-    <a href="mt-favoritos.html"  class="gen-nav__item"><span class="gen-nav__ico">⭐</span> Favoritos</a>
-
-    <div class="gen-nav__group">Explorar</div>
-    <div class="gen-nav__item" onclick="document.getElementById('openCalendar').click()"><span class="gen-nav__ico">📅</span> Estrenos</div>
-    <div class="gen-nav__item" onclick="document.getElementById('genTops').scrollIntoView({behavior:'smooth'})"><span class="gen-nav__ico">🏆</span> Top Valorados</div>
-
-    <a href="hub.html" class="gen-nav__item" style="margin-top:1rem"><span class="gen-nav__ico">←</span> Hub Friki</a>
-  </aside>
 
   <!-- MAIN -->
   <main class="gen-main">
@@ -343,6 +395,24 @@
       <a href="mt-biblioteca.html" class="gen-quick__item gen-quick__item--bib"><span class="gen-quick__ic">📚</span>Biblioteca</a>
     </div>
 
+    <!-- CALENDARIO DE ESTRENOS (como el de videojuegos) -->
+    <section class="gen-cal" id="genCal" aria-label="Calendario de estrenos">
+      <div class="gen-cal__head">
+        <h2 class="gen-cal__title">📅 CALENDARIO DE ESTRENOS<small>PELÍCULAS · SERIES · ANIME</small></h2>
+        <div class="gen-cal__nav">
+          <button type="button" class="mt-cal__navbtn" id="calPrev" aria-label="Mes anterior">‹</button>
+          <div class="mt-cal__monthlabel" id="calMonthLabel">—</div>
+          <button type="button" class="mt-cal__navbtn" id="calNext" aria-label="Mes siguiente">›</button>
+          <button type="button" class="mt-cal__today" id="calToday">HOY</button>
+        </div>
+        <button type="button" class="gen-cal__add" id="btnAddEstreno">+ Añadir estreno</button>
+      </div>
+      <div id="mtCalendar"></div>
+      <div class="mt-cal__legend">
+        <span><i style="background:#e63946"></i>Películas</span><span><i style="background:#4361ee"></i>Series</span><span><i style="background:#b5179e"></i>Anime</span>
+      </div>
+    </section>
+
     <div class="gen-tops-head" id="genTops">
       <div class="gen-tops-head__title">🏆 Mejores <span id="topScopeLabel">2026</span></div>
       <button class="gen-tops-scope" id="topScopeBtn">🏆 Ver TOP Histórico</button>
@@ -354,59 +424,7 @@
     </div>
   </main>
 
-  <!-- RIGHT COLUMN -->
-  <aside class="gen-right">
-    <div class="gen-panel">
-      <div class="gen-panel__head">
-        <div class="gen-panel__title">📅 Próximos estrenos</div>
-        <button class="gen-panel__link" id="openCalendar">Ver calendario</button>
-      </div>
-      <div class="mt-upcoming" id="genUpcoming"></div>
-      <button class="mt-btn mt-btn--secondary mt-btn--sm" id="btnAddEstreno" style="width:100%;justify-content:center;margin-top:0.75rem">+ Añadir estreno</button>
-    </div>
 
-    <div class="gen-panel">
-      <div class="gen-panel__head">
-        <div class="gen-panel__title">📊 Tu universo en cifras</div>
-        <select class="gen-stats-select" id="statsPlayer">
-          <option value="David">David</option>
-          <option value="Javi">Javi</option>
-          <option value="Mery">Mery</option>
-        </select>
-      </div>
-      <div class="gen-stats">
-        <div class="gen-stat gen-stat--pel"><div class="gen-stat__ico">🎬</div><div><div class="gen-stat__num" id="statPel">0</div><div class="gen-stat__lbl">Películas vistas</div></div></div>
-        <div class="gen-stat gen-stat--ser"><div class="gen-stat__ico">📺</div><div><div class="gen-stat__num" id="statSer">0</div><div class="gen-stat__lbl">Series completadas</div></div></div>
-        <div class="gen-stat gen-stat--ani"><div class="gen-stat__ico">🌸</div><div><div class="gen-stat__num" id="statAni">0</div><div class="gen-stat__lbl">Anime completados</div></div></div>
-        <div class="gen-stat gen-stat--hrs"><div class="gen-stat__ico">🕒</div><div><div class="gen-stat__num" id="statHoras">0</div><div class="gen-stat__lbl">Horas disfrutadas</div></div></div>
-      </div>
-    </div>
-  </aside>
-
-</div>
-
-<!-- ══ MODAL: CALENDARIO ══ -->
-<div class="mt-modal-overlay" id="calendarModal">
-  <div class="mt-modal" style="max-width:920px">
-    <div class="mt-modal__header">
-      <h2 class="mt-modal__title">📅 Calendario de estrenos</h2>
-      <button class="mt-modal__close" id="calModalClose">✕</button>
-    </div>
-    <div class="mt-modal__body">
-      <div class="mt-cal__nav" style="justify-content:center;margin-bottom:1.1rem">
-        <button class="mt-cal__navbtn" id="calPrev">◀</button>
-        <div class="mt-cal__monthlabel" id="calMonthLabel">—</div>
-        <button class="mt-cal__navbtn" id="calNext">▶</button>
-        <button class="mt-cal__today" id="calToday">HOY</button>
-      </div>
-      <div id="mtCalendar"></div>
-      <div class="mt-cal__legend">
-        <span><i style="background:#e63946"></i> Películas</span>
-        <span><i style="background:#4361ee"></i> Series</span>
-        <span><i style="background:#b5179e"></i> Anime</span>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- ══ MODAL: FICHA ══ -->
@@ -473,7 +491,7 @@
 <script src="firebase-config.js?v=20261030b" defer></script>
 <script src="js/sync-manager.js?v=20261101a" defer></script>
 <script src="mt-main.js?v=20261101g"         defer></script>
-<script src="mt-general.js?v=20260712e"      defer></script>
+<script src="mt-general.js?v=20261102a"      defer></script>
 <script src="js/mobile-ui.js?v=20261030m" defer></script>
 <script src="js/push-manager.js?v=20261030n" defer></script>
 <script src="app.js?v=20261023a" defer></script>
