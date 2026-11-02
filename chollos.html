@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" sizes="64x64" href="logonavegador.png">
+  <link rel="apple-touch-icon" href="logonuevo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Refugio 111 — Chollos</title>
+  <link rel="stylesheet" href="styles.css?v=20261103a">
+  <style>
+    /* ══ CHOLLOS: resumen de CholloGarde dentro del Refugio ══ */
+    .page-hero--chollos .page-hero__title { background: linear-gradient(135deg, #fff 20%, #4ade80 55%, #22d3ee); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .page-hero--chollos .page-hero__orb--1 { background: rgba(74,222,128,0.35); }
+    .page-hero--chollos .page-hero__orb--2 { background: rgba(34,211,238,0.28); }
+    .page-hero--chollos .page-hero__orb--3 { background: rgba(245,200,66,0.2); }
+    .ch { max-width: 1280px; margin: 0 auto; padding: 1.4rem 1.25rem 3rem; }
+    .ch-h { display: flex; align-items: baseline; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; margin: 2rem 0 0.9rem; }
+    .ch-h h2 { margin: 0; font-family: 'Orbitron', sans-serif; font-size: 0.95rem; letter-spacing: 0.08em; color: var(--txt); }
+    .ch-h small { color: var(--txt3); font-size: 0.78rem; }
+    .ch-note { text-align: center; color: var(--txt3); font-size: 0.85rem; padding: 2rem 1rem; }
+
+    /* cifras de un vistazo */
+    .ch-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.8rem; }
+    .ch-kpi { position: relative; overflow: hidden; padding: 0.95rem 1.05rem; border-radius: 16px; background: var(--bg2); border: 1px solid var(--border); }
+    .ch-kpi b { display: block; font-family: 'Orbitron', sans-serif; font-size: 1.55rem; font-weight: 900; line-height: 1.1; color: #fff; }
+    .ch-kpi span { display: block; margin-top: 0.25rem; font-size: 0.74rem; color: var(--txt3); }
+    .ch-kpi i { position: absolute; right: 0.8rem; top: 0.7rem; font-style: normal; font-size: 1.4rem; opacity: 0.85; }
+    .ch-kpi--hot { border-color: rgba(74,222,128,0.4); background: linear-gradient(135deg, rgba(74,222,128,0.12), var(--bg2) 60%); }
+    .ch-kpi--hot b { color: #4ade80; }
+    @media (max-width: 760px) { .ch-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ch-kpi b { font-size: 1.25rem; } }
+
+    /* tarjetas de juego */
+    .ch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.1rem; }
+    @media (max-width: 420px) { .ch-grid { grid-template-columns: minmax(0, 1fr); } }
+    .ch-card { position: relative; display: flex; flex-direction: column; overflow: hidden; border-radius: 18px; background: #0b0e17; border: 1px solid var(--border);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.45); transition: transform 0.25s ease-out, border-color 0.25s, box-shadow 0.25s; }
+    .ch-card--goal { border-color: rgba(74,222,128,0.55); box-shadow: 0 14px 34px rgba(0,0,0,0.45), 0 0 26px rgba(74,222,128,0.18); }
+    @media (hover: hover) and (pointer: fine) { .ch-card:hover { transform: translateY(-4px); border-color: rgba(34,211,238,0.5); } }
+    .ch-art { position: relative; aspect-ratio: 16 / 8; background: #111827 center / cover no-repeat; }
+    .ch-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, #0b0e17 0%, rgba(11,14,23,0.35) 45%, transparent 75%); }
+    .ch-off { position: absolute; z-index: 2; top: 0.7rem; right: 0.7rem; padding: 0.3rem 0.65rem; border-radius: 10px; background: #22c55e; color: #052e12;
+      font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.05rem; box-shadow: 0 6px 18px rgba(34,197,94,0.45); }
+    .ch-off--none { background: rgba(15,23,42,0.85); color: var(--txt3); box-shadow: none; font-size: 0.72rem; }
+    .ch-plat { position: absolute; z-index: 2; top: 0.7rem; left: 0.7rem; }
+    .ch-ttl { position: absolute; z-index: 2; left: 0.9rem; right: 0.9rem; bottom: 0.55rem; margin: 0; font-size: 1.12rem; font-weight: 800; line-height: 1.2; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.8); }
+    .ch-body { display: flex; flex-direction: column; gap: 0.7rem; padding: 0.75rem 0.95rem 0.95rem; flex: 1; }
+    .ch-price { display: flex; align-items: flex-end; gap: 0.6rem; flex-wrap: wrap; }
+    .ch-price b { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.7rem; line-height: 1; color: #4ade80; text-shadow: 0 0 16px rgba(74,222,128,0.35); }
+    .ch-price s { color: var(--txt3); font-size: 0.85rem; }
+    .ch-price span { font-size: 0.8rem; color: var(--txt2); }
+    .ch-price span em { font-style: normal; font-weight: 700; color: #fff; }
+    .ch-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .ch-tag { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.22rem 0.55rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--txt2); }
+    .ch-tag--buy { color: #4ade80; border-color: rgba(74,222,128,0.45); background: rgba(74,222,128,0.1); }
+    .ch-tag--wait { color: #fbbf24; border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.08); }
+    .ch-tag--bad { color: #f87171; border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.08); }
+    .ch-tag--goal { color: #052e12; background: #4ade80; border-color: #4ade80; }
+    .ch-spark { width: 100%; height: 38px; display: block; }
+    .ch-stores { display: flex; flex-direction: column; gap: 0.3rem; }
+    .ch-store { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 0.6rem; padding: 0.38rem 0.6rem; border-radius: 9px;
+      background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05); color: var(--txt2); text-decoration: none; font-size: 0.8rem; }
+    .ch-store:hover { border-color: rgba(34,211,238,0.45); color: #fff; }
+    .ch-store--best { border-color: rgba(74,222,128,0.45); background: rgba(74,222,128,0.07); color: #fff; }
+    .ch-store__n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+    .ch-store__n small { margin-left: 0.35rem; font-weight: 500; font-size: 0.66rem; color: var(--txt3); }
+    .ch-store__p { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.82rem; }
+    .ch-store__d { font-size: 0.68rem; color: var(--txt3); min-width: 3.2rem; text-align: right; }
+    .ch-store__d--up { color: #4ade80; }
+    .ch-ai { margin: 0; font-size: 0.76rem; line-height: 1.45; color: var(--txt3); }
+    .ch-ai b { color: var(--txt2); }
+    .ch-go { margin-top: auto; display: inline-flex; justify-content: center; align-items: center; gap: 0.4rem; min-height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, #22c55e, #16a34a); color: #04140a; font-weight: 800; font-size: 0.85rem; text-decoration: none; }
+    .ch-go:hover { filter: brightness(1.1); }
+
+    /* tiendas con más precios mínimos */
+    .ch-shops { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.7rem; }
+    .ch-shop { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.9rem; border-radius: 14px; background: var(--bg2); border: 1px solid var(--border); }
+    .ch-shop__r { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.1rem; color: var(--txt3); width: 1.6rem; text-align: center; }
+    .ch-shop:first-child { border-color: rgba(245,200,66,0.5); } .ch-shop:first-child .ch-shop__r { color: #f5c842; }
+    .ch-shop b { display: block; font-size: 0.92rem; color: #fff; }
+    .ch-shop span { font-size: 0.72rem; color: var(--txt3); }
+    .ch-foot { margin-top: 2.2rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; color: var(--txt3); font-size: 0.78rem; }
+    .ch-foot a { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.7rem 1.3rem; border-radius: 999px; border: 1px solid rgba(34,211,238,0.45); color: #22d3ee; font-weight: 700; text-decoration: none; }
+    .ch-skel { height: 340px; border-radius: 18px; background: linear-gradient(90deg, #0f1522 25%, #172033 50%, #0f1522 75%); background-size: 200% 100%; animation: chSk 1.4s linear infinite; }
+    @keyframes chSk { to { background-position: -200% 0; } }
+    @media (prefers-reduced-motion: reduce) { .ch-skel { animation: none; } .ch-card { transition: none; } }
+  </style>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#07070f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="css/mobile-native.css?v=20261101c">
+</head>
+<body>
+
+<div id="gtLoading" style="position:fixed;inset:0;background:#07070f;display:flex;align-items:center;justify-content:center;z-index:9999;color:rgba(232,232,248,.5);font-size:.8rem">Cargando tómbola...</div>
+
+<nav class="nav">
+  <a href="hub.html"          class="nav__link nav__link--hub nav__hub-solo">Hub</a>
+  <div class="nav__links nav__links--left">
+    <a href="biblioteca.html" class="nav__link">Biblioteca</a>
+    <a href="registro.html" class="nav__link">Registro</a>
+    <a href="backlog.html" class="nav__link">Pendientes</a>
+    <a href="halloffame.html" class="nav__link nav__link--hof">VAULTY</a>
+  </div>
+  <a href="index.html" class="nav__logo">
+    <div class="nav__logo-wrap"><img src="logonuevorotar.png" alt="" class="nav__logo-gear"><img src="logonuevosinrotar.png" alt="Refugio 111" class="nav__logo-inner"></div>
+  </a>
+  <div class="nav__links nav__links--right">
+    <a href="eventos.html" class="nav__link">Eventos</a>
+    <a href="jugadores.html" class="nav__link">Jugadores</a>
+    <a href="tombola.html" class="nav__link">Tómbola</a>
+    <a href="chollos.html" class="nav__link nav__link--active">Chollos</a>
+  </div>
+  <button class="nav__hamburger" id="navHamburger" aria-label="Menú">☰</button>
+</nav>
+<div class="nav__mobile" id="navMobile">
+  <a href="hub.html"          class="nav__link nav__link--hub">&#127968; Hub</a>
+  <a href="index.html"        class="nav__link" data-intab>Inicio</a>
+  <a href="halloffame.html"   class="nav__link nav__link--hof">&#127942; VAULTY</a>
+  <a href="biblioteca.html"   class="nav__link" data-intab>Biblioteca</a>
+  <a href="registro.html"     class="nav__link" data-intab>Registro</a>
+  <a href="backlog.html"      class="nav__link" data-intab>&#9203; Pendientes</a>
+  <a href="eventos.html"      class="nav__link">&#128197; Eventos</a>
+  <a href="tombola.html"      class="nav__link">&#127920; Tómbola</a>
+  <a href="chollos.html" class="nav__link">&#127991; Chollos</a>
+  <a href="jugadores.html"    class="nav__link">&#127918; Jugadores</a>
+</div>
+<nav class="tabbar" aria-label="Navegación principal">
+  <a href="biblioteca.html" class="tabbar__item"><span>&#128218;</span><span>Biblioteca</span></a>
+  <a href="registro.html" class="tabbar__item"><span>&#128203;</span><span>Registro</span></a>
+  <a href="index.html" class="tabbar__home" aria-label="Inicio"><span class="tabbar__gear"><img src="logonuevorotar.png" alt="" class="tabbar__gear-spin"><img src="logonuevosinrotar.png" alt="" class="tabbar__gear-in"></span></a>
+  <a href="backlog.html" class="tabbar__item"><span>&#9203;</span><span>Pendientes</span></a>
+  <button type="button" id="tabMore" class="tabbar__item tabbar__item--active" aria-expanded="false"><span>&#9776;</span><span>Más</span></button>
+</nav>
+<div class="page">
+  <div class="page-hero page-hero--chollos">
+    <div class="page-hero__bg">
+      <div class="page-hero__orb page-hero__orb--1"></div>
+      <div class="page-hero__orb page-hero__orb--2"></div>
+      <div class="page-hero__orb page-hero__orb--3"></div>
+    </div>
+    <h1 class="page-hero__title">CHOLLOS</h1>
+    <p class="page-hero__sub">Lo que vigila CholloGarde: dónde está más barato cada juego, ahora mismo</p>
+  </div>
+
+  <main class="ch">
+    <div class="ch-kpis" id="chKpis"></div>
+
+    <div class="ch-h"><h2>🔥 MEJORES REBAJAS AHORA</h2><small id="chUpdated"></small></div>
+    <div class="ch-grid" id="chGrid"><div class="ch-skel"></div><div class="ch-skel"></div><div class="ch-skel"></div></div>
+
+    <div class="ch-h"><h2>🏪 DÓNDE ESTÁ MÁS BARATO</h2><small>Tiendas con más precios mínimos entre los juegos vigilados</small></div>
+    <div class="ch-shops" id="chShops"></div>
+
+    <div class="ch-foot">
+      <a href="https://javi9elgarde.github.io/Chollo-Garde/#juegos" target="_blank" rel="noopener">🏷️ Abrir CholloGarde completo ↗</a>
+      <span>Para añadir juegos, cambiar objetivos o ver vuelos, usa CholloGarde. Los precios se revisan cada hora.</span>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"       defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"      defer></script>
+<script src="firebase-config.js?v=20261030b" defer></script>
+<script src="js/sync-manager.js?v=20261101a" defer></script>
+<script src="main.js?v=20261101g"            defer></script>
+<script src="chollos.js?v=20261103a"         defer></script>
+<script src="js/mobile-ui.js?v=20261030m" defer></script>
+<script src="js/push-manager.js?v=20261030n" defer></script>
+<script src="app.js?v=20261023a" defer></script>
+</body>
+</html>

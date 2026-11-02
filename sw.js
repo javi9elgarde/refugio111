@@ -1,13 +1,13 @@
 /* Service worker de Refugio 111: la web se abre rápido, funciona sin conexión y muestra los avisos push.
    Los datos (Firestore, RAWG, IGDB) no pasan por aquí: Firestore guarda los suyos con su propia persistencia.
    Al cambiar este archivo, sube VERSION: se vuelven a descargar las páginas y se borra la caché vieja. */
-const VERSION = '20261102c';
+const VERSION = '20261103a';
 const CACHE = 'refugio111-' + VERSION;
 
 // las 28 páginas; los JS y CSS de cada una se sacan de su propio HTML (con su ?v=), así no hay que mantener otra lista
 const PAGES = [
   'hub.html', 'index.html', 'biblioteca.html', 'registro.html', 'backlog.html', 'pendientes.html', 'eventos.html',
-  'halloffame.html', 'jugadores.html', 'estadisticas.html', 'noticias.html', 'tombola.html', 'importar.html',
+  'halloffame.html', 'jugadores.html', 'estadisticas.html', 'noticias.html', 'tombola.html', 'chollos.html', 'importar.html',
   'mt-hub.html', 'mt-general.html', 'mt-biblioteca.html', 'mt-registro.html', 'mt-pendientes.html',
   'mt-favoritos.html', 'mt-perfil.html', 'mt-importar.html',
   'import-david.html', 'import-javi.html', 'import-mery.html', 'limpiar-duplicados.html', 'reparar-registro.html',
