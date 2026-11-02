@@ -77,6 +77,7 @@
     });
 
     /* Calendario (en la página, debajo de la portada) */
+    initCalendarUI();
     document.getElementById('calPrev').addEventListener('click', function () { _view.setMonth(_view.getMonth() - 1); renderCalendar(); });
     document.getElementById('calNext').addEventListener('click', function () { _view.setMonth(_view.getMonth() + 1); renderCalendar(); });
     document.getElementById('calToday').addEventListener('click', function () { _view = new Date(); _view.setDate(1); renderCalendar(); });
@@ -348,22 +349,108 @@
     var today = new Date();
     var isToday = function (d) { return today.getFullYear() === y && today.getMonth() === m && today.getDate() === d; };
     var head = DIAS.map(function (d) { return '<div class="mt-cal__dow">' + d + '</div>'; }).join('');
-    var cells = '';
+    var cells = '', byDay = {};
     for (var i = 0; i < firstDow; i++) cells += '<div class="mt-cal__cell mt-cal__cell--empty"></div>';
     for (var d = 1; d <= daysInMonth; d++) {
       var rels = releasesOn(y, m, d);
-      // la portada del primero de fondo; cada título abre su ficha (desde ella se edita la fecha)
-      var first = rels[0], det = first && _heroDetails[first.tmdbId], bg = first ? ((det && det.backdrop) || first.portadaUrl || '') : '';
-      var relHtml = rels.slice(0, 2).map(function (r) {
-        return '<div class="mt-cal__rel mt-cal__rel--' + (r.tipo || 'peliculas') + '" title="' + esc(r.titulo) + '" ' +
-          'onclick="window.MTGen._fichaRel(\'' + r.id.replace(/'/g, "\\'") + '\')">' + esc(r.titulo) + '</div>';
-      }).join('');
-      cells += '<div class="mt-cal__cell' + (isToday(d) ? ' mt-cal__cell--today' : '') + (rels.length ? ' mt-cal__cell--has' : '') + '">' +
-        (bg ? '<img class="mt-cal__bg" src="' + esc(bg) + '" alt="" loading="lazy" onerror="this.remove()"><div class="mt-cal__fade"></div>' : '') +
-        (rels.length > 2 ? '<span class="mt-cal__more">+' + (rels.length - 2) + '</span>' : '') +
-        '<div class="mt-cal__daynum">' + d + '</div><div class="mt-cal__rels">' + relHtml + '</div></div>';
+      // con varios estrenos el mismo día, sus fondos y títulos van pasando dentro de la casilla (data-k)
+      var shown = rels.slice(0, 5);
+      byDay[d] = rels;
+      cells += '<div class="mt-cal__cell' + (isToday(d) ? ' mt-cal__cell--today' : '') + (rels.length ? ' mt-cal__cell--has' : '') + (rels.length > 1 ? ' mt-cal__cell--multi' : '') + '" data-day="' + d + '"' +
+        (rels.length === 1 ? ' title="' + esc(rels[0].titulo) + '"' : '') + '>' +
+        shown.map(function (r, k) {
+          var bg = relImg(r);
+          return bg ? '<img class="mt-cal__bg' + (k ? '' : ' is-on') + '" data-k="' + k + '" src="' + esc(bg) + '" alt="" loading="lazy" onerror="this.remove()">' : '';
+        }).join('') +
+        (rels.length ? '<div class="mt-cal__fade"></div>' : '') +
+        (rels.length > 1 ? '<span class="mt-cal__more">+' + (rels.length - 1) + '</span>' : '') +
+        '<div class="mt-cal__daynum">' + d + '</div>' +
+        (rels.length ? '<div class="mt-cal__rels">' + shown.map(function (r, k) {
+          return '<div class="mt-cal__rel mt-cal__rel--' + (r.tipo || 'peliculas') + (k ? '' : ' is-on') + '" data-k="' + k + '">' + esc(r.titulo) + '</div>';
+        }).join('') + '</div>' : '') +
+      '</div>';
     }
     host.innerHTML = '<div class="mt-cal__grid mt-cal__grid--head">' + head + '</div><div class="mt-cal__grid">' + cells + '</div>';
+    host._items = byDay;
+  }
+
+  // fondo de un estreno: el horizontal de TMDB si ya se ha cargado, si no su portada
+  function relImg(r) { var det = _heroDetails[r.tmdbId]; return (det && det.backdrop) || r.portadaUrl || ''; }
+
+  /* ventanitas flotantes: al pasar el ratón por un día con varios estrenos (o al tocarlo en el móvil);
+     un solo estreno abre directamente su ficha */
+  var _popCell = null, _popTimer = null;
+  function calPop() {
+    var pop = document.getElementById('mtCalPop');
+    if (!pop) {
+      pop = document.createElement('div');
+      pop.id = 'mtCalPop'; pop.className = 'mtc-pop'; pop.hidden = true;
+      document.body.appendChild(pop);
+      pop.addEventListener('mouseenter', function () { clearTimeout(_popTimer); });
+      pop.addEventListener('mouseleave', hidePopSoon);
+      pop.addEventListener('click', function (e) {
+        if (e.target.closest('.mtc-pop__x')) { pop.hidden = true; return; }
+        var c = e.target.closest('[data-rid]');
+        if (c) { pop.hidden = true; window.MTGen._fichaRel(c.dataset.rid); }
+      });
+    }
+    return pop;
+  }
+  function showPop(cell) {
+    var list = (document.getElementById('mtCalendar')._items || {})[cell.dataset.day] || [];
+    var pop = calPop();
+    clearTimeout(_popTimer);
+    if (list.length < 2) { pop.hidden = true; return; }
+    if (_popCell === cell && !pop.hidden) return; // ya abiertas para este día: no redibujar
+    _popCell = cell;
+    var sheet = innerWidth < 640, cat = { peliculas: '🎬 PELÍCULA', series: '📺 SERIE', anime: '🌸 ANIME' };
+    pop.innerHTML = (sheet ? '<div class="mtc-pop__hd"><b>' + cell.dataset.day + ' de ' + MESES[_view.getMonth()].toLowerCase() + ' · ' + list.length + ' estrenos</b>' +
+        '<button type="button" class="mtc-pop__x" aria-label="Cerrar">✕</button></div>' : '') +
+      list.map(function (r, i) {
+        var img = relImg(r);
+        return '<button type="button" class="mtc-pc mtc-pc--' + (r.tipo || 'peliculas') + '" style="--i:' + i + '" data-rid="' + esc(r.id) + '">' +
+          (img ? '<img src="' + esc(img) + '" alt="" onerror="this.remove()">' : '<span class="mtc-pc__ph">' + U().catEmoji(r.tipo) + '</span>') +
+          '<span class="mtc-pc__t"><small>' + (cat[r.tipo] || '') + '</small>' + esc(r.titulo) + '</span></button>';
+      }).join('');
+    pop.hidden = false;
+    pop.classList.toggle('mtc-pop--sheet', sheet);
+    if (sheet) { pop.style.left = ''; pop.style.top = ''; return; }
+    var rc = cell.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+    pop.style.left = Math.max(12, Math.min(innerWidth - w - 12, rc.left + rc.width / 2 - w / 2)) + 'px';
+    pop.style.top = (rc.top - h - 14 >= 70 ? rc.top - h - 14 : rc.bottom + 14) + 'px'; // arriba si cabe; si no, debajo
+  }
+  function hidePopSoon() { clearTimeout(_popTimer); _popTimer = setTimeout(function () { calPop().hidden = true; }, 180); }
+
+  function initCalendarUI() {
+    var grid = document.getElementById('mtCalendar');
+    if (!grid) return;
+    if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      grid.addEventListener('mouseover', function (e) { var c = e.target.closest('.mt-cal__cell--multi'); if (c) showPop(c); });
+      grid.addEventListener('mouseout', function (e) {
+        var c = e.target.closest('.mt-cal__cell--multi');
+        if (c && !c.contains(e.relatedTarget)) hidePopSoon();
+      });
+    }
+    grid.addEventListener('click', function (e) {
+      var c = e.target.closest('.mt-cal__cell--has');
+      if (!c) return;
+      var list = (grid._items || {})[c.dataset.day] || [];
+      if (list.length === 1) { openFicha(list[0]); return; }
+      _popCell = null; showPop(c);
+    });
+    document.addEventListener('click', function (e) { if (!e.target.closest('#mtCalPop, .mt-cal__cell--multi')) calPop().hidden = true; });
+    addEventListener('scroll', function () { var p = calPop(); if (!p.classList.contains('mtc-pop--sheet')) p.hidden = true; }, { passive: true });
+    // días con varios estrenos: van pasando sus fondos y títulos
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) setInterval(function () {
+      if (document.hidden) return;
+      grid.querySelectorAll('.mt-cal__cell--multi').forEach(function (c) {
+        var n = c.querySelectorAll('.mt-cal__rel').length;
+        if (n < 2) return;
+        var k = ((parseInt(c.dataset.k, 10) || 0) + 1) % n;
+        c.dataset.k = k;
+        c.querySelectorAll('[data-k]').forEach(function (el) { el.classList.toggle('is-on', +el.dataset.k === k); });
+      });
+    }, 2600);
   }
 
   function fmtDate(iso) { var p = iso.split('-'); return parseInt(p[2]) + ' ' + MESES[parseInt(p[1]) - 1] + ' ' + p[0]; }

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="mt-styles.css?v=20261101f">
+  <link rel="stylesheet" href="mt-styles.css?v=20261102b">
   <style>
     body { background: var(--bg1); }
 
@@ -276,6 +276,8 @@
        Menú lateral común (mt-sidebar), portada del mismo alto que la de videojuegos,
        calendario de estrenos debajo y tops más juntos. */
     .gen-layout { grid-template-columns: minmax(0, 1fr) !important; max-width: 1400px; padding: 1.5rem 2rem 2.5rem; }
+    /* pegado al menú lateral, sin el hueco del centrado */
+    @media (min-width: 1100px) { .gen-layout { margin: 0; max-width: 1560px; padding-left: 1.25rem; } }
     @media (max-width: 640px) { .gen-layout { padding: 1rem 0.85rem 2rem; } }
     .gen-hero { height: clamp(440px, 62vh, 600px); }
     @media (max-width: 640px) { .gen-hero { height: 440px; } }
@@ -310,8 +312,39 @@
       .gen-cal .mt-cal__dow { font-size: 0.55rem; letter-spacing: 0; }
       .gen-cal .mt-cal__cell { height: 64px; padding: 0.2rem 0.25rem; border-radius: 8px; }
       .gen-cal .mt-cal__rel { font-size: 0.5rem; padding: 0.08rem 0.2rem; border-left-width: 2px; }
-      .gen-cal .mt-cal__rel + .mt-cal__rel { display: none; }
     }
+
+    /* días con varios estrenos: fondos y títulos superpuestos que van pasando */
+    .gen-cal .mt-cal__cell--has { cursor: pointer; }
+    .gen-cal .mt-cal__bg { opacity: 0; transition: opacity 0.6s ease, transform 0.35s ease-out; }
+    .gen-cal .mt-cal__bg.is-on { opacity: 0.55; }
+    .gen-cal .mt-cal__cell--has:hover .mt-cal__bg.is-on { opacity: 0.85; }
+    .gen-cal .mt-cal__rels { display: grid; }
+    .gen-cal .mt-cal__rel { grid-area: 1 / 1; opacity: 0; transition: opacity 0.6s ease; }
+    .gen-cal .mt-cal__rel.is-on { opacity: 1; }
+    .gen-cal .mt-cal__cell--has:hover { border-color: rgba(var(--accent-rgb), 0.6); }
+
+    /* ventanitas flotantes con los estrenos de un día */
+    .mtc-pop { position: fixed; z-index: 600; display: flex; gap: 0.6rem; filter: drop-shadow(0 18px 40px rgba(0,0,0,0.65)); }
+    .mtc-pop[hidden] { display: none; }
+    .mtc-pc { --rot: -2deg; width: 210px; flex-shrink: 0; padding: 0; overflow: hidden; border-radius: 12px; text-align: left; cursor: pointer;
+      background: #0f0f1e; border: 1px solid rgba(var(--accent-rgb), 0.45); color: #fff; font: inherit;
+      transform: rotate(var(--rot)); animation: mtcIn 0.24s cubic-bezier(0.23, 1, 0.32, 1) both; animation-delay: calc(var(--i) * 45ms); transition: border-color 0.15s; }
+    .mtc-pc:nth-child(even) { --rot: 2deg; }
+    .mtc-pc:hover { border-color: var(--accent); }
+    .mtc-pc--peliculas { border-color: rgba(230,57,70,0.55); } .mtc-pc--series { border-color: rgba(67,97,238,0.55); } .mtc-pc--anime { border-color: rgba(181,23,158,0.55); }
+    @keyframes mtcIn { from { opacity: 0; transform: translateY(12px) scale(0.95) rotate(var(--rot)); } }
+    .mtc-pc img, .mtc-pc__ph { display: flex; align-items: center; justify-content: center; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #1e293b; font-size: 1.6rem; }
+    .mtc-pc__t { display: block; padding: 0.5rem 0.65rem 0.6rem; font-weight: 800; font-size: 0.86rem; line-height: 1.25; }
+    .mtc-pc__t small { display: block; margin-bottom: 0.15rem; font-size: 0.58rem; letter-spacing: 0.1em; color: var(--accent); }
+    .mtc-pc--peliculas small { color: #ff8b93; } .mtc-pc--series small { color: #93a7ff; } .mtc-pc--anime small { color: #e77ad4; }
+    .mtc-pop--sheet { left: 0.8rem !important; right: 0.8rem; top: auto !important; bottom: calc(72px + env(safe-area-inset-bottom, 0px)); flex-wrap: wrap; justify-content: center;
+      max-height: 70vh; overflow-y: auto; padding: 0.5rem 0.8rem 0.8rem; border-radius: 16px; background: rgba(7,7,15,0.96); border: 1px solid rgba(var(--accent-rgb), 0.35); }
+    .mtc-pop--sheet .mtc-pc { width: calc(50% - 0.3rem); }
+    .mtc-pop__hd { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; width: 100%; }
+    .mtc-pop__hd b { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 0.05em; color: var(--accent); }
+    .mtc-pop__x { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); background: #0f1522; color: #e2e8f0; font-size: 1rem; cursor: pointer; }
+    @media (prefers-reduced-motion: reduce) { .mtc-pc { animation: none; } .gen-cal .mt-cal__bg, .gen-cal .mt-cal__rel { transition: none; } }
 
     /* con el menú lateral a la vista, el logo de la barra de arriba sobra (ya está en el menú) */
     @media (min-width: 1100px) { .gen-brand { display: none; } }
@@ -491,7 +524,7 @@
 <script src="firebase-config.js?v=20261030b" defer></script>
 <script src="js/sync-manager.js?v=20261101a" defer></script>
 <script src="mt-main.js?v=20261101g"         defer></script>
-<script src="mt-general.js?v=20261102a"      defer></script>
+<script src="mt-general.js?v=20261102b"      defer></script>
 <script src="js/mobile-ui.js?v=20261030m" defer></script>
 <script src="js/push-manager.js?v=20261030n" defer></script>
 <script src="app.js?v=20261023a" defer></script>

@@ -1066,3 +1066,52 @@ body {
 /* Menús fijos de arriba y cajón lateral: sitio para la zona del notch en la app instalada */
 .mt-nav { height: calc(56px + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); }
 .mt-sidebar { padding-top: calc(0.85rem + env(safe-area-inset-top, 0px)); }
+
+/* Puntos de la portada con el color de cada jugador: lleno si la ha visto, anillo si la está viendo */
+.mt-card__dot--p-david { --pc: #60a5fa; }
+.mt-card__dot--p-javi  { --pc: #f87171; }
+.mt-card__dot--p-mery  { --pc: #c084fc; }
+.mt-card__dot--visto  { background: var(--pc, #43e97b); box-shadow: 0 0 6px var(--pc, #43e97b); opacity: 1; }
+.mt-card__dot--viendo { background: rgba(7,7,15,0.6); border: 2px solid var(--pc, #f59e0b); opacity: 1; }
+
+/* ══ MENÚ LATERAL CINEMATOGRÁFICO (todas las pestañas de pelis, series y anime) ══
+   Fondo de sala oscura con el foco del color de la categoría, perforaciones de película en el borde
+   e iconos de línea en vez de emojis. */
+.mt-sidebar {
+  background:
+    radial-gradient(120% 45% at 0% 0%, rgba(var(--accent-rgb), 0.18), transparent 65%),
+    radial-gradient(90% 30% at 50% 100%, rgba(var(--accent-rgb), 0.08), transparent 70%),
+    linear-gradient(180deg, #0d0c16, #06060c);
+  border-right: 1px solid rgba(var(--accent-rgb), 0.18);
+  padding-right: 1.15rem;
+}
+.mt-sidebar::after { /* perforaciones de un rollo de película */
+  content: ''; position: absolute; top: 0; bottom: 0; right: 5px; width: 7px; pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,0.09) 0 9px, transparent 9px 20px);
+  border-radius: 2px;
+}
+.mt-sidebar__brand span { display: flex; flex-direction: column; line-height: 1.1; }
+.mt-sidebar__brand span::after { content: 'CINE · SERIES · ANIME'; margin-top: 0.2rem; font-size: 0.46rem; letter-spacing: 0.12em; white-space: nowrap; color: var(--accent); }
+.mt-sidebar__group { display: flex; align-items: center; gap: 0.5rem; font-family: 'Orbitron', sans-serif; font-size: 0.52rem; color: rgba(var(--accent-rgb), 0.75); }
+.mt-sidebar__group::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.35), transparent); }
+.mt-sidebar__item { position: relative; gap: 0.75rem; padding: 0.6rem 0.75rem; font-weight: 600; letter-spacing: 0.01em; }
+.mt-sidebar__ico {
+  width: 20px; height: 20px; flex: none; font-size: 0; color: transparent;
+  background: currentColor; -webkit-mask: var(--ico) center / contain no-repeat; mask: var(--ico) center / contain no-repeat;
+}
+.mt-sidebar__item .mt-sidebar__ico { background: var(--txt3); transition: background 0.15s, filter 0.15s; }
+.mt-sidebar__item:hover .mt-sidebar__ico { background: var(--txt1); }
+.mt-sidebar__item--active {
+  color: #fff; background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.28), rgba(var(--accent-rgb), 0.04));
+  border-color: rgba(var(--accent-rgb), 0.35); box-shadow: inset 3px 0 0 var(--accent), 0 0 20px rgba(var(--accent-rgb), 0.15);
+}
+.mt-sidebar__item--active .mt-sidebar__ico { background: var(--accent); filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.8)); }
+.mt-sidebar__item[href="mt-general.html"] .mt-sidebar__ico { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z'/%3E%3C/svg%3E"); }
+.mt-sidebar__item[href="mt-biblioteca.html"] .mt-sidebar__ico { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='16' rx='2'/%3E%3Cpath d='M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4'/%3E%3C/svg%3E"); }
+.mt-sidebar__item[href="mt-registro.html"] .mt-sidebar__ico { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='7' y='3' width='10' height='4' rx='1'/%3E%3Cpath d='M17 5h2a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2M8 12h8M8 16h5'/%3E%3C/svg%3E"); }
+.mt-sidebar__item[href="mt-pendientes.html"] .mt-sidebar__ico { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E"); }
+.mt-sidebar__item[href="mt-favoritos.html"] .mt-sidebar__ico { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z'/%3E%3C/svg%3E"); }
+.mt-sidebar__item[href="mt-general.html?cal=1"] .mt-sidebar__ico { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M3 10h18M8 14h2M14 14h2M8 17h2'/%3E%3C/svg%3E"); }
+.mt-sidebar__item[href="hub.html"] .mt-sidebar__ico { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 6 9 12l6 6'/%3E%3C/svg%3E"); }
+.mt-sidebar__item[href="mt-perfil.html"] .mt-sidebar__ico { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21a8 8 0 0 1 16 0'/%3E%3C/svg%3E"); }
+.mt-sidebar__item[href="mt-importar.html"] .mt-sidebar__ico { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12M7 10l5 5 5-5M4 21h16'/%3E%3C/svg%3E"); }

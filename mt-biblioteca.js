@@ -235,7 +235,8 @@
     /* Player status dots */
     var dots = ['David', 'Javi', 'Mery'].map(function (p) {
       var est = U.resolvePlayerEstado(item, p);
-      return '<div class="mt-card__dot ' + U.playerDotClass(est) + '" title="' + p + ': ' + U.escHtml(est || 'sin estado') + '"></div>';
+      // cada punto lleva el color de su jugador cuando la ha visto (o la está viendo)
+      return '<div class="mt-card__dot ' + U.playerDotClass(est) + ' mt-card__dot--p-' + p.toLowerCase() + '" title="' + p + ': ' + U.escHtml(est || 'sin estado') + '"></div>';
     }).join('');
 
     var genre    = item.generos && item.generos[0] ? '<span class="mt-card__genre">' + U.escHtml(item.generos[0]) + '</span>' : '';
