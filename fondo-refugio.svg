@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <!-- Fondo del Refugio 111: minimalista y difuminado. Los dibujos van en las franjas de los lados
+       (en pantallas anchas el contenido ocupa el centro): engranaje del 111 y franjas a la izquierda,
+       símbolo del Refugio y puerta acorazada a la derecha, sobre un plano azul noche. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1020"/><stop offset="1" stop-color="#05070f"/></linearGradient>
+    <radialGradient id="gl" cx="0.07" cy="0.3" r="0.3"><stop offset="0" stop-color="#f5c842" stop-opacity="0.07"/><stop offset="1" stop-color="#f5c842" stop-opacity="0"/></radialGradient>
+    <radialGradient id="gr" cx="0.93" cy="0.62" r="0.32"><stop offset="0" stop-color="#3b82f6" stop-opacity="0.14"/><stop offset="1" stop-color="#3b82f6" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse"><path d="M64 0H0V64" fill="none" stroke="#7aa2ff" stroke-opacity="0.04" stroke-width="1"/></pattern>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3.5"/></filter>
+    <filter id="softer" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.8"/></filter>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <rect width="1920" height="1080" fill="url(#grid)"/>
+  <rect width="1920" height="1080" fill="url(#gl)"/>
+  <rect width="1920" height="1080" fill="url(#gr)"/>
+
+  <!-- IZQUIERDA: engranaje del 111, franjas doradas y depósito de agua -->
+  <g filter="url(#soft)" fill="none" stroke="#f5c842">
+    <path d="M282.3 271.9 L313.8 279.3 L313.8 320.7 L282.3 328.1 L276.7 349.3 L300.2 371.5 L279.5 407.3 L248.5 398.0 L233.0 413.5 L242.3 444.5 L206.5 465.2 L184.3 441.7 L163.1 447.3 L155.7 478.8 L114.3 478.8 L106.9 447.3 L85.7 441.7 L63.5 465.2 L27.7 444.5 L37.0 413.5 L21.5 398.0 L-9.5 407.3 L-30.2 371.5 L-6.7 349.3 L-12.3 328.1 L-43.8 320.7 L-43.8 279.3 L-12.3 271.9 L-6.7 250.7 L-30.2 228.5 L-9.5 192.7 L21.5 202.0 L37.0 186.5 L27.7 155.5 L63.5 134.8 L85.7 158.3 L106.9 152.7 L114.3 121.2 L155.7 121.2 L163.1 152.7 L184.3 158.3 L206.5 134.8 L242.3 155.5 L233.0 186.5 L248.5 202.0 L279.5 192.7 L300.2 228.5 L276.7 250.7 Z" stroke-opacity="0.2" stroke-width="8"/>
+    <circle cx="135" cy="300" r="102" stroke-opacity="0.14" stroke-width="6"/>
+  </g>
+  <text x="135" y="334" text-anchor="middle" font-family="Orbitron, Arial Black, sans-serif" font-weight="900" font-size="96" fill="#f5c842" fill-opacity="0.16" filter="url(#softer)">111</text>
+  <g filter="url(#softer)" fill="#f5c842" fill-opacity="0.1">
+    <rect x="0" y="530" width="250" height="12"/><rect x="0" y="552" width="250" height="12"/>
+  </g>
+  <g filter="url(#soft)" fill="none" stroke="#8fb3ff" stroke-opacity="0.1" stroke-width="5" stroke-linejoin="round">
+    <ellipse cx="120" cy="770" rx="62" ry="40"/>
+    <path d="M70 805 L48 960 M170 805 L192 960 M95 810 L88 960 M145 810 L152 960 M58 880 H182 M52 930 H188"/>
+  </g>
+
+  <!-- DERECHA: símbolo del Refugio, franjas y puerta acorazada -->
+  <g filter="url(#softer)" fill="none" stroke="#f5c842" stroke-opacity="0.16" stroke-linecap="round">
+    <circle cx="1795" cy="230" r="26" stroke-width="10"/>
+    <path d="M1720 207H1758M1832 207H1870M1700 230H1758M1832 230H1890M1720 253H1758M1832 253H1870" stroke-width="8"/>
+  </g>
+  <g filter="url(#softer)" fill="#f5c842" fill-opacity="0.1">
+    <rect x="1670" y="530" width="250" height="12"/><rect x="1670" y="552" width="250" height="12"/>
+  </g>
+  <g filter="url(#soft)" fill="none" stroke="#8fb3ff">
+    <circle cx="1800" cy="800" r="150" stroke-opacity="0.13" stroke-width="10"/>
+    <circle cx="1800" cy="800" r="112" stroke-opacity="0.1" stroke-width="5" stroke-dasharray="18 14"/>
+    <circle cx="1800" cy="800" r="64" stroke-opacity="0.1" stroke-width="4"/>
+    <circle cx="1800" cy="800" r="20" stroke-opacity="0.16" stroke-width="8"/>
+  </g>
+</svg>
