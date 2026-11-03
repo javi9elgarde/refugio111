@@ -276,19 +276,3 @@
 .r1-pc__t small.r1-pc__ea { color: #c084fc; }
 .r1-day__tag--v10 { background: #22c55e; color: #05170b; }
 .r1-pc__t small.r1-pc__v10 { color: #4ade80; }
-
-/* ── FONDO POR DEFECTO DEL MENÚ PRINCIPAL ──────────────────────
-   Dibujo propio minimalista (fondo-refugio.svg): engranaje del 111, puerta acorazada, plano y franjas, muy tenue para que no compita
-   con el contenido. Si hay un tema con fondos propios (o es día de estreno), mandan ellos. */
-.r1::before {
-  content: ''; position: fixed; inset: -12px; z-index: -1; pointer-events: none;
-  background: #05070f url("fondo-refugio.svg") center / cover no-repeat;
-  /* el difuminado va dentro del propio SVG */
-}
-.r1::after { /* viñeta: más oscuro detrás del contenido, los dibujos se ven a los lados */
-  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background: radial-gradient(ellipse 60% 75% at 50% 45%, rgba(7,7,15,0.55), rgba(7,7,15,0.15) 70%, transparent);
-}
-html.r1-tema--fondos .r1::before, html.r1-fiesta .r1::before, html.r1-tema--fondos .r1::after, html.r1-fiesta .r1::after { display: none; }
-@media (max-width: 640px) { .r1::before { background-position: 18% center; } }
-
