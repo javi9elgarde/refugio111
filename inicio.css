@@ -276,3 +276,19 @@
 .r1-pc__t small.r1-pc__ea { color: #c084fc; }
 .r1-day__tag--v10 { background: #22c55e; color: #05170b; }
 .r1-pc__t small.r1-pc__v10 { color: #4ade80; }
+
+/* ── FONDO POR DEFECTO DEL MENÚ PRINCIPAL ──────────────────────
+   El pasillo del Refugio con sus dos columnas, fijo, algo difuminado y oscurecido para que no compita
+   con el contenido. Si hay un tema con fondos propios (o es día de estreno), mandan ellos. */
+.r1::before {
+  content: ''; position: fixed; inset: -12px; z-index: -1; pointer-events: none;
+  background: #070b16 url("fondo-refugio.webp") center top / cover no-repeat;
+  filter: blur(2.5px) brightness(0.78) saturate(1.05);
+}
+.r1::after { /* viñeta: más oscuro detrás del contenido, las columnas se ven a los lados */
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse 60% 75% at 50% 45%, rgba(7,7,15,0.55), rgba(7,7,15,0.15) 70%, transparent);
+}
+html.r1-tema--fondos .r1::before, html.r1-fiesta .r1::before, html.r1-tema--fondos .r1::after, html.r1-fiesta .r1::after { display: none; }
+@media (max-width: 640px) { .r1::before { background-position: center center; filter: blur(3px) brightness(0.6); } }
+@media (prefers-reduced-transparency: reduce) { .r1::before { filter: brightness(0.6); } }
