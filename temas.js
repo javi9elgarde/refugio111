@@ -2,6 +2,7 @@
    REFUGIO 111 — Temas de la portada (editor en vivo + programación)
    settings/temas = { lista: [tema] }
    tema = { id, nombre, juegoId, desde, hasta (ms), prioridad, confeti,
+            evento: { texto, sub, enlace }  ← cartel de evento en el Inicio mientras dura el tema (p. ej. la semana de los TGA),
             colores: { acento, acento2, fondo, panel, borde, titulo, engranaje },
             titulos: { escala, brillo },
             fondos: { izq: { url, size, pos }, der: { url, size, pos }, oscuro, repetir } }
@@ -37,7 +38,7 @@
     VARS.forEach(function (v) { s.removeProperty(v); });
     root.classList.remove('r1-tema--acento', 'r1-tema--titulo', 'r1-tema--engranaje', 'r1-tema--fondos', 'r1-tema--logo', 'r1-tema--logo-negro', 'r1-tema--logo-blanco');
     root.classList.toggle('r1-tema', !!t);
-    if (!t) return;
+    if (!t) { evento(null); return; }
     var c = t.colores || {}, ti = t.titulos || {}, f = t.fondos || {};
     COLORES.forEach(function (k) { if (c[k[0]]) k[2].forEach(function (v) { s.setProperty(v, k[3] ? k[3](c[k[0]]) : c[k[0]]); }); });
     ['acento', 'titulo', 'engranaje'].forEach(function (k) { root.classList.toggle('r1-tema--' + k, !!c[k]); });
@@ -56,6 +57,23 @@
     root.classList.toggle('r1-tema--logo', !!t.logo);
     if (t.logo && t.logoFondo) root.classList.add('r1-tema--logo-' + t.logoFondo);
     syncGear();
+    evento(t);
+  }
+
+  // cartel del evento del tema (p. ej. «🏆 SEMANA DE THE GAME AWARDS»), arriba del Inicio; con los colores del tema
+  function evento(t) {
+    var ev = t && t.evento, el = document.getElementById('r1Evento');
+    if (!ev || !ev.texto) { if (el) el.hidden = true; return; }
+    if (!el) {
+      var wrap = document.querySelector('.r1-wrap');
+      if (!wrap) return;
+      el = document.createElement('div');
+      el.id = 'r1Evento'; el.className = 'r1-evento';
+      wrap.insertBefore(el, wrap.firstChild);
+    }
+    var inner = '<span class="r1-evento__t">' + esc(ev.texto) + '</span>' + (ev.sub ? '<small>' + esc(ev.sub) + '</small>' : '');
+    el.innerHTML = ev.enlace ? '<a href="' + esc(ev.enlace) + '">' + inner + '<i aria-hidden="true">→</i></a>' : inner;
+    el.hidden = false;
   }
 
   // capa de tinte sobre las dos piezas del logo, girando a la vez que el engranaje
@@ -159,6 +177,11 @@
           '<input type="url" class="tm-in" data-k="logo" placeholder="Logo para el cartel «Hoy sale» (URL, mejor PNG)">' +
           '<select class="tm-in" data-k="logoFondo"><option value="">Logo tal cual</option><option value="negro">Quitar fondo negro</option><option value="blanco">Quitar fondo blanco</option></select>' +
           '<p class="tm-state" id="tmState"></p></section>' +
+        '<section><h3>Evento</h3><p class="tm-hint">Un cartel arriba del Inicio mientras dura el tema. Vacío, no sale.</p>' +
+          '<input class="tm-in" data-k="evTexto" placeholder="Texto del cartel, p. ej. 🏆 SEMANA DE THE GAME AWARDS">' +
+          '<input class="tm-in" data-k="evSub" placeholder="Frase de debajo (opcional)">' +
+          '<input class="tm-in" data-k="evEnlace" placeholder="Enlace al pulsar (opcional), p. ej. halloffame.html#awards">' +
+          '<button type="button" class="tm-btn tm-btn--wide" data-act="tga">🏆 Plantilla: semana de The Game Awards</button></section>' +
         '<section><h3>Colores</h3>' + COLORES.map(row).join('') + '</section>' +
         '<section><h3>Títulos</h3>' +
           '<label class="tm-row"><span>Tamaño</span><input type="range" min="0.8" max="1.6" step="0.05" data-k="escala"><output id="tmEsc"></output></label>' +
@@ -215,6 +238,8 @@
     q('[data-k="juego"]').value = g ? g.titulo : '';
     q('[data-k="logo"]').value = t.logo || '';
     q('[data-k="logoFondo"]').value = t.logoFondo || '';
+    var ev = t.evento || {};
+    q('[data-k="evTexto"]').value = ev.texto || ''; q('[data-k="evSub"]').value = ev.sub || ''; q('[data-k="evEnlace"]').value = ev.enlace || '';
     COLORES.forEach(function (k) {
       var v = (t.colores || {})[k[0]], inp = q('[data-c="' + k[0] + '"]');
       inp.value = v || '#808080'; inp.closest('.tm-row').classList.toggle('is-off', !v);
@@ -295,6 +320,7 @@
     else if (k === 'nombre') t.nombre = el.value;
     else if (k === 'logo') t.logo = el.value.trim();
     else if (k === 'logoFondo') t.logoFondo = el.value;
+    else if (k === 'evTexto' || k === 'evSub' || k === 'evEnlace') { t.evento = t.evento || {}; t.evento[{ evTexto: 'texto', evSub: 'sub', evEnlace: 'enlace' }[k]] = el.value.trim(); }
     else if (k === 'juego') { var g = GT.Biblioteca.getAll().filter(function (x) { return x.titulo === el.value; })[0]; t.juegoId = g ? g.id : ''; }
     else if (k === 'escala' || k === 'brillo') t.titulos[k] = parseFloat(el.value);
     else if (k === 'oscuro') t.fondos.oscuro = parseFloat(el.value);
@@ -329,6 +355,19 @@
     else if (act === 'save') save(draft);
     else if (act === 'del') del(draft);
     else if (act === 'shots') fillShots();
+    else if (act === 'tga') tga();
+  }
+
+  // plantilla: la semana de los The Game Awards de este año (del 7 al 11 de diciembre), dorada y con enlace a las votaciones
+  function tga() {
+    var y = new Date().getFullYear(), t = draft;
+    t.nombre = 'Semana de The Game Awards ' + y;
+    t.evento = { texto: '🏆 SEMANA DE THE GAME AWARDS ' + y, sub: '¡Vota a tus favoritos en los VAULTY Awards del Refugio!', enlace: 'halloffame.html#awards' };
+    t.desde = new Date(y, 11, 7).getTime(); t.hasta = new Date(y, 11, 12).getTime();
+    t.colores = Object.assign({}, t.colores, { acento: '#f5c842', acento2: '#ff9d00', titulo: '#f5c842' });
+    t.confeti = true; t.prioridad = Math.max(t.prioridad || 0, 5);
+    edit(t);
+    GT.Toast && GT.Toast.show('Plantilla puesta: revisa y pulsa Guardar', 'success');
   }
 
   function store(list, msg) {

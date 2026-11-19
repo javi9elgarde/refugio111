@@ -93,3 +93,15 @@ html.tm-preview .r1-side::after { content: ''; position: absolute; inset: 6px; b
 /* logo con fondo liso: se funde con el cartel (negro: modo trama; blanco: multiplicar) */
 .r1-tema--logo-negro .r1-party__logo { mix-blend-mode: screen; filter: none; }
 .r1-tema--logo-blanco .r1-party__logo { mix-blend-mode: multiply; filter: none; }
+
+/* cartel del evento de un tema (p. ej. la semana de The Game Awards) */
+.r1-evento { margin-bottom: 1rem; border-radius: 14px; overflow: hidden; text-align: center;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--party-c, #f5c842) 85%, #000), var(--party-c2, #ff9d00));
+  box-shadow: 0 10px 34px color-mix(in srgb, var(--party-c, #f5c842) 30%, transparent); color: #0a0d14; }
+.r1-evento[hidden] { display: none; }
+.r1-evento > a, .r1-evento > .r1-evento__t { color: inherit; text-decoration: none; }
+.r1-evento > a, .r1-evento { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; padding: 0.7rem 1rem; position: relative; }
+.r1-evento > a { padding: 0; width: 100%; }
+.r1-evento__t { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: clamp(0.9rem, 2.4vw, 1.3rem); letter-spacing: 0.05em; }
+.r1-evento small { font-size: 0.8rem; font-weight: 600; opacity: 0.85; }
+.r1-evento i { position: absolute; right: 0.2rem; top: 50%; transform: translateY(-50%); font-style: normal; font-weight: 900; font-size: 1.2rem; }

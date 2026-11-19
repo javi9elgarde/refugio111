@@ -288,3 +288,6 @@
 .rg-card--plat .rg-card__ok { width: 38px; height: 38px; border-radius: 50%; border: 1px solid rgba(170,205,255,0.55);
   background: radial-gradient(circle at 50% 40%, rgba(120,170,255,0.35), rgba(5,8,24,0.9) 70%); box-shadow: 0 0 14px rgba(120,170,255,0.65); }
 .rg-card__ok img { position: static; inset: auto; height: 27px; width: auto; object-fit: contain; filter: drop-shadow(0 0 6px rgba(150,190,255,0.85)); } /* la regla de las portadas (.rg-card__cover img) la ponía en absoluto, pegada arriba a la izquierda */
+/* platinado en PC: el trofeo de platino de Steam, con su brillo turquesa */
+.rg-card--plat .rg-card__ok--steam { border-color: rgba(120,220,235,0.55); background: radial-gradient(circle at 50% 40%, rgba(80,200,225,0.32), rgba(5,12,24,0.9) 70%); box-shadow: 0 0 14px rgba(80,200,225,0.6); }
+.rg-card__ok--steam img { filter: drop-shadow(0 0 6px rgba(110,220,240,0.85)); }

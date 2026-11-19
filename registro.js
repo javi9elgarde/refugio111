@@ -242,7 +242,8 @@
     var game = Biblioteca.getById(r.juegoId), titulo = game ? game.titulo : '(Juego eliminado)', ret = RETOMAR[r.estado];
     return '<div class="rg-card' + (r.estado === 'Platinado' ? ' rg-card--plat' : '') + '">' +
       '<button type="button" class="rg-card__cover" onclick="window.GT.GameDetailModal.open(\'' + esc(r.juegoId) + '\')" title="Ver ficha">' + cover(game, 640) +
-        (r.estado === 'Platinado' ? '<span class="rg-card__ok" title="Platinado"><img src="platinum-trophy.png" alt="Platinado"></span>' : '') + '</button>' +
+        (r.estado === 'Platinado' ? '<span class="rg-card__ok' + (r.plataformaJugada === 'PC' ? ' rg-card__ok--steam' : '') + '" title="Platinado' + (r.plataformaJugada === 'PC' ? ' en Steam' : '') + '">' +
+          '<img src="' + (r.plataformaJugada === 'PC' ? 'steam-platinum.webp' : 'platinum-trophy.png') + '" alt="Platinado"></span>' : '') + '</button>' +
       '<div class="rg-card__b">' +
         '<b title="' + esc(titulo) + '">' + esc(titulo) + '</b>' +
         (Utils.playedInEarlyAccess(r, game) ? '<small class="rg-ea rg-ea--tag">⚡ Jugado en Early Access</small>' : '') +

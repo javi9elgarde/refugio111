@@ -101,6 +101,14 @@
   <!-- DOS PUERTAS: los campeones de cada año y los favoritos de siempre -->
   <section class="section">
     <div class="honor-gates">
+      <div class="honor-gate honor-gate--awards">
+        <div class="honor-gate__c">
+          <div class="olimpo__eyebrow">🗳️ Como The Game Awards, pero del Refugio</div>
+          <h2 class="honor-gate__title">VAULTY AWARDS</h2>
+          <p class="olimpo__sub">Todas las categorías y nominados del año: vota los tuyos y mira quién gana</p>
+          <button type="button" class="honor-gate__btn" id="awardsOpen">🏆 Votar los premios</button>
+        </div>
+      </div>
       <div class="honor-gate honor-gate--champ">
         <div class="honor-gate__c">
           <div class="olimpo__eyebrow">🏆 Año a año</div>
@@ -119,6 +127,25 @@
       </div>
     </div>
   </section>
+
+  <!-- VAULTY AWARDS (ventana): papeleta del año y votos de los tres -->
+  <div class="honor-modal" id="awardsModal" role="dialog" aria-modal="true" aria-label="VAULTY Awards" hidden>
+    <div class="honor-modal__box aw-box">
+      <button type="button" class="honor-modal__x" id="awClose" aria-label="Cerrar los VAULTY Awards">✕</button>
+      <section class="nuka-section">
+        <div class="nuka-header">
+          <div class="nuka-header__eyebrow">🗳️ REFUGIO 111 · LOS PREMIOS DEL AÑO 🗳️</div>
+          <h2 class="nuka-header__title">VAULTY AWARDS</h2>
+          <div class="nuka-header__sub">Pulsa un nominado para votarlo. Los votos de los demás se ven cuando votas esa categoría.</div>
+          <div class="aw-top">
+            <label class="aw-year">AÑO <select id="awYear" aria-label="Año de los premios"></select></label>
+            <div class="aw-progress" id="awProgress"></div>
+          </div>
+        </div>
+        <div id="awCats"></div>
+      </section>
+    </div>
+  </div>
 
   <!-- SALÓN DE CAMPEONES (ventana): el nº 1 de cada año ya terminado -->
   <div class="honor-modal" id="campeonesModal" role="dialog" aria-modal="true" aria-label="Salón de Campeones" hidden>
@@ -369,6 +396,48 @@
 .champ-score b { display: flex; align-items: center; gap: 0.4rem; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.3rem; line-height: 1;
   color: var(--sc); text-shadow: 0 0 14px color-mix(in srgb, var(--sc) 60%, transparent); white-space: nowrap; }
 .champ-score i { font-style: normal; font-size: 0.6rem; color: #f5c842; text-shadow: 0 0 8px rgba(245,200,66,0.7); }
+
+
+/* ══ VAULTY AWARDS ══════════════════════════════════════════ */
+.honor-gate--awards { grid-column: 1 / -1; border-color: rgba(245,200,66,0.7);
+  background: radial-gradient(ellipse 60% 120% at 50% 0%, rgba(245,200,66,0.28), transparent 70%), linear-gradient(180deg, #1a1203, #0a0702); }
+.honor-gate--awards .honor-gate__title { font-size: clamp(1.8rem, 5vw, 3rem); }
+.aw-box { max-width: 1240px; }
+.aw-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.8rem 1.2rem; margin-top: 1.1rem; }
+.aw-year { display: inline-flex; align-items: center; gap: 0.5rem; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.75rem; letter-spacing: 0.15em; color: rgba(245,200,66,0.8); }
+.aw-year select { padding: 0.35rem 0.7rem; border-radius: 10px; border: 1px solid rgba(245,200,66,0.55); background: #120d02; color: #f5c842; font: 900 1rem 'Orbitron', sans-serif; }
+.aw-progress { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+.aw-me, .aw-chip { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.75rem 0.3rem 0.3rem; border-radius: 999px; font-size: 0.8rem; color: #e8e8f8;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); }
+.aw-me { border-color: var(--pc, rgba(245,200,66,0.5)); background: color-mix(in srgb, var(--pc, #f5c842) 14%, transparent); }
+.aw-chip.is-done { border-color: rgba(74,222,128,0.5); color: #4ade80; }
+.aw-face { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; object-position: 50% 15%; border: 2px solid var(--pc, #f5c842); background: #1e293b; flex: none; }
+.aw-cat { margin: 1.6rem 0 0; padding: 1rem 1rem 1.1rem; border-radius: 16px; background: rgba(20,14,2,0.6); border: 1px solid rgba(245,200,66,0.18); }
+.aw-cat.is-voted { border-color: rgba(245,200,66,0.4); }
+.aw-cat__h { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+.aw-cat__h h3 { margin: 0; display: flex; align-items: center; gap: 0.55rem; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 0.95rem; letter-spacing: 0.05em; color: #f5c842; }
+.aw-cat__h small { font-size: 0.74rem; color: rgba(232,232,248,0.55); }
+.aw-cat.is-voted .aw-cat__h small { color: #4ade80; }
+.aw-noms { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.7rem; }
+.aw-nom { position: relative; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 12px; text-align: left; cursor: pointer; font: inherit; color: #fff;
+  background: #0d0a04; border: 2px solid rgba(255,255,255,0.08); transition: transform 0.18s ease-out, border-color 0.18s, box-shadow 0.18s; }
+@media (hover: hover) and (pointer: fine) { .aw-nom:hover { transform: translateY(-3px); border-color: rgba(245,200,66,0.55); } }
+.aw-nom:focus-visible { outline: 3px solid #f5c842; outline-offset: 2px; }
+.aw-nom.is-mine { border-color: var(--pc, #f5c842); box-shadow: 0 0 20px color-mix(in srgb, var(--pc, #f5c842) 45%, transparent); }
+.aw-nom.is-win { border-color: #f5c842; box-shadow: 0 0 26px rgba(245,200,66,0.55); }
+.aw-nom__img { position: relative; display: block; aspect-ratio: 16 / 9; background: #1e1a10 center / cover no-repeat; }
+.aw-nom__img.is-empty::before { content: '🎮'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; opacity: 0.35; }
+.aw-win, .aw-mine { position: absolute; left: 0.4rem; top: 0.4rem; padding: 0.15rem 0.45rem; border-radius: 6px; font-family: 'Orbitron', sans-serif; font-size: 0.55rem; font-weight: 900; letter-spacing: 0.06em; }
+.aw-win { background: linear-gradient(180deg, #ffe27a, #e0ad2a); color: #1a1200; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+.aw-mine { left: auto; right: 0.4rem; background: var(--pc, #f5c842); color: #07070f; }
+.aw-nom__t { padding: 0.5rem 0.6rem 0.2rem; font-weight: 800; font-size: 0.82rem; line-height: 1.25; }
+.aw-nom__t small { display: block; margin-top: 0.15rem; font-weight: 500; font-size: 0.66rem; color: rgba(232,232,248,0.5); }
+.aw-nom__f { display: flex; align-items: center; gap: 0.25rem; min-height: 32px; margin-top: auto; padding: 0.2rem 0.5rem 0.5rem; }
+.aw-nom__f .aw-face { width: 22px; height: 22px; }
+.aw-info { margin-left: auto; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.85rem;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); color: #e8e8f8; }
+.aw-info:hover { border-color: #f5c842; color: #f5c842; }
+@media (max-width: 640px) { .aw-noms { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; } .aw-cat { padding: 0.8rem 0.7rem; } }
 
 /* ── VENTANA DE LA SALA DE HONOR ── */
 .honor-modal { position: fixed; inset: 0; z-index: 1200; overflow-y: auto; overscroll-behavior: contain; padding: 1.5rem 1rem; background: #050400; }
@@ -674,6 +743,9 @@ body.honor-open { overflow: hidden; }
 <script src="firebase-config.js?v=20261030b" defer></script>
 <script src="js/sync-manager.js?v=20261101a" defer></script>
 <script src="main.js?v=20261101g"            defer></script>
+<script src="js/coop-match.js?v=20261101a"     defer></script>
+<script src="vaulty-awards.js?v=20261119a"     defer></script>
+<script src="awards.js?v=20261119a"            defer></script>
 <script src="index.js?v=20261101d"           defer></script>
 <script src="js/mobile-ui.js?v=20261030m" defer></script>
 <script src="js/push-manager.js?v=20261030n" defer></script>
