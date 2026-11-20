@@ -255,7 +255,12 @@
             <option value="remaster">✨ Remaster</option>
             <option value="relanzamiento">📦 Relanzamiento / Port</option>
           </select>
-          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Remasters y relanzamientos no cuentan en GOTY ni rankings</small>
+          <label class="ea-toggle" id="fVaultyWrap" hidden style="margin-top:0.55rem">
+            <input type="checkbox" id="fCuentaVaulty">
+            <span class="ea-toggle__track"><span class="ea-toggle__thumb"></span></span>
+            <span class="ea-toggle__label">🏆 Excepción: cuenta para VAULTY</span>
+          </label>
+          <small style="color:var(--txt3);font-size:0.75rem;margin-top:0.3rem;display:block">Remakes, remasters y relanzamientos no cuentan en VAULTY ni en los rankings, salvo que actives la excepción (p. ej. un remake hecho desde cero)</small>
         </div>
         <div class="form-group">
           <label class="form-label">Early Access</label>
@@ -420,10 +425,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"      defer></script>
 <script src="firebase-config.js?v=20261030b" defer></script>
 <script src="js/sync-manager.js?v=20261101a" defer></script>
-<script src="main.js?v=20261101g"            defer></script>
+<script src="main.js?v=20261120a"            defer></script>
 <script src="rawg.js?v=20261022a"            defer></script>
 <script src="igdb.js?v=20261022a"            defer></script>
-<script src="biblioteca.js?v=20261101i"      defer></script>
+<script src="biblioteca.js?v=20261120a"      defer></script>
 <script src="js/mobile-ui.js?v=20261030m" defer></script>
 <script src="js/push-manager.js?v=20261030n" defer></script>
 <script src="app.js?v=20261023a" defer></script>

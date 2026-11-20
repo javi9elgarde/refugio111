@@ -399,7 +399,7 @@ window.GT.Registro = (function () {
     var bib = window.GT.Biblioteca ? window.GT.Biblioteca.getAll() : [];
     var gameIdsThisYear = {};
     bib.forEach(function(g) {
-      if (g.tipoLanzamiento) return; // Remasters y relanzamientos excluidos del ranking
+      if (g.tipoLanzamiento && !g.cuentaVaulty) return; // remakes, remasters y relanzamientos fuera, salvo excepción marcada en la ficha
       if (g.fechaLanzamiento && g.fechaLanzamiento.startsWith(yearStr)) {
         gameIdsThisYear[g.id] = true;
       }
@@ -692,7 +692,7 @@ window.GT.GameDetailModal = (function () {
 
     var tipoMap  = { remake:'🔄 Remake', remaster:'✨ Remaster', relanzamiento:'📦 Relanzamiento / Port' };
     var tipoHtml = game.tipoLanzamiento
-      ? '<div class="detail-tipo">' + (tipoMap[game.tipoLanzamiento] || '') + ' <span style="opacity:0.6">· no computa en rankings</span></div>'
+      ? '<div class="detail-tipo">' + (tipoMap[game.tipoLanzamiento] || '') + (game.cuentaVaulty ? ' <span style="color:#f5c842">· 🏆 cuenta para VAULTY (excepción)</span>' : ' <span style="opacity:0.6">· no computa en rankings</span>') + '</div>'
       : '';
 
     var html =

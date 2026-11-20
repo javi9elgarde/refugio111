@@ -946,6 +946,8 @@
     document.getElementById('fPendJavi').checked  = false;
     document.getElementById('fPendMery').checked  = false;
     document.getElementById('fTipoLanzamiento').value = '';
+    document.getElementById('fCuentaVaulty').checked = false;
+    syncVaultyToggle();
     document.getElementById('fEarlyAccess').checked = false;
     document.getElementById('fFechaEA').value = '';
     document.getElementById('fSaga').value = '';
@@ -959,6 +961,11 @@
     renderPlataformaChips();
     document.getElementById('gameModal').classList.add('open');
     document.getElementById('fTitulo').focus();
+  }
+
+  // la excepción de VAULTY solo aparece si el juego es remake, remaster o relanzamiento
+  function syncVaultyToggle() {
+    document.getElementById('fVaultyWrap').hidden = !document.getElementById('fTipoLanzamiento').value;
   }
 
   function openEdit(id) {
@@ -982,6 +989,8 @@
     document.getElementById('fPendJavi').checked  = pPor.includes('Javi');
     document.getElementById('fPendMery').checked  = pPor.includes('Mery');
     document.getElementById('fTipoLanzamiento').value = game.tipoLanzamiento || '';
+    document.getElementById('fCuentaVaulty').checked = !!game.cuentaVaulty;
+    syncVaultyToggle();
     document.getElementById('fEarlyAccess').checked   = !!game.earlyAccess;
     document.getElementById('fFechaEA').value          = game.fechaEarlyAccess || '';
     document.getElementById('fSaga').value = game.saga || '';
@@ -1099,7 +1108,7 @@
     /* ── Tipo lanzamiento ──────────────────────────────────── */
     var tipoMap = { remake:'🔄 Remake', remaster:'✨ Remaster', relanzamiento:'📦 Relanzamiento / Port' };
     var tipoHtml = game.tipoLanzamiento
-      ? '<div class="detail-tipo">' + (tipoMap[game.tipoLanzamiento] || '') + ' <span style="opacity:0.6">· no computa en rankings</span></div>'
+      ? '<div class="detail-tipo">' + (tipoMap[game.tipoLanzamiento] || '') + (game.cuentaVaulty ? ' <span style="color:#f5c842">· 🏆 cuenta para VAULTY (excepción)</span>' : ' <span style="opacity:0.6">· no computa en rankings</span>') + '</div>'
       : '';
 
     var eaHtml = _inEA2
@@ -1271,6 +1280,7 @@
                         document.getElementById('fPendJavi').checked  ||
                         document.getElementById('fPendMery').checked,
       tipoLanzamiento:  document.getElementById('fTipoLanzamiento').value,
+      cuentaVaulty:     !!document.getElementById('fTipoLanzamiento').value && document.getElementById('fCuentaVaulty').checked,
       earlyAccess:      !!document.getElementById('fEarlyAccess').checked,
       fechaEarlyAccess: document.getElementById('fFechaEA').value || '',
       saga:             document.getElementById('fSaga').value.trim(),
@@ -1355,6 +1365,7 @@
     document.getElementById('fabAdd').addEventListener('click', openAdd);
 
     // Actualizar visibilidad del Hype al cambiar la fecha
+    document.getElementById('fTipoLanzamiento').addEventListener('change', syncVaultyToggle);
     ['fFechaDia','fFechaMes','fFechaAno'].forEach(function(id) {
       var el = document.getElementById(id);
       if (el) el.addEventListener('change', updateHypeFormVisibility);
