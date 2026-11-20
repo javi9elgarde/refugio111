@@ -33,11 +33,24 @@
       var s = window.GT_CoopMatch ? GT_CoopMatch.score(title, g.titulo) : (key(g.titulo) === k ? 1 : 0);
       if (s > score) { score = s; best = g; }
     });
-    return (_lib[k] = score >= 0.99 ? best : null);
+    if (score < 0.99) best = numbered(title);
+    return (_lib[k] = best);
+  }
+  // «Resident Evil Requiem» = «Resident Evil 9: Requiem»: mismas palabras, y en la Biblioteca solo sobra el número de la saga
+  function numbered(title) {
+    if (!window.GT_CoopMatch) return null;
+    var w = GT_CoopMatch.norm(title).split(' ');
+    return GT.Biblioteca.getAll().filter(function (g) {
+      var gw = GT_CoopMatch.norm(g.titulo).split(' ');
+      var extra = gw.filter(function (x) { return w.indexOf(x) === -1; });
+      return w.every(function (x) { return gw.indexOf(x) !== -1; }) && extra.length && extra.every(function (x) { return /^\d+$/.test(x); });
+    })[0] || null;
   }
   function nomGame(n) { return n.juego || n.t; }
+  // el juego de la Biblioteca de un nominado; las películas y series (tipo 'media') nunca son de la Biblioteca
+  function gameFor(n, cat) { return cat.tipo === 'media' ? null : libGame(nomGame(n)); }
   function image(n, cat) {
-    var g = libGame(nomGame(n));
+    var g = gameFor(n, cat);
     if (g && g.portadaUrl) return GT.Utils.thumb(g.portadaUrl, 640);
     return doc.imgs[key(nomGame(n))] || '';
   }
@@ -49,7 +62,7 @@
     (DATA[year] || []).forEach(function (cat) {
       cat.nominados.forEach(function (n) {
         var t = nomGame(n), k = key(t);
-        if (libGame(t) || doc.imgs[k] || fetching[k]) return;
+        if (gameFor(n, cat) || doc.imgs[k] || fetching[k]) return;
         fetching[k] = true;
         todo.push({ t: t, k: k, media: cat.tipo === 'media' });
       });
@@ -59,7 +72,7 @@
       var it = todo[i++];
       if (!it) return Promise.resolve();
       var q = it.media
-        ? fetch(TMDB + encodeURIComponent(it.t)).then(function (r) { return r.json(); }).then(function (d) {
+        ? fetch(TMDB + encodeURIComponent(it.t.replace(/\s*(temporada|season)\s*\d+\s*$/i, ''))).then(function (r) { return r.json(); }).then(function (d) {
             var x = (d.results || []).filter(function (r) { return r.backdrop_path || r.poster_path; })[0];
             return x ? 'https://image.tmdb.org/t/p/w780' + (x.backdrop_path || x.poster_path) : '';
           })
@@ -119,12 +132,12 @@
         '<header class="aw-cat__h"><h3><span>' + cat.icono + '</span>' + esc(cat.nombre) + '</h3>' +
           '<small>' + (done ? (count.filter(function (c) { return c === max; }).length > 1 ? '🤝 Empate' : '🏆 Ganador decidido') : mineV != null ? '✓ Ya has votado · ' + n + ' de 3' : p ? 'Falta tu voto' : n + ' de 3 votos') + '</small></header>' +
         '<div class="aw-noms">' + cat.nominados.map(function (nom, i) {
-          var img = image(nom, cat), g = libGame(nomGame(nom)), win = done && count[i] === max;
+          var img = image(nom, cat), g = gameFor(nom, cat), win = done && count[i] === max;
           var who = show ? PLAYERS.filter(function (x) { return v[x] === i; }) : [];
           return '<button type="button" class="aw-nom' + (mineV === i ? ' is-mine' : '') + (win ? ' is-win' : '') + '" data-cat="' + cat.id + '" data-i="' + i + '"' +
               (p ? ' style="--pc:' + COLOR[p] + '"' : '') + ' aria-pressed="' + (mineV === i) + '">' +
             '<span class="aw-nom__img' + (img ? '' : ' is-empty') + '" data-k="' + key(nomGame(nom)) + '"' + (img ? ' style="background-image:url(\'' + esc(img).replace(/'/g, '%27') + '\')"' : '') + '>' +
-              (win ? '<b class="aw-win">🏆 GANADOR</b>' : '') + (mineV === i ? '<b class="aw-mine">TU VOTO</b>' : '') + '</span>' +
+              (win ? '<b class="aw-win">🏆 GANADOR</b>' : '') + '</span>' +
             '<span class="aw-nom__t">' + esc(nom.t) + '<small>' + esc(nom.s || '') + '</small></span>' +
             '<span class="aw-nom__f">' + who.map(face).join('') +
               (g ? '<span class="aw-info" role="button" tabindex="0" data-ficha="' + esc(g.id) + '" title="Ver ficha">ⓘ</span>' : '') + '</span>' +
